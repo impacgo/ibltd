@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/ibltd/static/css/main.25679f0c.css",
+    "main.js": "/ibltd/static/js/main.abe3d4e5.js",
+    "static/js/453.c04d8542.chunk.js": "/ibltd/static/js/453.c04d8542.chunk.js",
+    "static/media/herosec.jpg": "/ibltd/static/media/herosec.8cf30e6c8176f3f70784.jpg",
+    "static/media/shirtshang.jpg": "/ibltd/static/media/shirtshang.91d687f7a024c908df92.jpg",
+    "static/media/servicewash.jpg": "/ibltd/static/media/servicewash.b99c35f51b89d1fd9f22.jpg",
+    "static/media/shoes.jpg": "/ibltd/static/media/shoes.0b8808b1e989fe00bb75.jpg",
+    "static/media/dryclean.jpg": "/ibltd/static/media/dryclean.8eca9e10b2ca6e1109ba.jpg",
+    "static/media/leather.jpg": "/ibltd/static/media/leather.d99815b968fcdbf96955.jpg",
+    "static/media/bedding.jpg": "/ibltd/static/media/bedding.43028f2e83ded5ffebee.jpg",
+    "static/media/irononly.jpg": "/ibltd/static/media/irononly.cd1bd4a93a646580275b.jpg",
+    "static/media/repair.jpg": "/ibltd/static/media/repair.4e1678ee30c0d2a075af.jpg",
+    "static/media/logo1.svg": "/ibltd/static/media/logo1.6f13509c9d4ad11cb523c6d1a6db8148.svg",
+    "index.html": "/ibltd/index.html",
+    "main.25679f0c.css.map": "/ibltd/static/css/main.25679f0c.css.map",
+    "main.abe3d4e5.js.map": "/ibltd/static/js/main.abe3d4e5.js.map",
+    "453.c04d8542.chunk.js.map": "/ibltd/static/js/453.c04d8542.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.25679f0c.css",
+    "static/js/main.abe3d4e5.js"
+  ]
+}
