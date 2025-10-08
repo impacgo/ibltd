@@ -1,0 +1,306 @@
+/* src/components/Pricing.css */
+.pricing-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 80px 20px;
+  position: relative;
+}
+
+.pricing-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* Header */
+.pricing-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.pricing-header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+
+.pricing-header p {
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Pricing Tables Wrapper */
+.pricing-tables-wrapper {
+  width: 100%;
+  margin-bottom: 60px;
+}
+
+.pricing-tables-scroll {
+  display: flex;
+  gap: 30px;
+  padding: 10px 0 20px 0;
+}
+
+/* Individual Pricing Table */
+.pricing-table {
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 12px;
+  border: 1px solid #334155;
+  backdrop-filter: blur(10px);
+  flex: 0 0 350px; /* Fixed width for all tables */
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.pricing-table:hover {
+  transform: translateY(-5px);
+  border-color: #475569;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.table-header {
+  background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%);
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #334155;
+}
+
+.table-header h3 {
+  color: #000;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.table-content {
+  flex: 1;
+  padding: 0;
+}
+
+.table-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #334155;
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background: rgba(51, 65, 85, 0.4);
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.service-name {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  font-weight: 500;
+  flex: 1;
+  padding-right: 15px;
+}
+
+.service-price {
+  color: #10b981;
+  font-weight: 600;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+/* CTA Button */
+.pricing-cta {
+  text-align: center;
+}
+
+.cta-btn {
+  background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%);
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
+}
+
+/* ---------- RESPONSIVE DESIGN ---------- */
+
+/* Desktop: Show all 3 tables side by side */
+@media (min-width: 1025px) {
+  .pricing-tables-scroll {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+/* Tablet: 2 tables side by side with scroll */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .pricing-tables-wrapper {
+    overflow-x: auto;
+  }
+  
+  .pricing-tables-scroll {
+    width: max-content;
+    padding: 10px 20px 20px 20px;
+  }
+  
+  .pricing-table {
+    flex: 0 0 320px;
+  }
+}
+
+/* Mobile: Horizontal scroll with fixed table sizes */
+@media (max-width: 768px) {
+  .pricing-section {
+    padding: 60px 16px;
+  }
+  
+  .pricing-header {
+    margin-bottom: 40px;
+  }
+  
+  .pricing-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .pricing-header p {
+    font-size: 1.1rem;
+  }
+  
+  .pricing-tables-wrapper {
+    overflow-x: auto;
+    margin-bottom: 50px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #FF6B00 rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Custom scrollbar */
+  .pricing-tables-wrapper::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .pricing-tables-wrapper::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin: 0 10px;
+  }
+  
+  .pricing-tables-wrapper::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%);
+    border-radius: 3px;
+  }
+  
+  .pricing-tables-scroll {
+    width: max-content;
+    gap: 20px;
+    padding: 10px 15px 25px 15px;
+  }
+  
+  .pricing-table {
+    flex: 0 0 300px;
+    min-height: 380px;
+  }
+  
+  .table-header {
+    padding: 18px;
+  }
+  
+  .table-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .table-row {
+    padding: 14px 18px;
+  }
+  
+  .service-name {
+    font-size: 0.9rem;
+  }
+  
+  .service-price {
+    font-size: 0.95rem;
+  }
+  
+  .cta-btn {
+    padding: 14px 32px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .pricing-header h1 {
+    font-size: 2rem;
+  }
+  
+  .pricing-header p {
+    font-size: 1rem;
+  }
+  
+  .pricing-tables-scroll {
+    gap: 15px;
+    padding: 5px 10px 20px 10px;
+  }
+  
+  .pricing-table {
+    flex: 0 0 280px;
+    min-height: 360px;
+  }
+  
+  .table-header {
+    padding: 16px;
+  }
+  
+  .table-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .table-row {
+    padding: 12px 16px;
+  }
+  
+  .service-name {
+    font-size: 0.85rem;
+  }
+  
+  .service-price {
+    font-size: 0.9rem;
+  }
+  
+  .cta-btn {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+  }
+}
