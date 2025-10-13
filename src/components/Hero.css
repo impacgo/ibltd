@@ -480,6 +480,7 @@
     height: auto;
     min-height: 100vh;
     padding: 1rem 0 2rem;
+    padding-top: 50px;
   }
  
   .hero-container {

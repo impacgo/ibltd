@@ -650,6 +650,7 @@
 @media (max-width: 768px) {
   .auth-page {
     overflow-x: hidden;
+    padding-top: 30px;
   }
   
   .auth-main {

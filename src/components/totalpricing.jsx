@@ -277,7 +277,7 @@ const TotalPricing = () => {
             <span className="back-arrow">←</span>
           </Link>
           <div className="mobile-title-section">
-            <h1 className="mobile-app-title">IroningBoy</h1>
+            <h1 className="mobile-app-title">OUR PRICING</h1>
             <span className="mobile-services-count">{totalServices} services</span>
           </div>
           <div className="mobile-header-actions">
