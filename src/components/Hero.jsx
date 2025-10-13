@@ -6,13 +6,11 @@ import backgroundImage from "../images/herosec.jpg";
 const Hero = () => {
   const [location, setLocation] = useState('');
   const [isVisible, setIsVisible] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
     
-    // Check if device is mobile
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -20,16 +18,7 @@ const Hero = () => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
-    const handleMouseMove = (e) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
@@ -54,28 +43,15 @@ const Hero = () => {
 
   return (
     <section className={`hero ${isVisible ? 'visible' : ''}`}>
-      {/* Animated Background with Parallax (disabled on mobile) */}
+      {/* Background */}
       <div 
         className="hero-background"
-        style={{ 
-          backgroundImage: `url(${backgroundImage})`,
-          transform: isMobile ? 'none' : `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`
-        }}
+        style={{ backgroundImage: `url(${backgroundImage})` }}
       />
       
       {/* Gradient Overlays */}
       <div className="gradient-overlay top"></div>
       <div className="gradient-overlay bottom"></div>
-      
-      {/* Floating Particles (reduced on mobile) */}
-      <div className="particles">
-        {[...Array(isMobile ? 8 : 15)].map((_, i) => (
-          <div key={i} className="particle" style={{
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 5}s`
-          }}></div>
-        ))}
-      </div>
 
       {/* Main Content */}
       <div className="hero-container">
@@ -90,15 +66,9 @@ const Hero = () => {
             <div className="eyebrow">PREMIUM LAUNDRY SERVICE</div>
             <h1>
               <span className="static-text">Where Luxury Meets</span>
-              <br />
               <span className="animated-text">
                 <Typewriter
-                  words={[
-                    'Freshness',
-                    'Convenience',
-                    'Perfection',
-                    'Care'
-                  ]}
+                  words={['Freshness', 'Convenience', 'Perfection', 'Care']}
                   loop
                   cursor
                   cursorStyle="|"
@@ -116,9 +86,9 @@ const Hero = () => {
             clothes look and feel brand new, every single time.
           </p>
 
-          {/* Enhanced Interactive Location Finder */}
-          <div className="location-finder highlighted" style={{animation:"none"}}>
-            <div className="finder-header" style={{animation:"none"}}>
+          {/* Location Finder */}
+          <div className="location-finder">
+            <div className="finder-header">
               <i className="fas fa-crosshairs"></i>
               <span>Find Service in Your Area</span>
             </div>
@@ -169,7 +139,6 @@ const Hero = () => {
               <div 
                 key={index} 
                 className="feature-card"
-                style={{ animationDelay: `${index * 0.2}s` }}
               >
                 <div className="feature-icon">{feature.icon}</div>
                 <div className="feature-text">{feature.text}</div>
@@ -194,25 +163,23 @@ const Hero = () => {
 
       {/* Bottom Stats Bar */}
       <div className="stats-bar">
-        <div className="stat" style={{background:"none", border:"none"}}>
+        <div className="stat" style={{background:"none",border:"none"}}>
           <div className="stat-number">50K+</div>
           <div className="stat-label">Items Cleaned</div>
         </div>
-        <div className="stat" style={{background:"none", border:"none"}}>
+        <div className="stat" style={{background:"none",border:"none"}}>
           <div className="stat-number">4.9★</div>
           <div className="stat-label">Customer Rating</div>
         </div>
-        <div className="stat" style={{background:"none", border:"none"}}>
+        <div className="stat" style={{background:"none",border:"none"}}>
           <div className="stat-number">24/7</div>
           <div className="stat-label">Support</div>
         </div>
-        <div className="stat" style={{background:"none", border:"none"}}>
+        <div className="stat" style={{background:"none",border:"none"}}>
           <div className="stat-number">98%</div>
           <div className="stat-label">On Time</div>
         </div>
       </div>
-
-      
     </section>
   );
 };

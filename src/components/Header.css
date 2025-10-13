@@ -588,7 +588,7 @@ body {
 .header-content {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
   position: relative;
 }
@@ -596,9 +596,8 @@ body {
 /* Left Section - Logo and App Icons */
 .header-left {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 1rem;
   flex-shrink: 0;
 }
 
@@ -639,9 +638,6 @@ body {
 /* App Store Icons - Mobile */
 .app-store-icons {
   display: none;
-  flex-direction: row;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
 }
 
 .store-btn {
@@ -656,6 +652,7 @@ body {
   transition: all 0.3s ease;
   border: 1px solid transparent;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .store-btn:hover {
@@ -827,10 +824,6 @@ body {
   cursor: pointer;
   padding: 0;
   z-index: 1002;
-  position: absolute;
-  top: 50%;
-  right: 1rem;
-  transform: translateY(-50%);
 }
 
 .mobile-menu-toggle span {
@@ -901,41 +894,44 @@ body {
   .header-content {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    min-height: 70px;
+    align-items: center;
+    min-height: 60px;
     width: 100%;
   }
 
   /* Left Section - Logo and App Icons for Mobile */
   .header-left {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
   }
 
-  /* Show app icons on mobile - ALWAYS ROW DIRECTION */
+  /* Show app icons on mobile - SIDE BY SIDE */
   .app-store-icons.mobile-only {
     display: flex;
     flex-direction: row;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    align-items: center;
   }
 
   /* Adjust logo for mobile */
+  .logo {
+    flex-shrink: 0;
+  }
+
   .logo-name {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
   }
 
   .logo-tagline {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 
   /* Mobile Menu Toggle */
   .mobile-menu-toggle {
     display: flex;
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
+    margin-left: auto;
   }
 
   /* Navigation */
@@ -998,78 +994,22 @@ body {
   }
 }
 
+/* Mobile S (320px) and Mobile M (375px) */
 @media (max-width: 480px) {
-  .header-container {
-    padding: 0 1rem;
-  }
-
-  .header-content {
-    min-height: 65px;
-  }
-
-  .logo-name {
-    font-size: 1.3rem;
-  }
-
-  .logo-tagline {
-    font-size: 0.65rem;
-  }
-
-  .app-store-icons.mobile-only {
-    gap: 0.5rem;
-  }
-
-  .store-btn {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.75rem;
-  }
-
-  .store-icon {
-    width: 14px;
-    height: 14px;
-  }
-
-  .nav {
-    width: 280px;
-    padding: 90px 1.5rem 1.5rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .logo-name {
-    font-size: 1.2rem;
-  }
-  
-  .app-store-icons.mobile-only {
-    flex-direction: row; /* CHANGED: Keep row direction */
-    gap: 0.4rem;
-  }
-
-  .store-btn {
-    padding: 0.35rem 0.5rem; /* Smaller padding */
-    font-size: 0.7rem; /* Smaller font */
-    gap: 0.3rem; /* Smaller gap */
-  }
-
-  .store-icon {
-    width: 12px; /* Smaller icons */
-    height: 12px;
-  }
-  
-  .nav {
-    width: 260px;
-    padding: 80px 1rem 1rem;
-  }
-}
-
-/* NEW: Extra small screens - 320px and below */
-@media (max-width: 320px) {
   .header-container {
     padding: 0 0.75rem;
   }
 
+  .header-content {
+    min-height: 55px;
+  }
+
+  .header-left {
+    gap: 0.75rem;
+  }
+
   .logo-name {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
 
   .logo-tagline {
@@ -1077,26 +1017,94 @@ body {
   }
 
   .app-store-icons.mobile-only {
-    gap: 0.3rem; /* Even smaller gap */
+    gap: 0.4rem;
   }
 
   .store-btn {
-    padding: 0.3rem 0.4rem; /* Minimal padding */
-    font-size: 0.65rem; /* Minimal readable font size */
+    padding: 0.35rem 0.5rem;
+    font-size: 0.7rem;
+    gap: 0.3rem;
+  }
+
+  .store-icon {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Mobile S - 320px specific adjustments */
+@media (max-width: 375px) {
+  .header-container {
+    padding: 0 0.5rem;
+  }
+
+  .header-left {
+    gap: 0.5rem;
+  }
+
+  .logo-name {
+    font-size: 1.1rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.55rem;
+  }
+
+  .app-store-icons.mobile-only {
+    gap: 0.3rem;
+  }
+
+  .store-btn {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.65rem;
     gap: 0.25rem;
   }
 
   .store-icon {
-    width: 10px; /* Minimal icon size */
+    width: 10px;
     height: 10px;
   }
+}
 
-  /* Ensure buttons stay side by side */
+/* Extra small screens - 320px and below */
+@media (max-width: 320px) {
+  .header-container {
+    padding: 0 0.4rem;
+  }
+
+  .logo-name {
+    font-size: 1rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.5rem;
+  }
+
+  .app-store-icons.mobile-only {
+    gap: 0.25rem;
+  }
+
+  .store-btn {
+    padding: 0.25rem 0.35rem;
+    font-size: 0.6rem;
+    gap: 0.2rem;
+  }
+
+  .store-icon {
+    width: 9px;
+    height: 9px;
+  }
+
+  /* Hide text on very small screens if needed, show only icons */
   .store-btn span {
-    display: inline; /* Ensure text doesn't wrap */
-    white-space: nowrap;
+    display: inline-block;
+    max-width: 45px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
+
+/* ... (keep all other existing CSS rules) */
 
 /* ... (keep all other existing CSS rules) */
 
