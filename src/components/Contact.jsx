@@ -96,7 +96,7 @@ const Contact = () => {
                   </div>
                   <div className="contact-text">
                     <h4>Call Us</h4>
-                    <p>020 7060 4939</p>
+                    <p>+44 7438502936</p>
                     <span className="contact-note">Mon-Sat: 8am-8pm</span>
                   </div>
                 </div>
@@ -107,7 +107,7 @@ const Contact = () => {
                   </div>
                   <div className="contact-text">
                     <h4>Email Us</h4>
-                    <p>info@ironingboy.com</p>
+                    <p>munish.rana@ironingboy.com</p>
                     <span className="contact-note">We reply within 24 hours</span>
                   </div>
                 </div>
@@ -118,7 +118,7 @@ const Contact = () => {
                   </div>
                   <div className="contact-text">
                     <h4>Visit Us</h4>
-                    <p>London, UK</p>
+                    <p>2 Turnpike Lane, Uxbridge, Hillingdon, UB10 0AH, UK</p>
                     <span className="contact-note">Come say hello</span>
                   </div>
                 </div>

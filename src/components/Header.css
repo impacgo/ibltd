@@ -639,7 +639,7 @@ body {
 /* App Store Icons - Mobile */
 .app-store-icons {
   display: none;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
@@ -913,7 +913,7 @@ body {
     gap: 0.75rem;
   }
 
-  /* Show app icons on mobile */
+  /* Show app icons on mobile - ALWAYS ROW DIRECTION */
   .app-store-icons.mobile-only {
     display: flex;
     flex-direction: row;
@@ -1041,8 +1041,19 @@ body {
   }
   
   .app-store-icons.mobile-only {
-    flex-direction: column;
+    flex-direction: row; /* CHANGED: Keep row direction */
     gap: 0.4rem;
+  }
+
+  .store-btn {
+    padding: 0.35rem 0.5rem; /* Smaller padding */
+    font-size: 0.7rem; /* Smaller font */
+    gap: 0.3rem; /* Smaller gap */
+  }
+
+  .store-icon {
+    width: 12px; /* Smaller icons */
+    height: 12px;
   }
   
   .nav {
@@ -1050,8 +1061,44 @@ body {
     padding: 80px 1rem 1rem;
   }
 }
-/* src/components/Header.css */
-/* ... (keep all existing CSS variables and base styles) */
+
+/* NEW: Extra small screens - 320px and below */
+@media (max-width: 320px) {
+  .header-container {
+    padding: 0 0.75rem;
+  }
+
+  .logo-name {
+    font-size: 1.1rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.6rem;
+  }
+
+  .app-store-icons.mobile-only {
+    gap: 0.3rem; /* Even smaller gap */
+  }
+
+  .store-btn {
+    padding: 0.3rem 0.4rem; /* Minimal padding */
+    font-size: 0.65rem; /* Minimal readable font size */
+    gap: 0.25rem;
+  }
+
+  .store-icon {
+    width: 10px; /* Minimal icon size */
+    height: 10px;
+  }
+
+  /* Ensure buttons stay side by side */
+  .store-btn span {
+    display: inline; /* Ensure text doesn't wrap */
+    white-space: nowrap;
+  }
+}
+
+/* ... (keep all other existing CSS rules) */
 
 /* Header Base Styles */
 .header {
@@ -1399,7 +1446,7 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px ) {
   .header-container {
     padding: 0 1rem;
   }

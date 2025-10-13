@@ -116,11 +116,11 @@ const Footer = () => {
               <ul className="contact-info">
                 <li>
                   <i className="fas fa-phone"></i>
-                  <span>07438502936</span>
+                  <span>+44 7438502936</span>
                 </li>
                 <li>
                   <i className="fas fa-envelope"></i>
-                  <span>info@ironingboy.com</span>
+                  <span>munish.rana@ironingboy.com</span>
                 </li>
                 <li>
                   <i className="fas fa-map-marker-alt"></i>

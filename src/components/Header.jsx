@@ -1,6 +1,6 @@
 // src/components/Header.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 
 // App Store Icons
@@ -28,6 +28,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,6 +47,12 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
+  const handleStoreClick = (storeType) => {
+    // Navigate to coming soon page with store type as state
+    navigate('/coming-soon', { state: { storeType } });
+    closeMenu(); // Close mobile menu if open
+  };
+
   const isActiveLink = (path) => {
     return location.pathname === path ? 'active' : '';
   };
@@ -62,14 +69,20 @@ const Header = () => {
             
             {/* App Store Icons - Mobile Only */}
             <div className="app-store-icons mobile-only">
-              <a href="#" className="store-btn apple-btn" onClick={closeMenu}>
+              <button 
+                className="store-btn apple-btn" 
+                onClick={() => handleStoreClick('ios')}
+              >
                 <AppleIcon />
                 <span>App Store</span>
-              </a>
-              <a href="#" className="store-btn android-btn" onClick={closeMenu}>
+              </button>
+              <button 
+                className="store-btn android-btn" 
+                onClick={() => handleStoreClick('android')}
+              >
                 <AndroidIcon />
                 <span>Google Play</span>
-              </a>
+              </button>
             </div>
           </div>
 
@@ -137,20 +150,26 @@ const Header = () => {
           {/* Header Actions - Desktop with App Store Icons */}
           <div className="header-actions desktop-only">
             <div className="app-store-desktop">
-              <a href="#" className="store-btn-desktop apple-btn">
+              <button 
+                className="store-btn-desktop apple-btn"
+                onClick={() => handleStoreClick('ios')}
+              >
                 <AppleIcon />
                 <div className="store-text">
                   <span className="store-label">Download on the</span>
                   <span className="store-name">App Store</span>
                 </div>
-              </a>
-              <a href="#" className="store-btn-desktop android-btn">
+              </button>
+              <button 
+                className="store-btn-desktop android-btn"
+                onClick={() => handleStoreClick('android')}
+              >
                 <AndroidIcon />
                 <div className="store-text">
                   <span className="store-label">Get it on</span>
                   <span className="store-name">Google Play</span>
                 </div>
-              </a>
+              </button>
             </div>
           </div>
 
