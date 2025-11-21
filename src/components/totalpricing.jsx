@@ -1,10 +1,7 @@
-// src/components/totalpricing.jsx
-import React, { useState, useMemo } from "react";
-import "./totalpricing.css";
-import { Link } from "react-router-dom";
 
-// Service categories and items (your existing serviceData remains the same)
-const serviceData = {
+import React, { useState } from "react";
+import "./totalpricing.css";
+   const serviceData = {
   "Service Wash Per Load": [
     { name: "Wash Dry & Fold Up to 5 kg", price: "£18.85", code: "SW001" },
     { name: "Per Additional Kg", price: "£3.75", code: "SW002" }
@@ -232,332 +229,83 @@ const serviceData = {
   ]
 };
 
+/* Extract category names */
+const categories = Object.keys(serviceData);
+
 const TotalPricing = () => {
-  const categories = Object.keys(serviceData);
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openCategory, setOpenCategory] = useState(null);
 
-  const filteredServices = useMemo(() => {
-    const services = serviceData[selectedCategory] || [];
-    if (!searchTerm.trim()) return services;
-    
-    return services.filter(service => 
-      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [selectedCategory, searchTerm]);
-
-  const handleInfoClick = (service) => {
-    setSelectedService(service);
-    setIsModalOpen(true);
+  const toggleCategory = (category) => {
+    setOpenCategory((prev) => (prev === category ? null : category));
   };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedService(null);
-  };
-
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setIsMobileMenuOpen(false);
-    setSearchTerm("");
-  };
-
-  const totalServices = Object.values(serviceData).reduce((total, category) => total + category.length, 0);
 
   return (
-    <div className="pricing-page">
-      {/* Fixed Mobile Header */}
-      <div className="mobile-header">
-        <div className="mobile-header-content">
-          <Link to="/" className="back-button">
-            <span className="back-arrow">←</span>
-          </Link>
-          <div className="mobile-title-section">
-            <h1 className="mobile-app-title">OUR PRICING</h1>
-            <span className="mobile-services-count">{totalServices} services</span>
-          </div>
-          <div className="mobile-header-actions">
-            <button 
-              className="mobile-menu-button"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <span className="menu-icon">☰</span>
-              <span className="menu-text">Menu</span>
-            </button>
-          </div>
-        </div>
-      </div>
+    <section className="tp-page">
+      <div className="tp-container">
 
-      <div className="pricing-container">
-        {/* Enhanced Mobile Sidebar */}
-        {isMobileMenuOpen && (
-          <div className="mobile-sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="mobile-sidebar" onClick={(e) => e.stopPropagation()}>
-              <div className="mobile-sidebar-header">
-                <div className="sidebar-title-section">
-                  <h3>Service Categories</h3>
-                  <p className="sidebar-subtitle">{categories.length} categories • {totalServices} services</p>
-                </div>
-                <button 
-                  className="close-sidebar"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  ✕
-                </button>
-              </div>
+        {/* HEADER */}
+        <header className="tp-header">
+          <span className="tp-badge">Complete Price List</span>
+          <h1 className="tp-title">Explore Our Services & Pricing</h1>
+          <p className="tp-subtitle">
+            Tap any category to view the full list of services with accurate pricing.
+          </p>
+        </header>
+
+        {/* CATEGORY CARDS */}
+        <div className="tp-accordion">
+          {categories.map((category) => (
+            <div key={category} className="tp-accordion-item">
               
-              <div className="mobile-search">
-                <div className="search-wrapper">
-                  <span className="search-icon">🔍</span>
-                  <input
-                    type="text"
-                    placeholder="Search all services..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="mobile-search-input"
-                  />
-                  {searchTerm && (
-                    <button 
-                      className="clear-search"
-                      onClick={() => setSearchTerm("")}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="mobile-category-list">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    className={`mobile-category-btn ${
-                      selectedCategory === category ? "active" : ""
-                    }`}
-                    onClick={() => handleCategorySelect(category)}
-                  >
-                    <div className="category-content">
-                      <span className="category-name">{category}</span>
-                      <span className="category-count">
-                        {serviceData[category].length}
-                      </span>
-                    </div>
-                    {selectedCategory === category && (
-                      <div className="active-indicator-mobile"></div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Desktop Sidebar */}
-        <aside className="sidebar">
-          <div className="sidebar-header">
-            <h3 className="sidebar-title">Service Categories</h3>
-            <div className="sidebar-subtitle">
-              {categories.length} categories • {totalServices} services
-            </div>
-          </div>
-          
-          <div className="search-sidebar">
-            <div className="search-wrapper">
-              <span className="search-icon">🔍</span>
-              <input
-                type="text"
-                placeholder="Search all services..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="sidebar-search"
-              />
-              {searchTerm && (
-                <button 
-                  className="clear-search"
-                  onClick={() => setSearchTerm("")}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="sidebar-list-container">
-            <ul className="sidebar-list">
-              {categories.map((category) => (
-                <li
-                  key={category}
-                  className={`sidebar-item ${
-                    selectedCategory === category ? "active" : ""
+              {/* CATEGORY HEADER */}
+              <button
+                className={`tp-accordion-header ${
+                  openCategory === category ? "open" : ""
+                }`}
+                onClick={() => toggleCategory(category)}
+              >
+                <span>{category}</span>
+                <i
+                  className={`fas fa-chevron-down arrow ${
+                    openCategory === category ? "rotate" : ""
                   }`}
-                  onClick={() => handleCategorySelect(category)}
-                >
-                  <div className="item-content">
-                    <span className="item-name">{category}</span>
-                    <span className="item-count">
-                      {serviceData[category].length}
-                    </span>
-                  </div>
-                  {selectedCategory === category && (
-                    <div className="active-indicator"></div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </aside>
+                ></i>
+              </button>
 
-        {/* Main Content */}
-        <main className="pricing-main">
-          <div className="pricing-header">
-            <div className="header-content">
-              <h2 className="pricing-title">{selectedCategory}</h2>
-              <p className="pricing-subtitle">
-                {filteredServices.length} of {serviceData[selectedCategory].length} services
-              </p>
-            </div>
-            
-            <div className="search-container">
-              <div className="search-wrapper">
-                <span className="search-icon">🔍</span>
-                <input
-                  type="text"
-                  placeholder={`Search in ${selectedCategory}...`}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
-                {searchTerm && (
-                  <button 
-                    className="clear-search"
-                    onClick={() => setSearchTerm("")}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+              {/* CONTENT */}
+              <div
+                className={`tp-accordion-content ${
+                  openCategory === category ? "show" : ""
+                }`}
+              >
+                <div className="tp-table-wrapper">
+                  <table className="tp-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Service</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
 
-          {/* Fixed Mobile Category Indicator */}
-          <div className="mobile-category-indicator">
-            <div className="current-category-info">
-              <div className="category-header">
-                <span className="category-label">CURRENT CATEGORY</span>
-                <span className="services-count">{serviceData[selectedCategory].length} services</span>
-              </div>
-              <h3 className="current-category-name">{selectedCategory}</h3>
-            </div>
-            <button 
-              className="change-category-btn"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              Change
-            </button>
-          </div>
-
-          <div className="pricing-table-container">
-            <div className="table-header">
-              <div className="header-name">Service Name</div>
-              <div className="header-price">Price</div>
-              <div className="header-code">Code</div>
-              <div className="header-info">Info</div>
-            </div>
-            
-            <div className="pricing-table">
-              {filteredServices.length > 0 ? (
-                filteredServices.map((service, index) => (
-                  <div 
-                    key={`${service.code}-${index}`} 
-                    className="pricing-row"
-                  >
-                    <div className="pricing-name">
-                      <span className="service-name-text">{service.name}</span>
-                    </div>
-                    <div className="pricing-price">
-                      <span className="price-badge">
-                        {service.price}
-                      </span>
-                    </div>
-                    <div className="pricing-code">
-                      <code>{service.code}</code>
-                    </div>
-                    <div 
-                      className="pricing-info"
-                      onClick={() => handleInfoClick(service)}
-                      title="Click for service details"
-                    >
-                      <span className="info-icon">ℹ️</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="no-results">
-                  <div className="no-results-icon">🔍</div>
-                  <h3>No services found</h3>
-                  <p>Try adjusting your search terms or select a different category</p>
-                  <button 
-                    className="clear-search-btn"
-                    onClick={() => setSearchTerm("")}
-                  >
-                    Clear Search
-                  </button>
+                    <tbody>
+                      {serviceData[category].map((s, index) => (
+                        <tr key={index}>
+                          <td>{index + 1}</td>
+                          <td>{s.name}</td>
+                          <td>{s.price}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
 
-          {/* Quick Stats Footer */}
-          <div className="pricing-footer">
-            <div className="footer-stats">
-              <div className="stat">
-                <span className="stat-number">{categories.length}</span>
-                <span className="stat-label">Categories</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">{totalServices}</span>
-                <span className="stat-label">Total Services</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">{filteredServices.length}</span>
-                <span className="stat-label" style={{color:"black"}}>Showing</span>
-              </div>
             </div>
-          </div>
-        </main>
-      </div>
-
-      {/* Modal */}
-      {isModalOpen && selectedService && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeModal}>✕</button>
-            <h3>{selectedService.name}</h3>
-            <div className="modal-details">
-              <div className="detail-item">
-                <strong>Price:</strong>
-                <span className="price-value" style={{color:"pink"}}>{selectedService.price}</span>
-              </div>
-              <div className="detail-item">
-                <strong>Code:</strong>
-                <code>{selectedService.code}</code>
-              </div>
-              <div className="detail-item">
-                <strong>Category:</strong>
-                <span>{selectedCategory}</span>
-              </div>
-            </div>
-            <button className="modal-button" onClick={closeModal}>
-              Close
-            </button>
-          </div>
+          ))}
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 };
 

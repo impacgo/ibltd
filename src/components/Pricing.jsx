@@ -1,90 +1,75 @@
 // src/components/Pricing.jsx
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Pricing.css';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import "./Pricing.css";
 
-const pricingCategories = [
+const pricingData = [
   {
-    category: "Clothing Services",
+    category: "Full Body & Essentials",
     items: [
-      { name: "Mens Shirt on Hanger", price: "£4.50" },
-      { name: "Mens Shirt Folded", price: "£5.00" },
-      { name: "Ladies Shirt on Hanger", price: "£4.75" },
-      { name: "Ladies Shirt Folded", price: "£5.25" },
-      { name: "Dry Clean - Shirt", price: "£6.00" },
-      { name: "Iron Only - Shirt", price: "£2.50" },
-    ]
+      { name: "Underwear: Press Only - Folded", price: "£0.95" },
+      { name: "Socks: Wash & Press - Folded", price: "£1.20" },
+      { name: "Underwear: Wash & Press - Folded", price: "£1.20" },
+      { name: "Face Mask: Wash & Press", price: "£1.90" },
+      { name: "BraL Wash & Press - Folded", price: "£2.45" },
+      { name: "Handkerchief: Press Only - Folded", price: "£2.53" },
+    ],
   },
   {
-    category: "Household Items",
+    category: "Household Extras",
     items: [
-      { name: "Bed Set: Single", price: "£15.00" },
-      { name: "Bed Set: Double", price: "£20.00" },
-      { name: "Bed Set: King", price: "£25.00" },
-      { name: "Super King", price: "£30.00" },
-      { name: "Pillowcase", price: "£2.00" },
-      { name: "Duvet Cover", price: "£6.00" },
-    ]
+      { name: "Personal Laundry Bag", price: "£0.00" },
+      { name: "Toy: Wash & Press", price: "£5.25" },
+      { name: "Toy: Dry Clean", price: "£5.25" },
+      { name: "Toy: Large - Wash & Press", price: "£7.88" },
+    ],
   },
   {
-    category: "Specialty Items",
+    category: "Accessories",
     items: [
-      { name: "Coat (Fur)", price: "£40.00" },
-      { name: "Coat (Leather/Suede)", price: "£35.00" },
-      { name: "Handbag", price: "£25.00" },
-      { name: "Shoes", price: "£20.00" },
-      { name: "Trainers", price: "£18.00" },
-      { name: "Wash & Fold (5kg)", price: "£18.00" },
-    ]
-  }
+      { name: "Belt (Free)", price: "£0.00" },
+      { name: "Bow Tie: Dry Clean", price: "£3.55" },
+      { name: "Scarf: Press Only - Hanger", price: "£4.86" },
+      { name: "Tie: Press Only - Hanger", price: "£5.01" },
+    ],
+  },
 ];
 
-const Pricing = () => {
+export default function Pricing() {
   const navigate = useNavigate();
-
-  const handleViewAllPrices = () => {
-    navigate('/pricing'); // Navigate to full pricing page
-  };
 
   return (
     <section className="pricing-section" id="pricing">
-      <div className="container">
-        {/* Header */}
-        <div className="pricing-header">
-          <h1>Our Pricing</h1>
-          <p>Simple, transparent pricing for all your laundry needs</p>
-        </div>
+      <div className="pricing-container">
+        <h2 className="pricing-title">Our Pricing</h2>
+        <p className="pricing-subtitle">
+          Transparent, simple and professional pricing — scroll to explore.
+        </p>
 
-        {/* Pricing Tables with Horizontal Scroll */}
-        <div className="pricing-tables-wrapper">
-          <div className="pricing-tables-scroll">
-            {pricingCategories.map((categoryData, index) => (
-              <div key={index} className="pricing-table">
-                <div className="table-header">
-                  <h3>{categoryData.category}</h3>
-                </div>
-                <div className="table-content">
-                  {categoryData.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="table-row">
-                      <span className="service-name">{item.name}</span>
-                      <span className="service-price">{item.price}</span>
-                    </div>
+        {/* HORIZONTAL SCROLL WRAPPER */}
+        <div className="pricing-scroll-wrapper">
+          {pricingData.map((group, index) => (
+            <div key={index} className="pricing-card">
+              <div className="card-header">{group.category}</div>
+
+              <table className="pricing-table">
+                <tbody>
+                  {group.items.map((item, i) => (
+                    <tr key={i}>
+                      <td className="service-name">{item.name}</td>
+                      <td className="service-price">{item.price}</td>
+                    </tr>
                   ))}
-                </div>
-              </div>
-            ))}
-          </div>
+                </tbody>
+              </table>
+            </div>
+          ))}
         </div>
 
-        {/* CTA Button */}
-        <div className="pricing-cta">
-          <button className="cta-btn" onClick={handleViewAllPrices}>
-            View All Price List
-          </button>
-        </div>
+        <button className="pricing-btn" onClick={() => navigate("/pricing")}>
+          View Full Price List
+        </button>
       </div>
     </section>
   );
-};
-
-export default Pricing;
+}
