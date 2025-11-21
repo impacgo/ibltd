@@ -2,41 +2,7 @@
 import React, { useState } from "react";
 import "./totalpricing.css";
    const serviceData = {
-  "Service Wash Per Load": [
-    { name: "Wash Dry & Fold Up to 5 kg", price: "£18.85", code: "SW001" },
-    { name: "Per Additional Kg", price: "£3.75", code: "SW002" }
-  ],
-  "Repair & Alterations": [
-    { name: "Button Repair", price: "£4.15", code: "RA001" },
-    { name: "New Zip (0\" to 10\")", price: "£25.75", code: "RA002" },
-    { name: "New Zip (10\" to 30\")", price: "£40.90", code: "RA003" },
-    { name: "New Zip (30\"+)", price: "£59.35", code: "RA004" },
-    { name: "Patch Repair", price: "£20.85", code: "RA005" },
-    { name: "Repair/Alteration", price: "£16.65", code: "RA006" },
-    { name: "Small Repair", price: "£8.95", code: "RA007" },
-    { name: "Curtains Shortening: per m*", price: "£22.15", code: "RA008" },
-    { name: "Dress Shortening", price: "£26.45", code: "RA009" },
-    { name: "Dress Shortening (Pleated/Multiple Layers)", price: "£46.95", code: "RA010" },
-    { name: "Name Tags", price: "£3.55", code: "RA011" },
-    { name: "Skirt Shortening", price: "£26.50", code: "RA012" },
-    { name: "Skirt Shortening (Pleated/Multiple Layers)", price: "£61.84", code: "RA013" },
-    { name: "Sleeve Lengthening", price: "£37.15", code: "RA014" },
-    { name: "Sleeve Shortening", price: "£37.15", code: "RA015" },
-    { name: "Tapering", price: "£40.15", code: "RA016" },
-    { name: "Top Shortening", price: "£19.75", code: "RA017" },
-    { name: "Trousers Re-hem (1 leg)", price: "£9.85", code: "RA018" },
-    { name: "Trousers Lengthening", price: "£24.10", code: "RA019" },
-    { name: "Trousers Shortening", price: "£20.95", code: "RA020" },
-    { name: "Waist In/Out", price: "£24.85", code: "RA021" },
-    { name: "Leather Half Sole", price: "£42.00", code: "RA022" },
-    { name: "Leather Half Sole & Heel", price: "£73.35", code: "RA023" },
-    { name: "Rubber Half Sole", price: "£29.25", code: "RA024" },
-    { name: "Rubber Half Sole & Heel", price: "£49.75", code: "RA025" },
-    { name: "Rubber Heel", price: "£17.10", code: "RA026" },
-    { name: "Shoe Shine", price: "£18.40", code: "RA027" },
-    { name: "Shoe Tips", price: "£20.90", code: "RA028" }
-  ],
-  "Clean and Iron": [
+      "Clean and Iron": [
     { name: "Mens Shirt on Hanger", price: "£2.80", code: "CI001" },
     { name: "Mens Shirt Folded", price: "£3.55", code: "CI002" },
     { name: "Ladies Shirt on Hanger", price: "£5.00", code: "CI003" },
@@ -94,6 +60,7 @@ import "./totalpricing.css";
     { name: "Child's Skirt", price: "£5.03", code: "CI055" },
     { name: "Child's Trousers", price: "£4.50", code: "CI056" }
   ],
+
   "Iron Only": [
     { name: "Mens Shirt: Hanger - Iron Only", price: "£2.80", code: "IO001" },
     { name: "Mens Shirt: Folded - Iron Only", price: "£3.55", code: "IO002" },
@@ -125,10 +92,33 @@ import "./totalpricing.css";
     { name: "Trousers - Iron Only", price: "£5.54", code: "IO028" },
     { name: "Underwear - Iron Only", price: "£0.95", code: "IO029" }
   ],
-  "Dry Clean": [
+    "Dry Clean": [
     { name: "Shirt on Hanger - Dry Clean", price: "£5.55", code: "DC001" },
     { name: "Shirt Folded - Dry Clean", price: "£6.40", code: "DC002" }
   ],
+
+  "Leather, Fur, Suede": [
+    { name: "Coat (Fur)", price: "£94.75", code: "LFS001" },
+    { name: "Coat (Leather/Suede)", price: "£83.69", code: "LFS002" },
+    { name: "Coat (Leather Trim)", price: "£51.35", code: "LFS003" },
+    { name: "Dress (Leather)", price: "£69.50", code: "LFS004" },
+    { name: "Gloves (Leather)", price: "£43.60", code: "LFS005" },
+    { name: "Jacket (Fur)", price: "£83.50", code: "LFS006" },
+    { name: "Jacket (Leather/Suede)", price: "£72.35", code: "LFS007" },
+    { name: "Jacket (Leather Trim)", price: "£28.46", code: "LFS008" },
+    { name: "Skirt (Leather)", price: "£72.32", code: "LFS009" },
+    { name: "Trousers (Leather)", price: "£58.30", code: "LFS010" },
+    { name: "Trousers (Leather Trim)", price: "£19.90", code: "LFS011" },
+    { name: "Child's Coat (Leather/Suede)", price: "£53.08", code: "LFS012" },
+    { name: "Child's Dress (Leather)", price: "£65.06", code: "LFS013" },
+    { name: "Child's Jacket (Leather/Suede)", price: "£45.84", code: "LFS014" }
+  ],
+
+  "Service Wash Per Load": [
+    { name: "Wash Dry & Fold Up to 5 kg", price: "£18.85", code: "SW001" },
+    { name: "Per Additional Kg", price: "£3.75", code: "SW002" }
+  ],
+
   "Bedding & Household (Clean & Iron)": [
     { name: "Bed Set: Single", price: "£15.60", code: "BH001" },
     { name: "Bed Set: Double", price: "£18.35", code: "BH002" },
@@ -183,6 +173,7 @@ import "./totalpricing.css";
     { name: "Table Mat", price: "£3.55", code: "BH051" },
     { name: "Table Runner", price: "£15.60", code: "BH052" }
   ],
+
   "Bedding (Iron Only)": [
     { name: "Pillowcase - Iron Only", price: "£1.90", code: "BIO001" },
     { name: "Duvet Cover: Single - Iron Only", price: "£7.63", code: "BIO002" },
@@ -204,6 +195,9 @@ import "./totalpricing.css";
     { name: "Table Cloth - Iron Only", price: "£6.45", code: "BIO018" },
     { name: "Table Cloth (Large) - Iron Only", price: "£19.44", code: "BIO019" }
   ],
+
+  
+  
   "Bag and Footwear": [
     { name: "Handbag", price: "£83.50", code: "BF001" },
     { name: "Shoes", price: "£17.75", code: "BF002" },
@@ -211,22 +205,38 @@ import "./totalpricing.css";
     { name: "UGG Boots", price: "£72.35", code: "BF004" },
     { name: "Boots", price: "£23.95", code: "BF005" }
   ],
-  "Leather, Fur, Suede": [
-    { name: "Coat (Fur)", price: "£94.75", code: "LFS001" },
-    { name: "Coat (Leather/Suede)", price: "£83.69", code: "LFS002" },
-    { name: "Coat (Leather Trim)", price: "£51.35", code: "LFS003" },
-    { name: "Dress (Leather)", price: "£69.50", code: "LFS004" },
-    { name: "Gloves (Leather)", price: "£43.60", code: "LFS005" },
-    { name: "Jacket (Fur)", price: "£83.50", code: "LFS006" },
-    { name: "Jacket (Leather/Suede)", price: "£72.35", code: "LFS007" },
-    { name: "Jacket (Leather Trim)", price: "£28.46", code: "LFS008" },
-    { name: "Skirt (Leather)", price: "£72.32", code: "LFS009" },
-    { name: "Trousers (Leather)", price: "£58.30", code: "LFS010" },
-    { name: "Trousers (Leather Trim)", price: "£19.90", code: "LFS011" },
-    { name: "Child's Coat (Leather/Suede)", price: "£53.08", code: "LFS012" },
-    { name: "Child's Dress (Leather)", price: "£65.06", code: "LFS013" },
-    { name: "Child's Jacket (Leather/Suede)", price: "£45.84", code: "LFS014" }
-  ]
+
+  "Repair & Alterations": [
+    { name: "Button Repair", price: "£4.15", code: "RA001" },
+    { name: "New Zip (0\" to 10\")", price: "£25.75", code: "RA002" },
+    { name: "New Zip (10\" to 30\")", price: "£40.90", code: "RA003" },
+    { name: "New Zip (30\"+)", price: "£59.35", code: "RA004" },
+    { name: "Patch Repair", price: "£20.85", code: "RA005" },
+    { name: "Repair/Alteration", price: "£16.65", code: "RA006" },
+    { name: "Small Repair", price: "£8.95", code: "RA007" },
+    { name: "Curtains Shortening: per m*", price: "£22.15", code: "RA008" },
+    { name: "Dress Shortening", price: "£26.45", code: "RA009" },
+    { name: "Dress Shortening (Pleated/Multiple Layers)", price: "£46.95", code: "RA010" },
+    { name: "Name Tags", price: "£3.55", code: "RA011" },
+    { name: "Skirt Shortening", price: "£26.50", code: "RA012" },
+    { name: "Skirt Shortening (Pleated/Multiple Layers)", price: "£61.84", code: "RA013" },
+    { name: "Sleeve Lengthening", price: "£37.15", code: "RA014" },
+    { name: "Sleeve Shortening", price: "£37.15", code: "RA015" },
+    { name: "Tapering", price: "£40.15", code: "RA016" },
+    { name: "Top Shortening", price: "£19.75", code: "RA017" },
+    { name: "Trousers Re-hem (1 leg)", price: "£9.85", code: "RA018" },
+    { name: "Trousers Lengthening", price: "£24.10", code: "RA019" },
+    { name: "Trousers Shortening", price: "£20.95", code: "RA020" },
+    { name: "Waist In/Out", price: "£24.85", code: "RA021" },
+    { name: "Leather Half Sole", price: "£42.00", code: "RA022" },
+    { name: "Leather Half Sole & Heel", price: "£73.35", code: "RA023" },
+    { name: "Rubber Half Sole", price: "£29.25", code: "RA024" },
+    { name: "Rubber Half Sole & Heel", price: "£49.75", code: "RA025" },
+    { name: "Rubber Heel", price: "£17.10", code: "RA026" },
+    { name: "Shoe Shine", price: "£18.40", code: "RA027" },
+    { name: "Shoe Tips", price: "£20.90", code: "RA028" }
+  ],
+  
 };
 
 /* Extract category names */

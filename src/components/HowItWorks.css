@@ -379,3 +379,13 @@
     padding: 20px 16px;
   }
 }
+
+.section-header {
+  text-align: center;
+  margin-top: 25px;        /* Added spacing ABOVE */
+  margin-bottom: 60px;     /* Increased spacing BELOW */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Ensures perfect centering */
+}

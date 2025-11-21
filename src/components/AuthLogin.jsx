@@ -39,7 +39,7 @@ const AuthLogin = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     await new Promise(resolve => setTimeout(resolve, 1500));
     console.log("Login successful:", loginFormData);
     navigate("/");
@@ -49,33 +49,27 @@ const AuthLogin = () => {
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     await new Promise(resolve => setTimeout(resolve, 1500));
     console.log("Signup successful:", signupFormData);
     navigate("/");
     setIsLoading(false);
   };
 
-  const flipToSignup = () => {
-    setIsFlipped(true);
-  };
-
-  const flipToLogin = () => {
-    setIsFlipped(false);
-  };
+  const flipToSignup = () => setIsFlipped(true);
+  const flipToLogin = () => setIsFlipped(false);
 
   return (
     <div className="auth-page">
-      {/* Main Content */}
       <main className="auth-main">
         <div className="auth-container">
-          <div className={`auth-card ${isFlipped ? 'flipped' : ''}`}>
-            
-            {/* Forms Container */}
+          <div className={`auth-card ${isFlipped ? "flipped" : ""}`}>
+
+            {/* FORMS */}
             <div className="forms-container">
-              
-              {/* Login Form */}
-              <div className={`form-section login-section ${isFlipped ? 'hidden' : 'active'}`}>
+
+              {/* LOGIN */}
+              <div className={`form-section login-section ${isFlipped ? "hidden" : "active"}`}>
                 <div className="form-content">
                   <div className="form-header">
                     <h1>Welcome Back</h1>
@@ -118,11 +112,12 @@ const AuthLogin = () => {
                         <input
                           type="checkbox"
                           checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
+                          onChange={e => setRememberMe(e.target.checked)}
                         />
                         <span className="checkmark"></span>
                         Remember me
                       </label>
+
                       <Link to="/forgot-password" className="forgot-link">
                         Forgot password?
                       </Link>
@@ -131,7 +126,7 @@ const AuthLogin = () => {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className={`auth-btn ${isLoading ? 'loading' : ''}`}
+                      className={`auth-btn ${isLoading ? "loading" : ""}`}
                     >
                       {isLoading ? (
                         <>
@@ -139,23 +134,28 @@ const AuthLogin = () => {
                           Signing In...
                         </>
                       ) : (
-                        'Sign In to Your Account'
+                        "Sign In to Your Account"
                       )}
                     </button>
                   </form>
 
                   <div className="auth-switch">
-                    <p>New to Ironing Boy? <button type="button" onClick={flipToSignup} className="switch-link">Create an account</button></p>
+                    <p>
+                      New to Ironing Boy?{" "}
+                      <button type="button" onClick={flipToSignup} className="switch-link">
+                        Create an account
+                      </button>
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Signup Form */}
-              <div className={`form-section signup-section ${isFlipped ? 'active' : 'hidden'}`}>
+              {/* SIGNUP */}
+              <div className={`form-section signup-section ${isFlipped ? "active" : "hidden"}`}>
                 <div className="form-content">
                   <div className="form-header">
                     <h1>Create Account</h1>
-                    <p>Join Our Happy Customer Memeber Today </p>
+                    <p>Join Our Happy Customer Member Today</p>
                   </div>
 
                   <form onSubmit={handleSignupSubmit} className="auth-form">
@@ -207,10 +207,7 @@ const AuthLogin = () => {
 
                     <div className="form-options">
                       <label className="checkbox">
-                        <input
-                          type="checkbox"
-                          required
-                        />
+                        <input type="checkbox" required />
                         <span className="checkmark"></span>
                         I agree to the Terms & Conditions
                       </label>
@@ -219,7 +216,7 @@ const AuthLogin = () => {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className={`auth-btn ${isLoading ? 'loading' : ''}`}
+                      className={`auth-btn ${isLoading ? "loading" : ""}`}
                     >
                       {isLoading ? (
                         <>
@@ -227,59 +224,71 @@ const AuthLogin = () => {
                           Creating Account...
                         </>
                       ) : (
-                        'Create Account'
+                        "Create Account"
                       )}
                     </button>
                   </form>
 
                   <div className="auth-switch">
-                    <p>Already have an account? <button type="button" onClick={flipToLogin} className="switch-link">Sign in</button></p>
+                    <p>
+                      Already have an account?{" "}
+                      <button type="button" onClick={flipToLogin} className="switch-link">
+                        Sign in
+                      </button>
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Brand Side - Right Side on Desktop */}
+            {/* BRAND SIDE */}
             <div className="brand-side">
               <div className="brand-content">
                 <div className="brand-logo">
                   <img src={logo} alt="Ironing Boy" />
                 </div>
+
                 <div className="brand-text">
                   <h2>Premium Laundry Service</h2>
                   <p>Where Luxury Meets Freshness</p>
                 </div>
+
                 <div className="features-list">
                   <div className="feature-item">
-                    <div className="feature-icon">⚡</div>
+                    <div className="feature-icon">✨</div>
                     <div className="feature-text">
-                      <h4>2-Hour Express</h4>
-                      <p>Quick delivery service</p>
+                      <h4>Expert Fabric Care</h4>
+                      <p>Advanced methods for delicate garments</p>
                     </div>
                   </div>
+
                   <div className="feature-item">
-                    <div className="feature-icon">🌿</div>
+                    <div className="feature-icon">🧼</div>
                     <div className="feature-text">
-                      <h4>Eco-Friendly</h4>
-                      <p>Environmentally safe products</p>
+                      <h4>Premium Stain Treatment</h4>
+                      <p>Deep stain removal solutions</p>
                     </div>
                   </div>
+
                   <div className="feature-item">
                     <div className="feature-icon">🚚</div>
                     <div className="feature-text">
                       <h4>Free Pickup</h4>
-                      <p>Convenient service</p>
+                      <p>Convenient doorstep service</p>
                     </div>
                   </div>
                 </div>
+
                 <div className="brand-stats">
                   <div className="stat-item">
                     <div className="stat-number">10,000+</div>
-                    <div className="stat-label" style={{color:"white"}}>Happy Customers</div>
+                    <div className="stat-label">Happy Customers</div>
                   </div>
                 </div>
+
               </div>
             </div>
+
           </div>
         </div>
       </main>
