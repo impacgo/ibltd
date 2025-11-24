@@ -28,7 +28,7 @@ import "./totalpricing.css";
     { name: "Coat", price: "£17.75", code: "CI023" },
     { name: "Jacket", price: "£9.50", code: "CI024" },
     { name: "Jacket (Puffer)", price: "£25.88", code: "CI025" },
-    { name: "Jacket (Burberry, Canada Goose or Moncler)", price: "£57.20", code: "CI026" },
+    { name: "Jacket (Burberry, Canada Goose)", price: "£57.20", code: "CI026" },
     { name: "Jumper", price: "£7.95", code: "CI027" },
     { name: "Knitwear", price: "£7.95", code: "CI028" },
     { name: "Knitwear (Cashmere)", price: "£10.00", code: "CI029" },
@@ -320,3 +320,4 @@ const TotalPricing = () => {
 };
 
 export default TotalPricing;
+
