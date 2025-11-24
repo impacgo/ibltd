@@ -557,3 +557,1275 @@ body {
     padding-top: 70px;
   }
 } 
+
+/* src/components/Header.css */
+/* ... (keep all existing CSS variables and base styles) */
+
+/* Header Base Styles */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: var(--background-white);
+  border-bottom: 1px solid var(--border-light);
+  padding: 1rem 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.header.scrolled {
+  box-shadow: var(--shadow);
+  padding: 0.75rem 0;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+/* Left Section - Logo and App Icons */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+/* Logo Styles */
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  z-index: 1002;
+}
+
+.logo:hover {
+  transform: translateY(-1px);
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.logo-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  letter-spacing: -0.5px;
+}
+
+.logo-tagline {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* App Store Icons - Mobile */
+.app-store-icons {
+  display: none;
+}
+
+.store-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.store-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.apple-btn {
+  background: #000;
+  color: white;
+}
+
+.apple-btn:hover {
+  background: #333;
+}
+
+.android-btn {
+  background: #3DDC84;
+  color: #000;
+}
+
+.android-btn:hover {
+  background: #2bc46e;
+}
+
+.store-icon {
+  flex-shrink: 0;
+}
+
+/* Navigation Styles */
+.nav {
+  display: flex;
+  align-items: center;
+}
+
+.nav-list {
+  display: flex;
+  list-style: none;
+  gap: 2.08rem;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
+  padding: 0.5rem 0;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  color: var(--primary-blue);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary-blue);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-link.active {
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+.nav-link.active::after {
+  width: 100%;
+  background: var(--primary-orange);
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Get App Button */
+.get-app-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--primary-blue);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  border: 2px solid var(--primary-blue);
+  background: transparent;
+}
+
+.get-app-btn:hover {
+  background: var(--primary-blue);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
+}
+
+.app-icon {
+  transition: transform 0.3s ease;
+}
+
+.get-app-btn:hover .app-icon {
+  transform: translateY(-1px);
+}
+
+/* Profile Button */
+.profile-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
+  padding: 0.6rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  border: 2px solid var(--border-light);
+  background: transparent;
+  width: 44px;
+  height: 44px;
+}
+
+.profile-btn:hover {
+  background: var(--background-light);
+  border-color: var(--primary-blue);
+  color: var(--primary-blue);
+  transform: translateY(-1px);
+}
+
+.profile-icon {
+  transition: transform 0.3s ease;
+}
+
+.profile-btn:hover .profile-icon {
+  transform: scale(1.1);
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1002;
+}
+
+.mobile-menu-toggle span {
+  width: 100%;
+  height: 3px;
+  background: var(--text-dark);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+  background: var(--primary-orange);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+  transform: scale(0);
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+  background: var(--primary-orange);
+}
+
+/* Desktop/Mobile Visibility */
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* Mobile Menu Backdrop */
+.mobile-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  display: none;
+}
+
+/* ---------- Responsive Design ---------- */
+@media (max-width: 1024px) {
+  .header-container {
+    padding: 0 1.5rem;
+  }
+  
+  .nav-list {
+    gap: 1.5rem;
+  }
+  
+  .logo-name {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    padding: 0 1rem;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 60px;
+    width: 100%;
+  }
+
+  /* Left Section - Logo and App Icons for Mobile */
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+  }
+
+  /* Show app icons on mobile - SIDE BY SIDE */
+  .app-store-icons.mobile-only {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  /* Adjust logo for mobile */
+  .logo {
+    flex-shrink: 0;
+  }
+
+  .logo-name {
+    font-size: 1.3rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.65rem;
+  }
+
+  /* Mobile Menu Toggle */
+  .mobile-menu-toggle {
+    display: flex;
+    margin-left: auto;
+  }
+
+  /* Navigation */
+  .nav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 300px;
+    height: 100vh;
+    background: var(--background-white);
+    border-left: 1px solid var(--border-light);
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 100px 2rem 2rem;
+    z-index: 1001;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .nav.active {
+    right: 0;
+  }
+
+  .nav-list {
+    flex-direction: column;
+    gap: 0;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .nav-item {
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+
+  .nav-link {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    border: 1px solid transparent;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .nav-link:hover {
+    background: var(--background-light);
+  }
+
+  .nav-link.active {
+    background: rgba(249, 115, 22, 0.1);
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* Hide desktop header actions */
+  .header-actions.desktop-only {
+    display: none;
+  }
+
+  /* Show mobile menu backdrop */
+  .mobile-menu-backdrop {
+    display: block;
+  }
+}
+
+/* Mobile S (320px) and Mobile M (375px) */
+@media (max-width: 480px) {
+  .header-container {
+    padding: 0 0.75rem;
+  }
+
+  .header-content {
+    min-height: 55px;
+  }
+
+  .header-left {
+    gap: 0.75rem;
+  }
+
+  .logo-name {
+    font-size: 1.2rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.6rem;
+  }
+
+  .app-store-icons.mobile-only {
+    gap: 0.4rem;
+  }
+
+  .store-btn {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.7rem;
+    gap: 0.3rem;
+  }
+
+  .store-icon {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Mobile S - 320px specific adjustments */
+@media (max-width: 375px) {
+  .header-container {
+    padding: 0 0.5rem;
+  }
+
+  .header-left {
+    gap: 0.5rem;
+  }
+
+  .logo-name {
+    font-size: 1.1rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.55rem;
+  }
+
+  .app-store-icons.mobile-only {
+    gap: 0.3rem;
+  }
+
+  .store-btn {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.65rem;
+    gap: 0.25rem;
+  }
+
+  .store-icon {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Extra small screens - 320px and below */
+@media (max-width: 320px) {
+  .header-container {
+    padding: 0 0.4rem;
+  }
+
+  .logo-name {
+    font-size: 1rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.5rem;
+  }
+
+  .app-store-icons.mobile-only {
+    gap: 0.25rem;
+  }
+
+  .store-btn {
+    padding: 0.25rem 0.35rem;
+    font-size: 0.6rem;
+    gap: 0.2rem;
+  }
+
+  .store-icon {
+    width: 9px;
+    height: 9px;
+  }
+
+  /* Hide text on very small screens if needed, show only icons */
+  .store-btn span {
+    display: inline-block;
+    max-width: 45px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* ... (keep all other existing CSS rules) */
+
+/* ... (keep all other existing CSS rules) */
+
+/* Header Base Styles */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: var(--background-white);
+  border-bottom: 1px solid var(--border-light);
+  padding: 1rem 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.header.scrolled {
+  box-shadow: var(--shadow);
+  padding: 0.75rem 0;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  position: relative;
+}
+
+/* Left Section - Logo and App Icons */
+.header-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Logo Styles */
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  z-index: 1002;
+}
+
+.logo:hover {
+  transform: translateY(-1px);
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.logo-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  letter-spacing: -0.5px;
+}
+
+.logo-tagline {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* App Store Icons - Mobile */
+.app-store-icons {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.store-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.store-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.apple-btn {
+  background: #000;
+  color: white;
+}
+
+.apple-btn:hover {
+  background: #333;
+}
+
+.android-btn {
+  background: #3DDC84;
+  color: #000;
+}
+
+.android-btn:hover {
+  background: #2bc46e;
+}
+
+.store-icon {
+  flex-shrink: 0;
+}
+
+/* Desktop App Store Styles */
+.app-store-desktop {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.store-btn-desktop {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  min-width: 140px;
+}
+
+.store-btn-desktop:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.store-btn-desktop.apple-btn {
+  background: #000;
+  color: white;
+  border: 1px solid #000;
+}
+
+.store-btn-desktop.apple-btn:hover {
+  background: #333;
+  border-color: #333;
+}
+
+.store-btn-desktop.android-btn {
+  background: #3DDC84;
+  color: #000;
+  border: 1px solid #3DDC84;
+}
+
+.store-btn-desktop.android-btn:hover {
+  background: #2bc46e;
+  border-color: #2bc46e;
+}
+
+.store-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.store-label {
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.store-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Navigation Styles */
+.nav {
+  display: flex;
+  align-items: center;
+}
+
+.nav-list {
+  display: flex;
+  list-style: none;
+  gap: 2.08rem;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
+  padding: 0.5rem 0;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  color: var(--primary-blue);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary-blue);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-link.active {
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+.nav-link.active::after {
+  width: 100%;
+  background: var(--primary-orange);
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1002;
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+}
+
+.mobile-menu-toggle span {
+  width: 100%;
+  height: 3px;
+  background: var(--text-dark);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+  background: var(--primary-orange);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+  transform: scale(0);
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+  background: var(--primary-orange);
+}
+
+/* Desktop/Mobile Visibility */
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* Mobile Menu Backdrop */
+.mobile-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  display: none;
+}
+
+/* ---------- Responsive Design ---------- */
+@media (max-width: 1024px) {
+  .header-container {
+    padding: 0 1.5rem;
+  }
+  
+  .nav-list {
+    gap: 1.5rem;
+  }
+  
+  .logo-name {
+    font-size: 1.5rem;
+  }
+
+  .store-btn-desktop {
+    min-width: 130px;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .store-label {
+    font-size: 0.65rem;
+  }
+
+  .store-name {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 768px ) {
+  .header-container {
+    padding: 0 1rem;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    min-height: 70px;
+    width: 100%;
+  }
+
+  /* Left Section - Logo and App Icons for Mobile */
+  .header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  /* Show app icons on mobile */
+  .app-store-icons.mobile-only {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  /* Adjust logo for mobile */
+  .logo-name {
+    font-size: 1.4rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.7rem;
+  }
+
+  /* Mobile Menu Toggle */
+  .mobile-menu-toggle {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+  }
+
+  /* Hide desktop app store on mobile */
+  .app-store-desktop {
+    display: none;
+  }
+
+  /* Navigation */
+  .nav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 300px;
+    height: 100vh;
+    background: var(--background-white);
+    border-left: 1px solid var(--border-light);
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 100px 2rem 2rem;
+    z-index: 1001;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .nav.active {
+    right: 0;
+  }
+
+  .nav-list {
+    flex-direction: column;
+    gap: 0;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .nav-item {
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+
+  .nav-link {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    border: 1px solid transparent;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .nav-link:hover {
+    background: var(--background-light);
+  }
+
+  .nav-link.active {
+    background: rgba(249, 115, 22, 0.1);
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* Show mobile menu backdrop */
+  .mobile-menu-backdrop {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-container {
+    padding: 0 1rem;
+  }
+
+  .header-content {
+    min-height: 65px;
+  }
+
+  .logo-name {
+    font-size: 1.3rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.65rem;
+  }
+
+  .app-store-icons.mobile-only {
+    gap: 0.5rem;
+  }
+
+  .store-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .store-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .nav {
+    width: 280px;
+    padding: 90px 1.5rem 1.5rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .logo-name {
+    font-size: 1.2rem;
+  }
+  
+  .app-store-icons.mobile-only {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .nav {
+    width: 260px;
+    padding: 80px 1rem 1rem;
+  }
+}
+
+/* Hide header on scroll down */
+.hide-header {
+  transform: translateY(-100%);
+  transition: transform 0.35s ease-in-out;
+}
+
+/* Smooth return when scrolling up */
+.header {
+  transition: transform 0.35s ease-in-out;
+}
+
+/* ======================================================
+   FROSTED GLASS MOBILE MENU — B3
+   (NO FUNCTIONALITY CHANGED)
+====================================================== */
+
+/* ======================================================
+   FROSTED GLASS MOBILE MENU — B3 (UPDATED NAV TEXT WHITE)
+   (NO FUNCTIONALITY CHANGED)
+====================================================== */
+
+:root {
+  --primary-blue: #1a365d;
+  --primary-orange: #f97316;
+  --text-dark: #1f2937;
+  --text-light: #dfe2e9;
+  --bg-white: #ffffff;
+  --blur-bg: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(255, 255, 255, 0.35);
+}
+
+/* HEADER BASE -------------------------------------------------- */
+
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: var(--bg-white);
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.header.scrolled {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.hide-header {
+  transform: translateY(-100%);
+}
+
+/* DESKTOP NAV -------------------------------------------------- */
+
+.nav {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .nav {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 75%;
+    height: 100vh;
+
+    /* FROSTED GLASS */
+    background: var(--blur-bg);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border-glass);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+
+    padding: 110px 2rem 2rem;
+    transition: left 0.45s cubic-bezier(0.33, 0.02, 0.06, 1);
+  }
+
+  .nav.active {
+    left: 0;
+  }
+}
+
+/* NAV LINKS ---------------------------------------------------- */
+
+.nav-list {
+  display: flex;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .nav-list {
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+}
+
+/* ❗ UPDATED: MAKE NAV LINKS WHITE IN MOBILE */
+
+.nav-link {
+  font-size: 1rem;
+  color: var(--text-dark);
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s ease;
+}
+
+/* MOBILE OVERRIDE → WHITE TEXT */
+@media (max-width: 768px) {
+  .nav-link {
+    color: #ffffff;
+    font-size: 1.15rem;
+  }
+
+  .nav-link:hover {
+    color: var(--primary-orange);
+  }
+}
+
+/* ACTIVE LINK */
+.nav-link.active {
+  color: var(--primary-orange);
+}
+
+/* MOBILE MENU ICON -------------------------------------------- */
+
+.mobile-menu-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    position: absolute;
+    right: 1rem;
+    top: 20px;
+  }
+
+  .mobile-menu-toggle span {
+    width: 28px;
+    height: 3px;
+    background: var(--text-dark);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .mobile-menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 7px);
+    background: var(--primary-orange);
+  }
+
+  .mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -7px);
+    background: var(--primary-orange);
+  }
+}
+
+/* MOBILE BACKDROP -------------------------------------------- */
+
+.mobile-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,0.45);
+  width: 100%;
+  height: 100%;
+  z-index: 900;
+}
+
+/* LOGO ----------------------------------------------------- */
+
+.logo-name {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+}
+
+.logo-tagline {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+/* MOBILE STORE BUTTONS ------------------------------------ */
+
+.app-store-icons.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .app-store-icons.mobile-only {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .store-btn {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid var(--border-glass);
+    backdrop-filter: blur(12px);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .store-btn:hover {
+    background: rgba(255,255,255,0.3);
+  }
+}

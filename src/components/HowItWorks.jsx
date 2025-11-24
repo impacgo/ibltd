@@ -8,58 +8,59 @@ const steps = [
     id: 1,
     title: "Schedule Pickup",
     description: "Book in 2 minutes via app or website",
-    icon: "fas fa-calendar-check"
+    icon: "fas fa-calendar-check",
   },
   {
     id: 2,
     title: "We Collect",
     description: "Free pickup from your doorstep",
-    icon: "fas fa-truck-pickup"
+    icon: "fas fa-truck-pickup",
   },
   {
     id: 3,
     title: "Expert Cleaning",
     description: "Professional care with eco-friendly products",
-    icon: "fas fa-spa"
+    icon: "fas fa-spa",
   },
   {
     id: 4,
     title: "Fast Delivery",
     description: "Fresh clothes in 24 hours",
-    icon: "fas fa-shipping-fast"
-  }
+    icon: "fas fa-shipping-fast",
+  },
 ];
 
 const pricingFeatures = [
   {
     icon: "fas fa-pound-sign",
-    text: "Minimum order £20"
+    text: "Minimum order £20",
   },
   {
     icon: "fas fa-clock",
-    text: "24-hour turnaround"
+    text: "24-hour turnaround",
   },
   {
     icon: "fas fa-truck",
-    text: "Free pickup & delivery"
+    text: "Free pickup & delivery",
   },
   {
     icon: "fas fa-leaf",
-    text: "Eco-friendly products"
-  }
+    text: "Eco-friendly products",
+  },
 ];
 
 const HowItWorks = () => {
   const navigate = useNavigate();
 
   const handleSchedulePickup = () => {
-    navigate('/coming-soon', {
+    navigate("/coming-soon", {
       state: {
         title: "Booking System Coming Soon",
-        description: "We're building an intuitive booking system to make scheduling your laundry pickup effortless and convenient.",
+        description:
+          "We're building an intuitive booking system to make scheduling your laundry pickup effortless and convenient.",
         featureName: "Online Booking System",
-        expectedTime: "2-3 weeks"
-      }
+        expectedTime: "2-3 weeks",
+      },
     });
   };
 
@@ -71,14 +72,12 @@ const HowItWorks = () => {
           <div className="section-badge">
             <span>Simple Process</span>
           </div>
-          <h2 className="section-title">
-            How It Works
-          </h2>
+          <h2 className="section-title">How It Works</h2>
           <p className="section-description">
-            Get your laundry done in 4 easy steps. Fast, reliable, and professional service.
+            Get your laundry done in 4 easy steps. Fast, reliable, and
+            professional service.
           </p>
         </div>
-
 
         {/* Steps Grid */}
         <div className="steps-grid">
@@ -104,19 +103,24 @@ const HowItWorks = () => {
             <div className="cta-content">
               <h3>Ready to Get Started?</h3>
               <p>Join thousands of satisfied customers</p>
-              
+
               <div className="pricing-reminder">
                 <div className="minimum-badge">
                   <i className="fas fa-tag"></i>
-                  <span>Minimum Order: <strong>£20</strong></span>
+                  <span>
+                    Minimum Order: <strong>£20</strong>
+                  </span>
                 </div>
               </div>
-              
-              <button 
-                className="cta-button" 
-                onClick={handleSchedulePickup} style={{background:"linear-gradient(135deg, #FF8C00, #FF6B00)"}}
+
+              <button
+                className="cta-button"
+                onClick={handleSchedulePickup}
+                style={{
+                  background: "linear-gradient(135deg, #FF8C00, #FF6B00)",
+                }}
               >
-                <i className="fas fa-bolt" ></i>
+                <i className="fas fa-bolt"></i>
                 Schedule Your First Pickup
               </button>
             </div>

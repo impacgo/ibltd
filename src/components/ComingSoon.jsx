@@ -58,37 +58,7 @@ const ComingSoon = ({
             </div>
 
             {/* Text Content */}
-            <div className="content-text">
-              <h1 className="title">{title}</h1>
-              <p className="description">{description}</p>
-              
-              {/* Feature Stats */}
-              <div className="feature-stats">
-                <div className="stat">
-                  <div className="stat-value">75%</div>
-                  <div className="stat-label">Progress</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-value">{expectedTime}</div>
-                  <div className="stat-label">Launch</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-value">{featureName}</div>
-                  <div className="stat-label">Feature</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="progress-container">
-              <div className="progress-header">
-                <span>Development Progress</span>
-                <span>75%</span>
-              </div>
-              <div className="progress-bar">
-                <div className="progress-fill"></div>
-              </div>
-            </div>
+          
 
             {/* Notification Form */}
             <div className="notification-section">

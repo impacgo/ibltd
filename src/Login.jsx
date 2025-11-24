@@ -23,19 +23,14 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login process
     try {
-      // Here you would typically make an API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, we'll consider any email/password as valid
+
       console.log('Login successful:', formData);
-      
-      // Store login state (in a real app, you'd use context or redux)
+
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userEmail', formData.email);
-      
-      // Redirect to home page
+
       navigate('/');
     } catch (error) {
       console.error('Login failed:', error);
@@ -140,15 +135,17 @@ const Login = () => {
 
         <div className="login-features">
           <div className="feature-card">
-            <div className="feature-icon">🚀</div>
-            <h3>Fast & Easy Booking</h3>
-            <p>Schedule pickups in seconds with your saved preferences</p>
+            <div className="feature-icon">✨</div>
+            <h3>Expert Fabric Care</h3>
+            <p>Advanced cleaning methods for premium garments</p>
           </div>
+
           <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3>Track Your Orders</h3>
-            <p>Monitor your laundry status in real-time</p>
+            <div className="feature-icon">🧼</div>
+            <h3>Premium Stain Treatment</h3>
+            <p>Targeted solutions for tough stains</p>
           </div>
+
           <div className="feature-card">
             <div className="feature-icon">💳</div>
             <h3>Easy Payments</h3>

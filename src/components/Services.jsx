@@ -1,14 +1,14 @@
 // src/components/Services.jsx
 import React from "react";
 import "./Services.css";
-import image from "../images/shirtshang.jpg";
-import image2 from "../images/irononly.jpg";
-import image3 from "../images/dryclean.jpg";
-import image4 from "../images/leather.jpg";
-import image5 from "../images/shoes.jpg";
-import image6 from "../images/bedding.jpg";
-import image7 from "../images/repair.jpg";
-import image8 from "../images/servicewash.jpg";
+import image from "../images/shirtshang.webp";
+import image2 from "../images/irononly.webp";
+import image3 from "../images/dryclean.webp";
+import image4 from "../images/leather.webp";
+import image5 from "../images/shoes.webp";
+import image6 from "../images/bedding.webp";
+import image7 from "../images/repair.webp";
+import image8 from "../images/servicewash.webp";
 
 const services = [
   {
@@ -26,7 +26,7 @@ const services = [
   {
     id: 3,
     title: "Dry Cleaning",
-    description: "We offer delicate dry cleaning for suits, dresses, and other specialty items.",
+    description: "Delicate dry cleaning for suits, dresses, and specialty items.",
     image: image3,
   },
   {
@@ -38,13 +38,13 @@ const services = [
   {
     id: 5,
     title: "Bedding & Household",
-    description: "Comforters, bedsheets, pillow covers, curtains — all freshly washed.",
+    description: "Comforters, bedsheets, curtains — all freshly washed.",
     image: image6,
   },
   {
     id: 6,
     title: "Shoes & Bags",
-    description: "Full care service for your shoes, handbags, and accessories.",
+    description: "Full care service for shoes, handbags, and accessories.",
     image: image5,
   },
   {
@@ -56,38 +56,37 @@ const services = [
   {
     id: 8,
     title: "Service Wash",
-    description: "Drop your everyday laundry — we'll wash, dry, and fold it for you.",
+    description: "Drop your laundry — we wash, dry, and fold it for you.",
     image: image8,
   },
 ];
 
 const Services = () => {
   return (
-    <>
-      <section className="services-section" id="services">
-        <div className="container">
-          <h2 className="services-heading">Our Services</h2>
-          <p className="services-subheading">
-            Premium laundry and dry cleaning solutions — fresh, crisp, and cared for with perfection.
-          </p>
-          <div className="services-grid">
-            {services.map((service) => (
+    <section className="services-section" id="services">
+      <div className="container">
+        <h2 className="services-heading">Our Services</h2>
+        <p className="services-subheading">
+          Premium laundry and dry cleaning solutions — fresh, crisp, and cared for with perfection.
+        </p>
+
+        <div className="services-grid">
+          {services.map((service) => (
+            <div key={service.id} className="service-card">
               <div
-                key={service.id}
-                className="service-card"
+                className="service-image"
                 style={{ backgroundImage: `url(${service.image})` }}
-              >
-                <div className="service-overlay">
-                  <h3>{service.title}</h3>
-                  <p>{service.description}</p>
-                  <button className="learn-more-btn">Know More</button>
-                </div>
+              ></div>
+
+              <div className="service-content">
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };
 

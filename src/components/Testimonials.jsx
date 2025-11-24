@@ -16,7 +16,7 @@ const testimonials = [
     rating: 5,
   },
   {
-    name: 'Daisy Welby',
+    name: 'Manisha Tata',
     title: 'The ultimate self-care',
     text: 'This service is revolutionary for the busy professional who just needs a helping hand. Feels like my mum coming round to help when everything else feels too much. It\'s genius.',
     rating: 5,

@@ -662,3 +662,176 @@
     font-size: 1.1rem;
   }
 }
+/* ===========================
+   FOOTER — TYPOGRAPHY OPTIMIZED
+   =========================== */
+
+.footer {
+  background: linear-gradient(135deg, #1a2a6c 0%, #2c3e50 100%);
+  color: white;
+  padding: 40px 0 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ------------------- APP SECTION ------------------- */
+
+.app-text h3 {
+  font-size: 2rem;          /* Smoothed (was 2.2rem) */
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.app-text p {
+  font-size: 1rem;          /* Matches your FAQ + Testimonials */
+  line-height: 1.55;
+}
+
+/* Buttons text refinement */
+.get-on, .download-on {
+  font-size: 0.7rem;
+}
+
+.store-name {
+  font-size: 1rem;          /* Slightly reduced */
+}
+
+/* ------------------- MAIN FOOTER ------------------- */
+
+.brand-title {
+  font-size: 1.7rem;        /* Slightly reduced for balance */
+  font-weight: 800;
+}
+
+.brand-tagline {
+  font-size: 0.95rem;
+}
+
+.brand-description {
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* Column titles */
+.footer-column h4 {
+  font-size: 1rem;          /* More balanced than 1.1rem */
+  font-weight: 700;
+}
+
+/* Column links */
+.footer-column a {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Contact info */
+.contact-info li {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Newsletter */
+.newsletter-text {
+  font-size: 0.85rem;
+}
+
+/* Bottom section */
+.payment-label {
+  font-size: 0.8rem;
+}
+
+copyright p {
+  font-size: 0.8rem;
+}
+
+.legal-links a {
+  font-size: 0.8rem;
+}
+
+/* ------------------- RESPONSIVE ------------------- */
+
+/* TABLET */
+@media (max-width: 1024px) {
+  .app-text h3 {
+    font-size: 1.8rem;
+  }
+
+  .app-text p {
+    font-size: 0.95rem;
+  }
+
+  .brand-title {
+    font-size: 1.5rem;
+  }
+
+  .footer-column a {
+    font-size: 0.8rem;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .app-text h3 {
+    font-size: 1.6rem;
+  }
+
+  .app-text p {
+    font-size: 0.95rem;
+  }
+
+  .brand-title {
+    font-size: 1.4rem;
+  }
+
+  .brand-description {
+    font-size: 0.85rem;
+  }
+
+  .footer-column h4 {
+    font-size: 0.95rem;
+  }
+
+  .footer-column a {
+    font-size: 0.8rem;
+  }
+
+  .contact-info li {
+    font-size: 0.8rem;
+  }
+
+  .newsletter-text {
+    font-size: 0.8rem;
+  }
+
+  .copyright p,
+  .legal-links a {
+    font-size: 0.75rem;
+  }
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+  .app-text h3 {
+    font-size: 1.4rem;
+  }
+
+  .brand-title {
+    font-size: 1.3rem;
+  }
+
+  .footer-column h4 {
+    font-size: 0.9rem;
+  }
+
+  .footer-column a {
+    font-size: 0.78rem;
+  }
+
+  .newsletter-group input {
+    font-size: 0.78rem;
+  }
+
+  .payment-methods i {
+    font-size: 1.1rem;
+  }
+}

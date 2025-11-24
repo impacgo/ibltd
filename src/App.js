@@ -15,6 +15,8 @@ import './App.css';
 import SearchResults from './components/SearchResults';
 import AuthLogin from './components/AuthLogin'; // New import
 import ComingSoon from './components/ComingSoon';
+import CareerSection from './components/CareerSection';
+import ServiceAreas from './components/ServiceAreas';
 
 // Home component
 const Home = () => {
@@ -23,6 +25,7 @@ const Home = () => {
       <Hero />
       <Services />
       <HowItWorks />
+      <ServiceAreas/>
       <Pricing />
       <Testimonials />
       <FAQ />
@@ -102,6 +105,7 @@ function App() {
           <Route path="/search" element={<SearchResults />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<ComingSoon />} />
+          <Route path="/coming-soon" element={<ComingSoon />} />
         </Routes>
       </div>
     </Router>

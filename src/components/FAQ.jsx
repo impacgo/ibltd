@@ -94,7 +94,10 @@ const FAQ = () => {
   return (
     <section className="faq" id="faq">
       <div className="container">
-        <h2 className="section-title">Frequently Asked Questions</h2>
+        <div className="faq-header-block">
+  <h2 className="section-title">Frequently Asked Questions</h2>
+</div>
+
         
         {/* Search Bar */}
         <div className="faq-search-container">

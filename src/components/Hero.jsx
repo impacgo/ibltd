@@ -1,218 +1,166 @@
-import React, { useState, useEffect } from 'react';
-import { Typewriter } from 'react-simple-typewriter';
-import './Hero.css';
-import backgroundImage from "../images/herosec.jpg";
+import React, { useState, useEffect, useMemo } from "react";
+import { Typewriter } from "react-simple-typewriter";
+import "./Hero.css";
+import backgroundImage from "../images/herosec.webp";
 
 const Hero = () => {
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState("");
   const [isVisible, setIsVisible] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    setIsVisible(true);
-    
-    // Check if device is mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    const handleMouseMove = (e) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', checkMobile);
-    };
+    // Delay added to avoid load-time jitter
+    requestAnimationFrame(() => setIsVisible(true));
   }, []);
 
-  const scrollToSection = (sectionId) => {
-    const el = document.getElementById(sectionId);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleGetStarted = () => {
-    if (location.trim()) {
-      scrollToSection('services');
-    }
+    if (location.trim()) scrollToSection("services");
   };
 
-  const features = [
-    { icon: '⚡', text: '2-Hour Express Delivery' },
-    { icon: '👔', text: 'Expert Fabric Care' },
-    { icon: '🌿', text: 'Eco-Friendly Products' },
-    { icon: '🏠', text: 'Free Pickup & Delivery' }
-  ];
+  // Memoized so component doesn’t re-render unnecessary parts
+  const features = useMemo(
+    () => [
+      { icon: "👔", text: "Expert Fabric Care" },
+      { icon: "🚚", text: "Free Pickup & Delivery" },
+      { icon: "🧺", text: "Doorstep Collection & Drop-off" },
+      { icon: "✨", text: "Premium Stain Treatment" }
+    ],
+    []
+  );
+
+  const discountItems = useMemo(
+    () => [
+      "Minimum top up - £20",
+      "If booking amount is £50 - £100 then 15% discount",
+      "If booking amount is £100 - £300 then 20% discount",
+      "If booking amount is more than £300 then 22% discount",
+      "Applicable on each customer's first 3 orders"
+    ],
+    []
+  );
 
   return (
-    <section className={`hero ${isVisible ? 'visible' : ''}`}>
-      {/* Animated Background with Parallax (disabled on mobile) */}
-      <div 
-        className="hero-background"
-        style={{ 
-          backgroundImage: `url(${backgroundImage})`,
-          transform: isMobile ? 'none' : `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`
+    <section className={`hero ${isVisible ? "visible" : ""}`}>
+      {/* Optimized Background */}
+      <div
+        className="hero-bg"
+        style={{
+          backgroundImage: `url(${backgroundImage})`
         }}
       />
-      
-      {/* Gradient Overlays */}
-      <div className="gradient-overlay top"></div>
-      <div className="gradient-overlay bottom"></div>
-      
-      {/* Floating Particles (reduced on mobile) */}
-      <div className="particles">
-        {[...Array(isMobile ? 8 : 15)].map((_, i) => (
-          <div key={i} className="particle" style={{
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 5}s`
-          }}></div>
-        ))}
-      </div>
+      <div className="hero-gradient" />
 
-      {/* Main Content */}
       <div className="hero-container">
-        {/* Left Content */}
-        <div className="content-left">
-          <div className="premium-badge">
-            <div className="sparkle">✨</div>
-            <span>Trusted by 10,000+ Happy Customers</span>
-          </div>
+        {/* LEFT */}
+        <div className="hero-left">
+          <div className="hero-badge">✨ Trusted by 10,000+ Happy Customers</div>
 
-          <div className="main-headline">
-            <div className="eyebrow">PREMIUM LAUNDRY SERVICE</div>
-            <h1>
-              <span className="static-text">Where Luxury Meets</span>
-              <br />
-              <span className="animated-text">
-                <Typewriter
-                  words={[
-                    'Freshness',
-                    'Convenience',
-                    'Perfection',
-                    'Care'
-                  ]}
-                  loop
-                  cursor
-                  cursorStyle="|"
-                  typeSpeed={80}
-                  deleteSpeed={50}
-                  delaySpeed={2000}
-                />
-              </span>
-            </h1>
-          </div>
+          <h1 className="hero-title">
+            <span className="title-main">Where Luxury Meets</span>
+            <span className="title-type">
+              <Typewriter
+                words={["Freshness", "Convenience", "Perfection", "Care"]}
+                loop
+                cursor
+                cursorStyle="|"
+                typeSpeed={60}
+                deleteSpeed={45}
+                delaySpeed={1500}
+              />
+            </span>
+          </h1>
 
-          <p className="hero-description">
-            Experience the future of laundry care. We combine cutting-edge technology 
-            with artisan techniques to deliver impeccable results that make your 
-            clothes look and feel brand new, every single time.
+          <p className="hero-subtext">
+            Experience the future of laundry care — advanced technology combined
+            with premium techniques for spotless results.
           </p>
 
-          {/* Enhanced Interactive Location Finder */}
-          <div className="location-finder highlighted" style={{animation:"none"}}>
-            <div className="finder-header" style={{animation:"none"}}>
-              <i className="fas fa-crosshairs"></i>
+          {/* LOCATION CARD */}
+          <div className="location-card">
+            <div className="location-header">
+              <i className="fas fa-crosshairs" />
               <span>Find Service in Your Area</span>
             </div>
-            <div className="input-group">
-              <input 
-                type="text" 
+
+            <div className="location-input-wrap">
+              <input
+                type="text"
                 placeholder="Enter your address or zip code..."
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleGetStarted()}
-                className="location-input"
+                onKeyDown={(e) => e.key === "Enter" && handleGetStarted()}
               />
-              <button 
-                className={`find-btn ${location ? 'active' : ''}`}
+
+              <button
+                className={`location-btn ${location ? "active" : ""}`}
                 onClick={handleGetStarted}
               >
-                <span>Check Availability</span>
-                <i className="fas fa-arrow-right"></i>
+                Check <i className="fas fa-arrow-right" />
               </button>
             </div>
-            <div className="location-hint">
-              <i className="fas fa-info-circle"></i>
-              <span>Enter your location to check service availability and pricing</span>
-            </div>
+
+            <p className="location-hint">
+              <i className="fas fa-info-circle" />
+              Enter your location to check availability & pricing
+            </p>
           </div>
 
-          {/* Trust Indicators */}
-          <div className="trust-indicators">
-            <div className="trust-item">
-              <div className="trust-icon">✅</div>
-              <span>Same-Day Service Available</span>
-            </div>
-            <div className="trust-item">
-              <div className="trust-icon">🛡️</div>
-              <span>Quality Guarantee</span>
-            </div>
-            <div className="trust-item">
-              <div className="trust-icon">💸</div>
-              <span>Minimum charges £20</span>
-            </div>
+          {/* TRUST */}
+          <div className="hero-trust">
+            <div className="trust-item">🟢 Same-Day Service</div>
+            <div className="trust-item">🛡️ Quality Guarantee</div>
+            <div className="trust-item">💸 Minimum charges £20</div>
           </div>
         </div>
 
-        {/* Right Content - Feature Cards */}
-        <div className="content-right">
-          <div className="feature-grid">
-            {features.map((feature, index) => (
-              <div 
-                key={index} 
-                className="feature-card"
-                style={{ animationDelay: `${index * 0.2}s` }}
-              >
-                <div className="feature-icon">{feature.icon}</div>
-                <div className="feature-text">{feature.text}</div>
+        {/* RIGHT */}
+        <div className="hero-right">
+          <div className="feature-list">
+            {features.map((item, i) => (
+              <div className="feature-card" key={i}>
+                <div className="feature-icon">{item.icon}</div>
+                <div className="feature-text">{item.text}</div>
               </div>
             ))}
           </div>
 
-          {/* CTA Card */}
           <div className="cta-card">
-            <div className="offer-badge">
-              <span>SPECIAL OFFER</span>
-            </div>
-            <h3>First-Time Customer?</h3>
-            <p>Get <strong>30% OFF</strong> your first order + free delivery</p>
-            <button className="offer-btn">
-              Claim Your Discount
-              <i className="fas fa-gift"></i>
+            <div className="cta-tag">SPECIAL OFFER</div>
+            <h3 style={{ color: "white" }}>Are You A Student?</h3>
+            <p style={{ color: "white" }}>
+              Get <strong>25% OFF</strong> on your order + free delivery
+            </p>
+
+            <button className="cta-btn">
+              Order Now <i className="fas fa-shopping-bag" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Bottom Stats Bar */}
-      <div className="stats-bar">
-        <div className="stat" style={{background:"none", border:"none"}}>
-          <div className="stat-number">50K+</div>
-          <div className="stat-label">Items Cleaned</div>
-        </div>
-        <div className="stat" style={{background:"none", border:"none"}}>
-          <div className="stat-number">4.9★</div>
-          <div className="stat-label">Customer Rating</div>
-        </div>
-        <div className="stat" style={{background:"none", border:"none"}}>
-          <div className="stat-number">24/7</div>
-          <div className="stat-label">Support</div>
-        </div>
-        <div className="stat" style={{background:"none", border:"none"}}>
-          <div className="stat-number">98%</div>
-          <div className="stat-label">On Time</div>
+      {/* DISCOUNT MARQUEE */}
+      <div className="hero-discount-wrapper">
+        <div className="hero-discount-label">Intro Discounts</div>
+
+        <div className="hero-discount-marquee">
+          <div className="discount-track">
+            {discountItems.map((item, idx) => (
+              <span key={`d1-${idx}`} className="discount-item">
+                {item}
+              </span>
+            ))}
+            {discountItems.map((item, idx) => (
+              <span key={`d2-${idx}`} className="discount-item">
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
-
-      
     </section>
   );
 };

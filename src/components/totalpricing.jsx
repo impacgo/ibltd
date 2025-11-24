@@ -1,45 +1,8 @@
-// src/components/totalpricing.jsx
-import React, { useState, useMemo } from "react";
-import "./totalpricing.css";
-import { Link } from "react-router-dom";
 
-// Service categories and items (your existing serviceData remains the same)
-const serviceData = {
-  "Service Wash Per Load": [
-    { name: "Wash Dry & Fold Up to 5 kg", price: "£18.85", code: "SW001" },
-    { name: "Per Additional Kg", price: "£3.75", code: "SW002" }
-  ],
-  "Repair & Alterations": [
-    { name: "Button Repair", price: "£4.15", code: "RA001" },
-    { name: "New Zip (0\" to 10\")", price: "£25.75", code: "RA002" },
-    { name: "New Zip (10\" to 30\")", price: "£40.90", code: "RA003" },
-    { name: "New Zip (30\"+)", price: "£59.35", code: "RA004" },
-    { name: "Patch Repair", price: "£20.85", code: "RA005" },
-    { name: "Repair/Alteration", price: "£16.65", code: "RA006" },
-    { name: "Small Repair", price: "£8.95", code: "RA007" },
-    { name: "Curtains Shortening: per m*", price: "£22.15", code: "RA008" },
-    { name: "Dress Shortening", price: "£26.45", code: "RA009" },
-    { name: "Dress Shortening (Pleated/Multiple Layers)", price: "£46.95", code: "RA010" },
-    { name: "Name Tags", price: "£3.55", code: "RA011" },
-    { name: "Skirt Shortening", price: "£26.50", code: "RA012" },
-    { name: "Skirt Shortening (Pleated/Multiple Layers)", price: "£61.84", code: "RA013" },
-    { name: "Sleeve Lengthening", price: "£37.15", code: "RA014" },
-    { name: "Sleeve Shortening", price: "£37.15", code: "RA015" },
-    { name: "Tapering", price: "£40.15", code: "RA016" },
-    { name: "Top Shortening", price: "£19.75", code: "RA017" },
-    { name: "Trousers Re-hem (1 leg)", price: "£9.85", code: "RA018" },
-    { name: "Trousers Lengthening", price: "£24.10", code: "RA019" },
-    { name: "Trousers Shortening", price: "£20.95", code: "RA020" },
-    { name: "Waist In/Out", price: "£24.85", code: "RA021" },
-    { name: "Leather Half Sole", price: "£42.00", code: "RA022" },
-    { name: "Leather Half Sole & Heel", price: "£73.35", code: "RA023" },
-    { name: "Rubber Half Sole", price: "£29.25", code: "RA024" },
-    { name: "Rubber Half Sole & Heel", price: "£49.75", code: "RA025" },
-    { name: "Rubber Heel", price: "£17.10", code: "RA026" },
-    { name: "Shoe Shine", price: "£18.40", code: "RA027" },
-    { name: "Shoe Tips", price: "£20.90", code: "RA028" }
-  ],
-  "Clean and Iron": [
+import React, { useState } from "react";
+import "./totalpricing.css";
+   const serviceData = {
+      "Clean and Iron": [
     { name: "Mens Shirt on Hanger", price: "£2.80", code: "CI001" },
     { name: "Mens Shirt Folded", price: "£3.55", code: "CI002" },
     { name: "Ladies Shirt on Hanger", price: "£5.00", code: "CI003" },
@@ -97,6 +60,7 @@ const serviceData = {
     { name: "Child's Skirt", price: "£5.03", code: "CI055" },
     { name: "Child's Trousers", price: "£4.50", code: "CI056" }
   ],
+
   "Iron Only": [
     { name: "Mens Shirt: Hanger - Iron Only", price: "£2.80", code: "IO001" },
     { name: "Mens Shirt: Folded - Iron Only", price: "£3.55", code: "IO002" },
@@ -128,10 +92,33 @@ const serviceData = {
     { name: "Trousers - Iron Only", price: "£5.54", code: "IO028" },
     { name: "Underwear - Iron Only", price: "£0.95", code: "IO029" }
   ],
-  "Dry Clean": [
+    "Dry Clean": [
     { name: "Shirt on Hanger - Dry Clean", price: "£5.55", code: "DC001" },
     { name: "Shirt Folded - Dry Clean", price: "£6.40", code: "DC002" }
   ],
+
+  "Leather, Fur, Suede": [
+    { name: "Coat (Fur)", price: "£94.75", code: "LFS001" },
+    { name: "Coat (Leather/Suede)", price: "£83.69", code: "LFS002" },
+    { name: "Coat (Leather Trim)", price: "£51.35", code: "LFS003" },
+    { name: "Dress (Leather)", price: "£69.50", code: "LFS004" },
+    { name: "Gloves (Leather)", price: "£43.60", code: "LFS005" },
+    { name: "Jacket (Fur)", price: "£83.50", code: "LFS006" },
+    { name: "Jacket (Leather/Suede)", price: "£72.35", code: "LFS007" },
+    { name: "Jacket (Leather Trim)", price: "£28.46", code: "LFS008" },
+    { name: "Skirt (Leather)", price: "£72.32", code: "LFS009" },
+    { name: "Trousers (Leather)", price: "£58.30", code: "LFS010" },
+    { name: "Trousers (Leather Trim)", price: "£19.90", code: "LFS011" },
+    { name: "Child's Coat (Leather/Suede)", price: "£53.08", code: "LFS012" },
+    { name: "Child's Dress (Leather)", price: "£65.06", code: "LFS013" },
+    { name: "Child's Jacket (Leather/Suede)", price: "£45.84", code: "LFS014" }
+  ],
+
+  "Service Wash Per Load": [
+    { name: "Wash Dry & Fold Up to 5 kg", price: "£18.85", code: "SW001" },
+    { name: "Per Additional Kg", price: "£3.75", code: "SW002" }
+  ],
+
   "Bedding & Household (Clean & Iron)": [
     { name: "Bed Set: Single", price: "£15.60", code: "BH001" },
     { name: "Bed Set: Double", price: "£18.35", code: "BH002" },
@@ -186,6 +173,7 @@ const serviceData = {
     { name: "Table Mat", price: "£3.55", code: "BH051" },
     { name: "Table Runner", price: "£15.60", code: "BH052" }
   ],
+
   "Bedding (Iron Only)": [
     { name: "Pillowcase - Iron Only", price: "£1.90", code: "BIO001" },
     { name: "Duvet Cover: Single - Iron Only", price: "£7.63", code: "BIO002" },
@@ -207,6 +195,9 @@ const serviceData = {
     { name: "Table Cloth - Iron Only", price: "£6.45", code: "BIO018" },
     { name: "Table Cloth (Large) - Iron Only", price: "£19.44", code: "BIO019" }
   ],
+
+  
+  
   "Bag and Footwear": [
     { name: "Handbag", price: "£83.50", code: "BF001" },
     { name: "Shoes", price: "£17.75", code: "BF002" },
@@ -214,350 +205,117 @@ const serviceData = {
     { name: "UGG Boots", price: "£72.35", code: "BF004" },
     { name: "Boots", price: "£23.95", code: "BF005" }
   ],
-  "Leather, Fur, Suede": [
-    { name: "Coat (Fur)", price: "£94.75", code: "LFS001" },
-    { name: "Coat (Leather/Suede)", price: "£83.69", code: "LFS002" },
-    { name: "Coat (Leather Trim)", price: "£51.35", code: "LFS003" },
-    { name: "Dress (Leather)", price: "£69.50", code: "LFS004" },
-    { name: "Gloves (Leather)", price: "£43.60", code: "LFS005" },
-    { name: "Jacket (Fur)", price: "£83.50", code: "LFS006" },
-    { name: "Jacket (Leather/Suede)", price: "£72.35", code: "LFS007" },
-    { name: "Jacket (Leather Trim)", price: "£28.46", code: "LFS008" },
-    { name: "Skirt (Leather)", price: "£72.32", code: "LFS009" },
-    { name: "Trousers (Leather)", price: "£58.30", code: "LFS010" },
-    { name: "Trousers (Leather Trim)", price: "£19.90", code: "LFS011" },
-    { name: "Child's Coat (Leather/Suede)", price: "£53.08", code: "LFS012" },
-    { name: "Child's Dress (Leather)", price: "£65.06", code: "LFS013" },
-    { name: "Child's Jacket (Leather/Suede)", price: "£45.84", code: "LFS014" }
-  ]
+
+  "Repair & Alterations": [
+    { name: "Button Repair", price: "£4.15", code: "RA001" },
+    { name: "New Zip (0\" to 10\")", price: "£25.75", code: "RA002" },
+    { name: "New Zip (10\" to 30\")", price: "£40.90", code: "RA003" },
+    { name: "New Zip (30\"+)", price: "£59.35", code: "RA004" },
+    { name: "Patch Repair", price: "£20.85", code: "RA005" },
+    { name: "Repair/Alteration", price: "£16.65", code: "RA006" },
+    { name: "Small Repair", price: "£8.95", code: "RA007" },
+    { name: "Curtains Shortening: per m*", price: "£22.15", code: "RA008" },
+    { name: "Dress Shortening", price: "£26.45", code: "RA009" },
+    { name: "Dress Shortening (Pleated/Multiple Layers)", price: "£46.95", code: "RA010" },
+    { name: "Name Tags", price: "£3.55", code: "RA011" },
+    { name: "Skirt Shortening", price: "£26.50", code: "RA012" },
+    { name: "Skirt Shortening (Pleated/Multiple Layers)", price: "£61.84", code: "RA013" },
+    { name: "Sleeve Lengthening", price: "£37.15", code: "RA014" },
+    { name: "Sleeve Shortening", price: "£37.15", code: "RA015" },
+    { name: "Tapering", price: "£40.15", code: "RA016" },
+    { name: "Top Shortening", price: "£19.75", code: "RA017" },
+    { name: "Trousers Re-hem (1 leg)", price: "£9.85", code: "RA018" },
+    { name: "Trousers Lengthening", price: "£24.10", code: "RA019" },
+    { name: "Trousers Shortening", price: "£20.95", code: "RA020" },
+    { name: "Waist In/Out", price: "£24.85", code: "RA021" },
+    { name: "Leather Half Sole", price: "£42.00", code: "RA022" },
+    { name: "Leather Half Sole & Heel", price: "£73.35", code: "RA023" },
+    { name: "Rubber Half Sole", price: "£29.25", code: "RA024" },
+    { name: "Rubber Half Sole & Heel", price: "£49.75", code: "RA025" },
+    { name: "Rubber Heel", price: "£17.10", code: "RA026" },
+    { name: "Shoe Shine", price: "£18.40", code: "RA027" },
+    { name: "Shoe Tips", price: "£20.90", code: "RA028" }
+  ],
+  
 };
 
+/* Extract category names */
+const categories = Object.keys(serviceData);
+
 const TotalPricing = () => {
-  const categories = Object.keys(serviceData);
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openCategory, setOpenCategory] = useState(null);
 
-  const filteredServices = useMemo(() => {
-    const services = serviceData[selectedCategory] || [];
-    if (!searchTerm.trim()) return services;
-    
-    return services.filter(service => 
-      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [selectedCategory, searchTerm]);
-
-  const handleInfoClick = (service) => {
-    setSelectedService(service);
-    setIsModalOpen(true);
+  const toggleCategory = (category) => {
+    setOpenCategory((prev) => (prev === category ? null : category));
   };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedService(null);
-  };
-
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setIsMobileMenuOpen(false);
-    setSearchTerm("");
-  };
-
-  const totalServices = Object.values(serviceData).reduce((total, category) => total + category.length, 0);
 
   return (
-    <div className="pricing-page">
-      {/* Fixed Mobile Header */}
-      <div className="mobile-header">
-        <div className="mobile-header-content">
-          <Link to="/" className="back-button">
-            <span className="back-arrow">←</span>
-          </Link>
-          <div className="mobile-title-section">
-            <h1 className="mobile-app-title">IroningBoy</h1>
-            <span className="mobile-services-count">{totalServices} services</span>
-          </div>
-          <div className="mobile-header-actions">
-            <button 
-              className="mobile-menu-button"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <span className="menu-icon">☰</span>
-              <span className="menu-text">Menu</span>
-            </button>
-          </div>
-        </div>
-      </div>
+    <section className="tp-page">
+      <div className="tp-container">
 
-      <div className="pricing-container">
-        {/* Enhanced Mobile Sidebar */}
-        {isMobileMenuOpen && (
-          <div className="mobile-sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="mobile-sidebar" onClick={(e) => e.stopPropagation()}>
-              <div className="mobile-sidebar-header">
-                <div className="sidebar-title-section">
-                  <h3>Service Categories</h3>
-                  <p className="sidebar-subtitle">{categories.length} categories • {totalServices} services</p>
-                </div>
-                <button 
-                  className="close-sidebar"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  ✕
-                </button>
-              </div>
+        {/* HEADER */}
+        <header className="tp-header">
+          <span className="tp-badge">Complete Price List</span>
+          <h1 className="tp-title">Explore Our Services & Pricing</h1>
+          <p className="tp-subtitle">
+            Tap any category to view the full list of services with accurate pricing.
+          </p>
+        </header>
+
+        {/* CATEGORY CARDS */}
+        <div className="tp-accordion">
+          {categories.map((category) => (
+            <div key={category} className="tp-accordion-item">
               
-              <div className="mobile-search">
-                <div className="search-wrapper">
-                  <span className="search-icon">🔍</span>
-                  <input
-                    type="text"
-                    placeholder="Search all services..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="mobile-search-input"
-                  />
-                  {searchTerm && (
-                    <button 
-                      className="clear-search"
-                      onClick={() => setSearchTerm("")}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="mobile-category-list">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    className={`mobile-category-btn ${
-                      selectedCategory === category ? "active" : ""
-                    }`}
-                    onClick={() => handleCategorySelect(category)}
-                  >
-                    <div className="category-content">
-                      <span className="category-name">{category}</span>
-                      <span className="category-count">
-                        {serviceData[category].length}
-                      </span>
-                    </div>
-                    {selectedCategory === category && (
-                      <div className="active-indicator-mobile"></div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Desktop Sidebar */}
-        <aside className="sidebar">
-          <div className="sidebar-header">
-            <h3 className="sidebar-title">Service Categories</h3>
-            <div className="sidebar-subtitle">
-              {categories.length} categories • {totalServices} services
-            </div>
-          </div>
-          
-          <div className="search-sidebar">
-            <div className="search-wrapper">
-              <span className="search-icon">🔍</span>
-              <input
-                type="text"
-                placeholder="Search all services..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="sidebar-search"
-              />
-              {searchTerm && (
-                <button 
-                  className="clear-search"
-                  onClick={() => setSearchTerm("")}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="sidebar-list-container">
-            <ul className="sidebar-list">
-              {categories.map((category) => (
-                <li
-                  key={category}
-                  className={`sidebar-item ${
-                    selectedCategory === category ? "active" : ""
+              {/* CATEGORY HEADER */}
+              <button
+                className={`tp-accordion-header ${
+                  openCategory === category ? "open" : ""
+                }`}
+                onClick={() => toggleCategory(category)}
+              >
+                <span>{category}</span>
+                <i
+                  className={`fas fa-chevron-down arrow ${
+                    openCategory === category ? "rotate" : ""
                   }`}
-                  onClick={() => handleCategorySelect(category)}
-                >
-                  <div className="item-content">
-                    <span className="item-name">{category}</span>
-                    <span className="item-count">
-                      {serviceData[category].length}
-                    </span>
-                  </div>
-                  {selectedCategory === category && (
-                    <div className="active-indicator"></div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </aside>
+                ></i>
+              </button>
 
-        {/* Main Content */}
-        <main className="pricing-main">
-          <div className="pricing-header">
-            <div className="header-content">
-              <h2 className="pricing-title">{selectedCategory}</h2>
-              <p className="pricing-subtitle">
-                {filteredServices.length} of {serviceData[selectedCategory].length} services
-              </p>
-            </div>
-            
-            <div className="search-container">
-              <div className="search-wrapper">
-                <span className="search-icon">🔍</span>
-                <input
-                  type="text"
-                  placeholder={`Search in ${selectedCategory}...`}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
-                {searchTerm && (
-                  <button 
-                    className="clear-search"
-                    onClick={() => setSearchTerm("")}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+              {/* CONTENT */}
+              <div
+                className={`tp-accordion-content ${
+                  openCategory === category ? "show" : ""
+                }`}
+              >
+                <div className="tp-table-wrapper">
+                  <table className="tp-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Service</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
 
-          {/* Fixed Mobile Category Indicator */}
-          <div className="mobile-category-indicator">
-            <div className="current-category-info">
-              <div className="category-header">
-                <span className="category-label">CURRENT CATEGORY</span>
-                <span className="services-count">{serviceData[selectedCategory].length} services</span>
-              </div>
-              <h3 className="current-category-name">{selectedCategory}</h3>
-            </div>
-            <button 
-              className="change-category-btn"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              Change
-            </button>
-          </div>
-
-          <div className="pricing-table-container">
-            <div className="table-header">
-              <div className="header-name">Service Name</div>
-              <div className="header-price">Price</div>
-              <div className="header-code">Code</div>
-              <div className="header-info">Info</div>
-            </div>
-            
-            <div className="pricing-table">
-              {filteredServices.length > 0 ? (
-                filteredServices.map((service, index) => (
-                  <div 
-                    key={`${service.code}-${index}`} 
-                    className="pricing-row"
-                  >
-                    <div className="pricing-name">
-                      <span className="service-name-text">{service.name}</span>
-                    </div>
-                    <div className="pricing-price">
-                      <span className="price-badge">
-                        {service.price}
-                      </span>
-                    </div>
-                    <div className="pricing-code">
-                      <code>{service.code}</code>
-                    </div>
-                    <div 
-                      className="pricing-info"
-                      onClick={() => handleInfoClick(service)}
-                      title="Click for service details"
-                    >
-                      <span className="info-icon">ℹ️</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="no-results">
-                  <div className="no-results-icon">🔍</div>
-                  <h3>No services found</h3>
-                  <p>Try adjusting your search terms or select a different category</p>
-                  <button 
-                    className="clear-search-btn"
-                    onClick={() => setSearchTerm("")}
-                  >
-                    Clear Search
-                  </button>
+                    <tbody>
+                      {serviceData[category].map((s, index) => (
+                        <tr key={index}>
+                          <td>{index + 1}</td>
+                          <td>{s.name}</td>
+                          <td>{s.price}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
 
-          {/* Quick Stats Footer */}
-          <div className="pricing-footer">
-            <div className="footer-stats">
-              <div className="stat">
-                <span className="stat-number">{categories.length}</span>
-                <span className="stat-label">Categories</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">{totalServices}</span>
-                <span className="stat-label">Total Services</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">{filteredServices.length}</span>
-                <span className="stat-label" style={{color:"black"}}>Showing</span>
-              </div>
             </div>
-          </div>
-        </main>
-      </div>
-
-      {/* Modal */}
-      {isModalOpen && selectedService && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeModal}>✕</button>
-            <h3>{selectedService.name}</h3>
-            <div className="modal-details">
-              <div className="detail-item">
-                <strong>Price:</strong>
-                <span className="price-value" style={{color:"pink"}}>{selectedService.price}</span>
-              </div>
-              <div className="detail-item">
-                <strong>Code:</strong>
-                <code>{selectedService.code}</code>
-              </div>
-              <div className="detail-item">
-                <strong>Category:</strong>
-                <span>{selectedCategory}</span>
-              </div>
-            </div>
-            <button className="modal-button" onClick={closeModal}>
-              Close
-            </button>
-          </div>
+          ))}
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 };
 
