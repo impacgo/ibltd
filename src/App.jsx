@@ -17,6 +17,7 @@ import AuthLogin from './components/AuthLogin'; // New import
 import ComingSoon from './components/ComingSoon';
 import CareerSection from './components/CareerSection';
 import ServiceAreas from './components/ServiceAreas';
+import AccountDeletionRequest from './AccountDeletionRequest';
 
 // Home component
 const Home = () => {
@@ -106,6 +107,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<ComingSoon />} />
           <Route path="/coming-soon" element={<ComingSoon />} />
+          <Route path="/delete-request" element={<AccountDeletionRequest />} />
         </Routes>
       </div>
     </Router>
