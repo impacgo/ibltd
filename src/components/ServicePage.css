@@ -1,0 +1,170 @@
+/* ---------------- GLOBAL ---------------- */
+.service-page {
+  background: #081529;
+  color: #e9f0ff;
+  font-family: "Inter", sans-serif;
+  line-height: 1.6;
+}
+
+/* ---------------- HERO ---------------- */
+.service-hero {
+  height: 330px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.service-hero .overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 12, 28, 0.4), rgba(8, 12, 28, 0.9));
+}
+
+.hero-inner {
+  position: relative;
+  padding: 34px 6%;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.breadcrumbs {
+  color: #ffdba8;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.hero-inner h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #ffbf63, #ff9b27);
+  -webkit-background-clip: text;
+  color: transparent;
+  margin-bottom: 8px;
+}
+
+.lead {
+  max-width: 680px;
+  color: #e7edff;
+  font-size: 1.05rem;
+}
+
+/* ---------------- MAIN CONTENT ---------------- */
+.container {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 0 6%;
+}
+
+/* ---------------- SECTION HEADINGS ---------------- */
+.service-body h2,
+.service-body h3 {
+  font-weight: 700;
+  color: #ffc873;
+  margin-bottom: 8px;
+}
+
+.muted {
+  color: #bcccff;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+/* ---------------- FEATURES ---------------- */
+.service-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.feature {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 14px 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 200, 130, 0.18);
+  font-size: 15px;
+  color: #fff;
+  min-width: 230px;
+  transition: 0.25s;
+  backdrop-filter: blur(6px);
+}
+
+.feature:hover {
+  background: rgba(255, 200, 130, 0.12);
+  transform: translateY(-4px);
+}
+
+/* ---------------- AREA CHIPS ---------------- */
+.area-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 200, 130, 0.25);
+  color: #ffd48b;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 15px;
+  backdrop-filter: blur(6px);
+  transition: 0.2s ease;
+}
+
+.area-chip:hover {
+  background: rgba(255, 200, 130, 0.2);
+  color: #fff;
+  transform: translateY(-3px);
+}
+
+.areas-list-inline {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 18px 0 32px;
+}
+
+/* ---------------- FAQ ---------------- */
+.faq {
+  margin-top: 40px;
+}
+
+.faq details {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 200, 130, 0.18);
+  padding: 14px;
+  border-radius: 12px;
+  margin-top: 10px;
+  transition: 0.25s ease;
+}
+
+.faq details summary {
+  color: #ffcd84;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.faq details[open] {
+  background: rgba(255, 200, 130, 0.15);
+}
+
+.faq p {
+  margin-top: 10px;
+  color: #d7e4ff;
+}
+
+/* ---------------- RESPONSIVE ---------------- */
+@media (max-width: 768px) {
+  .service-hero {
+    height: 250px;
+  }
+
+  .hero-inner h1 {
+    font-size: 2rem;
+  }
+
+  .feature,
+  .area-chip {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -513,3 +513,126 @@
     justify-content: space-between; /* aligns bottom CTA with bottom of left content */
   }
 }
+/* QUICK BOOKING — aligned identical to Find Area card */
+.quick-booking-card {
+  background: linear-gradient(135deg, #1a1a1a, #292929);
+  padding: 2.4rem 2rem 2rem;
+  border-radius: 22px;
+  border: 1px solid rgba(239, 236, 234, 0.2);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 25px rgba(255, 140, 0, 0.12);
+  margin-top: 0.3rem;
+  text-align: center;
+}
+
+.quick-tag {
+  display: inline-block;
+  padding: 6px 16px;
+  background: #ff6a00;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 14px;
+  margin-top: -1.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.quick-title {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.quick-desc {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin-bottom: 1.4rem;
+}
+
+.quick-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #ff7a00, #ff5100);
+  border-radius: 12px;
+  color: white;
+  font-weight: 700;
+  border: none;
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.quick-btn:hover {
+  transform: translateY(-3px);
+}
+
+/* Wrapper to reduce width and center the card */
+.quick-wrapper {
+  width: 90%;               /* ⬅ Reduced width for a cleaner look */
+  max-width: 430px;         /* ⬅ Prevents extra-wide card on large screens */
+  margin-top: 0.6rem;
+}
+
+/* Perfectly aligned, sleek quick booking card */
+.quick-booking-card {
+  background: linear-gradient(135deg, #1a1a1a, #292929);
+  padding: 2.2rem 1.8rem;
+  border-radius: 22px;
+  border: 1px solid rgba(239, 236, 234, 0.2);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 25px rgba(255, 140, 0, 0.12);
+  text-align: center;
+}
+
+/* Badge */
+.quick-tag {
+  display: inline-block;
+  padding: 6px 16px;
+  background: #ff6a00;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 14px;
+  margin-top: -1.6rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Title */
+.quick-title {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+/* Description */
+.quick-desc {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  margin-bottom: 1.4rem;
+}
+
+/* CTA Button */
+.quick-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #ff7a00, #ff5100);
+  border-radius: 12px;
+  color: white;
+  font-weight: 700;
+  border: none;
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.quick-btn:hover {
+  transform: translateY(-3px);
+}
+
+

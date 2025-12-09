@@ -1,0 +1,301 @@
+/* =========================================
+   GLOBAL
+========================================= */
+.area-page {
+  background: #0b1430;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+}
+
+/* =========================================
+   HERO
+========================================= */
+.area-hero {
+  height: 360px;
+  background-image: url("/hero-common.jpg");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.area-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 13, 35, 0.65);
+  backdrop-filter: blur(3px);
+}
+
+.area-hero-content {
+  position: relative;
+  z-index: 2;
+  padding-top: 20px;
+}
+
+.area-breadcrumbs {
+  color: #ffd28a;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.area-title {
+  font-size: 38px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.area-subtitle {
+  color: #d9e5ff;
+  max-width: 720px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.area-hero-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 14px;
+}
+
+.btn-primary,.btn-outline {
+  background: linear-gradient(90deg, #ff9500, #ffd86b);
+  padding: 12px 22px;
+  border: none;
+  border-radius: 10px;
+  color: #05112d;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 5px 18px rgba(255, 165, 0, 0.4);
+  transition: 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+}
+
+.btn-secondary {
+  padding: 12px 22px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* =========================================
+   MAIN SECTION
+========================================= */
+.container {
+  max-width: 1200px;
+  margin: 0 50px;
+  padding: 40px 12px;
+}
+
+.area-main-section {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 45px;
+  align-items: start;
+}
+
+/* =========================================
+   LEFT SIDE — SERVICE CARDS
+========================================= */
+.section-heading {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.section-description {
+  color: #cdd8ff;
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+/* --- NEW 3 COLUMN GRID --- */
+.service-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+}
+
+/* --- NEW FULL IMAGE CARD STYLE --- */
+.service-card {
+  position: relative;
+  height: 240px;
+  border-radius: 18px;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+  color: #fff;
+
+  background: #0d1c38;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Back image */
+.service-card-img {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.4s ease;
+}
+
+/* Dark gradient on top */
+.service-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.6)
+  );
+  z-index: 1;
+}
+
+/* Text glass panel */
+.service-card-info {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 18px;
+  z-index: 2;
+
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(12px);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.service-card-info h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.service-card-info p {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #dbe6ff;
+}
+
+/* Hover Effects */
+.service-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
+}
+
+.service-card:hover .service-card-img {
+  transform: scale(1.12);
+}
+
+/* =========================================
+   SIDEBAR — AREA INFORMATION + MORE LOCATIONS
+========================================= */
+.area-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebar-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-card h4 {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.sidebar-card p {
+  font-size: 14px;
+  color: #d7e3ff;
+}
+
+/* More locations */
+.location-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #e5eeff;
+  margin-bottom: 8px;
+  transition: 0.25s ease;
+}
+
+.location-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.location-link.active {
+  background: linear-gradient(90deg, #0f2352, #183774);
+  color: #ffcf74;
+  box-shadow: 0 6px 18px rgba(8, 22, 50, 0.6);
+}
+
+/* =========================================
+   SEO LINKS SECTION
+========================================= */
+.seo-section {
+  margin-top: 50px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 22px;
+  border-radius: 14px;
+}
+
+.seo-list li {
+  margin: 6px 0;
+}
+
+.seo-list a {
+  color: #ffcf80;
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+@media (max-width: 1100px) {
+  .service-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .area-main-section {
+    grid-template-columns: 1fr;
+  }
+
+  .area-sidebar {
+    order: -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .service-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-card {
+    height: 210px;
+  }
+
+  .area-title {
+    font-size: 30px;
+  }
+
+  .area-hero {
+    height: 300px;
+  }
+}

@@ -53,15 +53,7 @@ const HowItWorks = () => {
   const navigate = useNavigate();
 
   const handleSchedulePickup = () => {
-    navigate("/coming-soon", {
-      state: {
-        title: "Booking System Coming Soon",
-        description:
-          "We're building an intuitive booking system to make scheduling your laundry pickup effortless and convenient.",
-        featureName: "Online Booking System",
-        expectedTime: "2-3 weeks",
-      },
-    });
+    navigate("/quick-booking");
   };
 
   return (
@@ -72,7 +64,7 @@ const HowItWorks = () => {
           <div className="section-badge">
             <span>Simple Process</span>
           </div>
-          <h2 className="section-title">How It Works</h2>
+          <h2 className="section-title" style={{fontSize:"2.5rem"}}>How It Works</h2>
           <p className="section-description">
             Get your laundry done in 4 easy steps. Fast, reliable, and
             professional service.

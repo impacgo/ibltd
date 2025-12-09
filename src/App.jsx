@@ -13,11 +13,9 @@ import Footer from './components/Footer';
 import TotalPricing from './components/totalpricing';
 import './App.css';
 import SearchResults from './components/SearchResults';
-import AuthLogin from './components/AuthLogin'; // New import
+import AuthLogin from './components/AuthLogin';
 import ComingSoon from './components/ComingSoon';
-import CareerSection from './components/CareerSection';
 import ServiceAreas from './components/ServiceAreas';
-import AccountDeletionRequest from './AccountDeletionRequest';
 
 // Home component
 const Home = () => {
@@ -26,7 +24,6 @@ const Home = () => {
       <Hero />
       <Services />
       <HowItWorks />
-      <ServiceAreas/>
       <Pricing />
       <Testimonials />
       <FAQ />
@@ -41,7 +38,7 @@ const ServicesPage = () => {
   return (
     <div className="page-container">
       <Services />
-      <Footer/>
+      <Footer />
     </div>
   );
 };
@@ -61,7 +58,7 @@ const LoginPage = () => {
   return <AuthLogin />;
 };
 
-// Other page components
+// How it works page
 const HowItWorksPage = () => (
   <div className="page-container">
     <HowItWorks />
@@ -69,6 +66,7 @@ const HowItWorksPage = () => (
   </div>
 );
 
+// Testimonials page
 const TestimonialsPage = () => (
   <div className="page-container">
     <Testimonials />
@@ -76,16 +74,42 @@ const TestimonialsPage = () => (
   </div>
 );
 
+// FAQ page
 const FAQPage = () => (
   <div className="page-container">
     <FAQ />
-    <Footer/>
+    <Footer />
   </div>
 );
 
+// Contact page
 const ContactPage = () => (
   <div className="page-container">
     <Contact />
+    <Footer />
+  </div>
+);
+
+// Areas Page
+const AreasPage = () => (
+  <div className="page-container">
+    <ServiceAreas />
+    <Footer />
+  </div>
+);
+
+// Quick Booking Page
+const QuickBookingPage = () => (
+  <div className="page-container">
+    <QuickBooking />
+    <Footer />
+  </div>
+);
+
+// Service Detail Page
+const ServiceDetailPage = () => (
+  <div className="page-container">
+    <ServiceDetail />
     <Footer />
   </div>
 );
@@ -107,7 +131,6 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<ComingSoon />} />
           <Route path="/coming-soon" element={<ComingSoon />} />
-          <Route path="/delete-request" element={<AccountDeletionRequest />} />
         </Routes>
       </div>
     </Router>

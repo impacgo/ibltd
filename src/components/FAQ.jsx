@@ -95,7 +95,7 @@ const FAQ = () => {
     <section className="faq" id="faq">
       <div className="container">
         <div className="faq-header-block">
-  <h2 className="section-title">Frequently Asked Questions</h2>
+  <h2 className="section-title" style={{fontSize:"2.5rem"}}>Frequently Asked Questions</h2>
 </div>
 
         

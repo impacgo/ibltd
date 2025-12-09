@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./totalpricing.css";
    const serviceData = {
       "Clean and Iron": [
@@ -28,7 +27,7 @@ import "./totalpricing.css";
     { name: "Coat", price: "£17.75", code: "CI023" },
     { name: "Jacket", price: "£9.50", code: "CI024" },
     { name: "Jacket (Puffer)", price: "£25.88", code: "CI025" },
-    { name: "Jacket (Burberry, Canada Goose)", price: "£57.20", code: "CI026" },
+    { name: "Jacket (Burberry, Canada Goose or Moncler)", price: "£57.20", code: "CI026" },
     { name: "Jumper", price: "£7.95", code: "CI027" },
     { name: "Knitwear", price: "£7.95", code: "CI028" },
     { name: "Knitwear (Cashmere)", price: "£10.00", code: "CI029" },
@@ -243,17 +242,89 @@ import "./totalpricing.css";
 const categories = Object.keys(serviceData);
 
 const TotalPricing = () => {
+  const [categories, setCategories] = useState([]);
+  const [categoryMap, setCategoryMap] = useState({});
   const [openCategory, setOpenCategory] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const toggleCategory = (category) => {
-    setOpenCategory((prev) => (prev === category ? null : category));
+    setOpenCategory(openCategory === category ? null : category);
   };
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch categories
+        const catRes = await fetch(`${API_BASE}/categories`);
+        const catJson = await catRes.json();
+
+        const catList = catJson.data || [];
+
+        // convert array → map id → category name
+        const tempCatMap = {};
+        const categoryNames = [];
+
+        catList.forEach((c) => {
+          tempCatMap[c.id] = c.name;
+          categoryNames.push(c.name);
+        });
+
+        // Fetch products
+        const prodRes = await fetch(`${API_BASE}/products1`);
+        const prodJson = await prodRes.json();
+
+        const prodList = Array.isArray(prodJson)
+          ? prodJson
+          : prodJson.data || [];
+
+        // Build grouped category → products list
+        const grouped = {};
+        categoryNames.forEach((cat) => (grouped[cat] = []));
+
+        prodList.forEach((p) => {
+          const categoryName = tempCatMap[p.category_id];
+          if (!categoryName) return; // skip invalid categories
+
+          const priceValue = p.price ?? p.standard_price ?? 0;
+
+          grouped[categoryName].push({
+            name: p.name,
+            price: "£" + Number(priceValue).toFixed(2),
+          });
+        });
+
+        setCategories(categoryNames);
+        setCategoryMap(grouped);
+
+      } catch (err) {
+        console.error("Pricing Load Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="tp-page">
+        <div className="tp-container">
+          <h2 style={{ textAlign: "center", padding: "40px" }}>
+            Loading pricing…
+          </h2>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="tp-page">
       <div className="tp-container">
-
-        {/* HEADER */}
+        
+        {/* Header */}
         <header className="tp-header">
           <span className="tp-badge">Complete Price List</span>
           <h1 className="tp-title">Explore Our Services & Pricing</h1>
@@ -262,30 +333,28 @@ const TotalPricing = () => {
           </p>
         </header>
 
-        {/* CATEGORY CARDS */}
+        {/* Accordion */}
         <div className="tp-accordion">
-          {categories.map((category) => (
-            <div key={category} className="tp-accordion-item">
-              
-              {/* CATEGORY HEADER */}
+          {categories.map((cat) => (
+            <div key={cat} className="tp-accordion-item">
+
+              {/* Category Header */}
               <button
-                className={`tp-accordion-header ${
-                  openCategory === category ? "open" : ""
-                }`}
-                onClick={() => toggleCategory(category)}
+                className={`tp-accordion-header ${openCategory === cat ? "open" : ""}`}
+                onClick={() => toggleCategory(cat)}
               >
-                <span>{category}</span>
+                <span>{cat}</span>
                 <i
                   className={`fas fa-chevron-down arrow ${
-                    openCategory === category ? "rotate" : ""
+                    openCategory === cat ? "rotate" : ""
                   }`}
                 ></i>
               </button>
 
-              {/* CONTENT */}
+              {/* Category Contents */}
               <div
                 className={`tp-accordion-content ${
-                  openCategory === category ? "show" : ""
+                  openCategory === cat ? "show" : ""
                 }`}
               >
                 <div className="tp-table-wrapper">
@@ -297,15 +366,22 @@ const TotalPricing = () => {
                         <th>Price</th>
                       </tr>
                     </thead>
-
                     <tbody>
-                      {serviceData[category].map((s, index) => (
-                        <tr key={index}>
-                          <td>{index + 1}</td>
-                          <td>{s.name}</td>
-                          <td>{s.price}</td>
+                      {categoryMap[cat] && categoryMap[cat].length > 0 ? (
+                        categoryMap[cat].map((item, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{item.name}</td>
+                            <td>{item.price}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="3" style={{ textAlign: "center" }}>
+                            No services available.
+                          </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -314,6 +390,7 @@ const TotalPricing = () => {
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );
