@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Star, Truck, Shield, Users } from "lucide-react";
 import "./ServiceDetail.css";
 
-const API_BASE = "http://51.21.123.162:3000";
+const API_BASE = "https://api.ironingboy.com";
 
 const ServiceDetail = () => {
   const { categoryId } = useParams();

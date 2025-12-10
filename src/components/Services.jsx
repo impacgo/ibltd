@@ -14,7 +14,7 @@ import imageRepair from "../images/repair.webp";
 import imageServiceWash from "../images/servicewash.webp";
 
 // API
-const API_BASE = "http://51.21.123.2:3000";
+const API_BASE = "https://api.ironingboy.com";
 
 // Map backend category names -> Local images
 const categoryImages = {

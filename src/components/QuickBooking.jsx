@@ -15,7 +15,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 
-const API_BASE = "http://51.21.123.162:3000";
+const API_BASE = "https://api.ironingboy.com";
 
 // Initialize Stripe with your publishable key
 const stripePromise = loadStripe(

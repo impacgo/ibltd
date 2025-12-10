@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PersonalInfo.css";
 
-const API_BASE = "http://51.21.123.162:3000";
+const API_BASE = "https://api.ironingboy.com";
 
 const PersonalInfo = () => {
   const navigate = useNavigate();

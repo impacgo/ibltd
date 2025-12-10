@@ -8,7 +8,7 @@ import Google from "../images/google-logo.png";
 import apple from "../images/icons8-apple-logo-50.png";
 import { Eye, EyeOff, ArrowLeft, Mail, Phone, Lock, User } from "lucide-react";
 
-const API_BASE = "http://51.21.123.162:3000";
+const API_BASE = "https://api.ironingboy.com";
 
 /**
  * Helper: safely parse JSON responses
