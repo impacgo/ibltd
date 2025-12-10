@@ -16,8 +16,21 @@ import SearchResults from './components/SearchResults';
 import AuthLogin from './components/AuthLogin';
 import ComingSoon from './components/ComingSoon';
 import ServiceAreas from './components/ServiceAreas';
+import AreaDetails from "./components/AreaDetails";
+import ServicePage from "./components/ServicePage";
+import AreaServicePage from "./components/AreaServicePage";
+import CategoryDetails from "./components/CategoryDetails";
+import Checkout from './components/Checkout';
+import PersonalInfo from "./components/PersonalInfo";
+import QuickBooking from "./components/QuickBooking";
+import { AuthProvider } from './context/AuthContext';
+import OrderHistory from './components/OrderHistory';
+import ServiceDetail from './components/ServiceDetail';
 
-// Home component
+// REMOVE OR COMMENT OUT THE MISSING IMPORT
+// import AccountDeletionRequest from './components/AccountDeletionRequest';
+
+// Home component - Remove QuickBooking from here since it's on a separate page
 const Home = () => {
   return (
     <>
@@ -116,24 +129,45 @@ const ServiceDetailPage = () => (
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/how-it-works" element={<HowItWorksPage />} />
-          <Route path="/testimonials" element={<TestimonialsPage />} />
-          <Route path="/faq" element={<FAQPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="*" element={<ComingSoon />} />
-          <Route path="/coming-soon" element={<ComingSoon />} />
-        </Routes>
-      </div>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <Header />
+
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/services" element={<ServicesPage />} />
+            {/* TWO ROUTES FOR CATEGORY DETAILS - KEEP BOTH FOR BACKWARD COMPATIBILITY */}
+            <Route path="/services/:id" element={<CategoryDetails />} />
+            <Route path="/category/:categoryId" element={<ServiceDetailPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/testimonials" element={<TestimonialsPage />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/profile" element={<PersonalInfo />} />
+            <Route path="/quick-booking" element={<QuickBookingPage />} />
+            {/* FIX: Removed duplicate /areas route - keep only one */}
+            <Route path="/areas" element={<AreasPage />} />
+            <Route path="/areas/:slug" element={<AreaDetails />} />
+            <Route path="/areas/:slug/:serviceSlug" element={<AreaServicePage />} />
+            
+            {/* REMOVE OR COMMENT OUT THE MISSING ROUTE */}
+            {/* <Route path="/delete-request" element={<AccountDeletionRequest />} /> */}
+            
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/services/:serviceSlug" element={<ServicePage />} />
+            <Route path="/orders" element={<OrderHistory />} />
+            
+            {/* 404/Catch-all route should be LAST */}
+            <Route path="/coming-soon" element={<ComingSoon />} />
+            <Route path="*" element={<ComingSoon />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
