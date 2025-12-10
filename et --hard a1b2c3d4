@@ -1,0 +1,95 @@
+[33mcommit dbe168b644e634cc6527155f87ecf1b536841fa5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Tue Dec 9 22:41:49 2025 +0530
+
+    Upadte ibltd page with atteched backend connection
+
+[33mcommit 70088a7da2769499c568a60aca9dcba2ebd1dbb5[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Fri Dec 5 14:45:26 2025 +0530
+
+    added new file for the Account deletion Request
+
+[33mcommit 3792da43dab32dd3f2c24bad326b3647c710b6c4[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Fri Dec 5 14:43:48 2025 +0530
+
+    Add route for account deletion request
+
+[33mcommit 550496cace163589dd080ed2b172fb2252b88e6a[m
+Author: Vishwanath Yadav <vishwanathyadavdgtl@gmail.com>
+Date:   Thu Dec 4 10:48:51 2025 +0530
+
+    Update index.html
+
+[33mcommit 7c7db3448a42a0de6cecd34742d8eaa6acd7699d[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Thu Dec 4 10:33:47 2025 +0530
+
+    add gsc tags on index.html file
+
+[33mcommit b902ce851560e982433860111033447543f3796a[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Sat Nov 29 17:16:03 2025 +0530
+
+    added sitemap.xml file in public folder
+
+[33mcommit db162dfa564ae936ab93c812946caf5b71cb989c[m
+Author: Vishwanath Yadav <vishwanathyadavdgtl@gmail.com>
+Date:   Sat Nov 29 15:39:42 2025 +0530
+
+    Updated robots.txt
+
+[33mcommit 9146dbbb3e4c0d4b153b88e70af4a6b9077a0d60[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Mon Nov 24 12:01:35 2025 +0530
+
+    Update totalpricing.jsx
+
+[33mcommit c00aa8f85bffd0e218c54f1f63e14fa083838b54[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Mon Nov 24 11:48:58 2025 +0530
+
+    Fix JSX extensions
+
+[33mcommit aeaa2fff153dc2a8c485b392034f548fe169f579[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Mon Nov 24 11:18:22 2025 +0530
+
+    Fix Vercel routing + vite config
+
+[33mcommit 5256e3dffdee50d467601ee8753d68466d8b207e[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Mon Nov 24 10:41:09 2025 +0530
+
+    migrated to vite
+
+[33mcommit 067da9ea42c6abf005104467262fc1a0702a8427[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Mon Nov 24 10:24:13 2025 +0530
+
+    Add files via upload
+
+[33mcommit e675324b016f2469ea0d581143a22e51de153459[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Mon Nov 24 10:09:10 2025 +0530
+
+    Updated React code, replaced images with webp, added ServiceAreas + CareerSection components
+
+[33mcommit ba4eb0e211f86e01539ef21e8fa62cc7c4138634[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Wed Oct 8 09:43:31 2025 +0530
+
+    track large files with git lfs
+
+[33mcommit 569d6ea0b37ad4516e26f57c62b518d6bf0319e0[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Wed Oct 8 09:31:23 2025 +0530
+
+    first commit
+
+[33mcommit 2a6575c246725a731028081d50e4523346bae637[m
+Author: impacgo <adityaramipg123@gmail.com>
+Date:   Wed Oct 8 09:20:40 2025 +0530
+
+    Initialize project using Create React App

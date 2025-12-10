@@ -4,7 +4,7 @@ import "./Header.css";
 import LoginPopup from "./LoginPopup";
 import { useAuth } from "../context/AuthContext";
 
-const API_BASE = "http://51.21.123.162:3000";
+const API_BASE = "https://api.ironingboy.com";
 
 // Optimized SVG Icons with better styling
 const AppleIcon = () => (
@@ -282,56 +282,11 @@ const Header = () => {
       <header className={`header ${isScrolled ? "scrolled" : ""} ${hideHeader ? "hide-header" : ""}`}>
         <div className="header-container">
           <div className="header-content">
-            {/* MOBILE HEADER - Two Row Layout */}
-            <div className="header-top-row">
-              {/* Logo on Left */}
-              <div className="header-left">
-                <Link to="/" className="logo" onClick={closeMenu} aria-label="Ironing Boy Home">
-                  <TextLogo />
-                </Link>
-              </div>
-
-              {/* Menu Icon on Right */}
-              <button
-                ref={menuButtonRef}
-                className="mobile-menu-btn"
-                onClick={toggleMenu}
-                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={isMenuOpen}
-              >
-                <MenuIcon />
-              </button>
-            </div>
-
-            {/* App Store Icons Row - Below Logo */}
-            <div className="header-apps-row">
-              <div className="mobile-app-icons">
-                <button 
-                  className="mini-store-btn apple-btn"
-                  onClick={handleAppStoreClick}
-                  aria-label="Download on the App Store"
-                >
-                  <AppleIcon />
-                  <div className="mini-store-text">
-                    <span className="mini-store-label">Download on the</span>
-                    <span className="mini-store-name">App Store</span>
-                  </div>
-                </button>
-
-                <button 
-                  className="mini-store-btn android-btn"
-                  onClick={handlePlayStoreClick}
-                  aria-label="Get it on Google Play"
-                >
-                  <AndroidIcon />
-                  <div className="mini-store-text">
-                    <span className="mini-store-label">Get it on</span>
-                    <span className="mini-store-name">Google Play</span>
-                  </div>
-                </button>
-              </div>
-              {/* Spacer to align with menu icon */}
-              <div className="header-apps-spacer"></div>
+            {/* Left Section: Logo only */}
+            <div className="header-left">
+              <Link to="/" className="logo" onClick={closeMenu} aria-label="Ironing Boy Home">
+                <TextLogo />
+              </Link>
             </div>
 
             {/* Desktop Navigation */}
@@ -356,11 +311,11 @@ const Header = () => {
                       categories.map((category) => (
                         <li key={category.id}>
                           <Link 
-                            to={`/category/${category.id}`} 
-                            onClick={() => setIsServiceOpen(false)}
-                          >
-                            {category.name}
-                          </Link>
+  to={`/category/${category.id}`} 
+  onClick={() => setIsServiceOpen(false)}
+>
+  {category.name}
+</Link>
                         </li>
                       ))
                     ) : (
@@ -463,6 +418,17 @@ const Header = () => {
                 )}
               </div>
             </div>
+
+            {/* Mobile Menu Button - At the end (right side) */}
+            <button
+              ref={menuButtonRef}
+              className="mobile-menu-btn"
+              onClick={toggleMenu}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+            >
+              <MenuIcon />
+            </button>
           </div>
         </div>
 

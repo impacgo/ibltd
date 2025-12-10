@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./CategoryDetails.css";
 
-const API_BASE = "http://16.16.68.189:3000";
+const API_BASE = "https://api.ironingboy.com";
 const STORAGE_KEY = "ironboy_cart";
 
 const CategoryDetails = () => {
