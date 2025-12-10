@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { Typewriter } from "react-simple-typewriter";
 import "./Hero.css";
 import backgroundImage from "../images/herosec.webp";
@@ -7,7 +7,7 @@ import backgroundImage from "../images/herosec.webp";
 const Hero = () => {
   const [location, setLocation] = useState("");
   const [isVisible, setIsVisible] = useState(false);
-  const navigate = useNavigate(); // Initialize navigate hook
+  const navigate = useNavigate();
 
   useEffect(() => {
     requestAnimationFrame(() => setIsVisible(true));
@@ -24,7 +24,7 @@ const Hero = () => {
 
   // Handle Quick Book navigation
   const handleQuickBook = () => {
-    // Check if user is logged in
+    // Check if user is logged in by checking localStorage
     const isLoggedIn = localStorage.getItem("ironboy_user") !== null;
     
     if (isLoggedIn) {
@@ -33,8 +33,7 @@ const Hero = () => {
     } else {
       // If not logged in, navigate to quick booking page which will show login popup
       navigate("/quick-booking");
-      // Alternatively, you could show a login modal first, then navigate
-      // But since QuickBooking component already handles login, we can navigate directly
+      // The QuickBooking component will handle showing the login popup
     }
   };
 
