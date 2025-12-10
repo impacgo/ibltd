@@ -80,7 +80,7 @@ const Services = () => {
           </p>
         </div>
 
-        {/* Loading & Error States */}
+        {/* Loading State */}
         {loading && (
           <div className="services-loading">
             <div className="loading-spinner"></div>
@@ -88,7 +88,8 @@ const Services = () => {
           </div>
         )}
 
-        {/* {error && (
+        {/* Error State */}
+        {error && (
           <div className="services-error">
             <i className="fas fa-exclamation-triangle"></i>
             <p>{error}</p>
@@ -99,55 +100,73 @@ const Services = () => {
               Retry
             </button>
           </div>
-        )} */}
-
-        {/* Services Grid */}
-        {!loading && !error && categories.length > 0 && (
-          <>
-            <div className="services-grid">
-              {categories.map((cat) => {
-                const img = categoryImages[cat.name] || imageFullBody;
-                return (
-                  <div
-                    key={cat.id}
-                    className="service-card"
-                    onClick={() => handleServiceClick(cat.id)}
-                  >
-                    <div className="service-image-wrapper">
-                      <div
-                        className="service-image"
-                        style={{ backgroundImage: `url(${img})` }}
-                      ></div>
-                      <div className="service-overlay"></div>
-                    </div>
-
-                    <div className="service-content">
-                      <div className="service-icon">
-                        <i className="fas fa-spa"></i>
-                      </div>
-                      <h3>{cat.name}</h3>
-                      <p>{cat.description || "Professional care for your items."}</p>
-
-                      <button 
-                        className="service-cta-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleServiceClick(cat.id);
-                        }}
-                      >
-                        <i className="fas fa-arrow-right"></i> View Service
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            
-          </>
         )}
 
-        {/* Empty State */}
+        {/* Book Now Button Section - Always show this */}
+        <div className="book-now-section">
+          <div className="book-now-card">
+            <div className="book-now-icon">
+              <i className="fas fa-calendar-alt"></i>
+            </div>
+            <div className="book-now-content">
+              <h3>Ready for Fresh & Clean Clothes?</h3>
+              <p>Schedule a pickup in just 2 minutes. We handle everything from collection to delivery.</p>
+            </div>
+            <button 
+              className="book-now-btn"
+              onClick={handleBookNow}
+            >
+              <i className="fas fa-calendar-check"></i> Book Now
+            </button>
+          </div>
+        </div>
+
+        {/* Services Grid - COMMENTED OUT TEMPORARILY */}
+        {/* 
+        {!loading && !error && categories.length > 0 && (
+          <div className="services-grid">
+            {categories.map((cat) => {
+              const img = categoryImages[cat.name] || imageFullBody;
+              return (
+                <div
+                  key={cat.id}
+                  className="service-card"
+                  onClick={() => handleServiceClick(cat.id)}
+                >
+                  <div className="service-image-wrapper">
+                    <div
+                      className="service-image"
+                      style={{ backgroundImage: `url(${img})` }}
+                    ></div>
+                    <div className="service-overlay"></div>
+                  </div>
+
+                  <div className="service-content">
+                    <div className="service-icon">
+                      <i className="fas fa-spa"></i>
+                    </div>
+                    <h3>{cat.name}</h3>
+                    <p>{cat.description || "Professional care for your items."}</p>
+
+                    <button 
+                      className="service-cta-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleServiceClick(cat.id);
+                      }}
+                    >
+                      <i className="fas fa-arrow-right"></i> View Service
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        */}
+
+        {/* Empty State - Also commented out since we're not showing cards */}
+        {/* 
         {!loading && !error && categories.length === 0 && (
           <div className="services-empty">
             <i className="fas fa-tshirt"></i>
@@ -155,24 +174,7 @@ const Services = () => {
             <p>Check back soon for our service offerings.</p>
           </div>
         )}
-        {/* Book Now Button Section */}
-            <div className="book-now-section">
-              <div className="book-now-card">
-                <div className="book-now-icon">
-                  <i className="fas fa-calendar-alt"></i>
-                </div>
-                <div className="book-now-content">
-                  <h3>Ready for Fresh & Clean Clothes?</h3>
-                  <p>Schedule a pickup in just 2 minutes. We handle everything from collection to delivery.</p>
-                </div>
-                <button 
-                  className="book-now-btn"
-                  onClick={handleBookNow}
-                >
-                  <i className="fas fa-calendar-check"></i> Book Now
-                </button>
-              </div>
-            </div>
+        */}
       </div>
     </section>
   );
