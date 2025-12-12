@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms and Conditions | IRONING BOY Professional Laundry Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Import your brand fonts if needed */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary-blue: #1a365d;
+            --primary-orange: #ff7a00;
+            --secondary-orange: #ffb05c;
+            --text-dark: #0f1724;
+            --text-light: #ffffff;
+            --text-muted: #9aa3b2;
+            --bg-white: #ffffff;
+            --bg-light: #f9f9f9;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.15);
+            --max-width: 1200px;
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-to-site {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border: 2px solid var(--primary-blue);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-site:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .print-btn, .close-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .print-btn {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .print-btn:hover {
+            background: #2d4a7a;
+            transform: translateY(-1px);
+        }
+
+        .close-btn {
+            background: #f7f9fc;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+        }
+
+        .close-btn:hover {
+            background: #edf2f7;
+        }
+
+        /* Hero Header */
+        .terms-hero {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #2d4a7a 100%);
+            color: var(--text-light);
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terms-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.05)"/></svg>');
+            background-size: cover;
+        }
+
+        .terms-hero h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            position: relative;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .meta-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+        }
+
+        /* Quick Navigation */
+        .quick-nav-wrapper {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 61px;
+            z-index: 999;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .quick-nav {
+            display: flex;
+            overflow-x: auto;
+            gap: 5px;
+            padding: 20px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .quick-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-item {
+            flex: 0 0 auto;
+            padding: 12px 24px;
+            background: #f7f9fc;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background: #edf2f7;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-item.active {
+            background: var(--primary-blue);
+            color: var(--text-light);
+            border-color: var(--primary-orange);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Main Content */
+        .terms-main {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .terms-card {
+            background: var(--bg-white);
+            padding: 60px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            position: relative;
+        }
+
+        /* Clause Styling */
+        .clause-section {
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            scroll-margin-top: 180px;
+        }
+
+        .clause-section:last-child {
+            border-bottom: none;
+        }
+
+        .clause-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary-orange);
+        }
+
+        .clause-number {
+            background: var(--primary-orange);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
+        }
+
+        .clause-title {
+            color: var(--primary-blue);
+            font-size: 1.9rem;
+            font-weight: 800;
+            flex: 1;
+        }
+
+        /* Sub-clause styling */
+        .sub-clause {
+            margin-bottom: 25px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .sub-clause::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 8px;
+            height: 8px;
+            background: var(--primary-orange);
+            border-radius: 50%;
+        }
+
+        .sub-clause-title {
+            color: var(--primary-blue);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sub-clause-title .number {
+            color: var(--primary-orange);
+            font-weight: 800;
+        }
+
+        .sub-clause-content {
+            color: var(--text-dark);
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        .sub-clause-content p {
+            margin-bottom: 15px;
+        }
+
+        /* Lists */
+        .styled-list {
+            list-style: none;
+            margin: 15px 0 15px 25px;
+        }
+
+        .styled-list li {
+            margin-bottom: 12px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .styled-list li::before {
+            content: '•';
+            color: var(--primary-orange);
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        /* Definition Box */
+        .definition-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid var(--primary-orange);
+            padding: 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+        }
+
+        .definition-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #cbd5e0;
+        }
+
+        .definition-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .term {
+            display: block;
+            font-weight: 800;
+            color: var(--primary-blue);
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .meaning {
+            color: var(--text-dark);
+            margin-left: 15px;
+            line-height: 1.6;
+        }
+
+        /* Warning/Important Box */
+        .warning-box {
+            background: linear-gradient(135deg, #fff8e6 0%, #ffeed8 100%);
+            border: 2px solid #ffcc80;
+            border-left: 5px solid var(--primary-orange);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .warning-icon {
+            color: var(--primary-orange);
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .warning-content h4 {
+            color: var(--primary-blue);
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        /* Contact Card */
+        .contact-card {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f0ff 100%);
+            border: 2px solid #c2d6ff;
+            border-left: 5px solid var(--primary-blue);
+            padding: 35px;
+            border-radius: 12px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .contact-card h3 {
+            color: var(--primary-blue);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        .contact-details {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            line-height: 1.8;
+        }
+
+        .contact-details strong {
+            color: var(--primary-blue);
+            font-weight: 700;
+        }
+
+        /* Legal Disclaimer */
+        .legal-disclaimer {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffebeb 100%);
+            border: 2px solid #ffcccc;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 50px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .disclaimer-icon {
+            color: #e53e3e;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .disclaimer-content h4 {
+            color: #c53030;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        /* Floating Action Buttons */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        }
+
+        .fab-print {
+            background: var(--primary-blue);
+        }
+
+        .fab-top {
+            background: var(--primary-orange);
+        }
+
+        /* Footer */
+        .terms-footer {
+            background: var(--primary-blue);
+            color: var(--text-light);
+            padding: 60px 0 40px;
+            margin-top: 80px;
+        }
+
+        .footer-content {
+            text-align: center;
+        }
+
+        .footer-brand {
+            margin-bottom: 30px;
+        }
+
+        .footer-brand h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .footer-tagline {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .footer-copyright {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .terms-card {
+                padding: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .terms-hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .terms-card {
+                padding: 30px 20px;
+            }
+            
+            .clause-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .clause-number {
+                width: 45px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+            
+            .clause-title {
+                font-size: 1.6rem;
+            }
+            
+            .fab-container {
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .fab {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .terms-hero {
+                padding: 60px 0;
+            }
+            
+            .terms-hero h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-item {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .warning-box,
+            .legal-disclaimer {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .contact-card {
+                padding: 25px 15px;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .top-nav,
+            .quick-nav-wrapper,
+            .fab-container,
+            .terms-footer {
+                display: none;
+            }
+            
+            body {
+                background: white;
+                font-size: 12pt;
+            }
+            
+            .terms-hero {
+                background: #1a365d !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .terms-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                padding: 0;
+            }
+            
+            .clause-section {
+                break-inside: avoid;
+                margin-bottom: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="https://www.ironingboy.com" class="back-to-site">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Main Site
+                </a>
+                <div class="nav-actions">
+                    <button class="print-btn" onclick="window.print()">
+                        <i class="fas fa-print"></i>
+                        Print Terms
+                    </button>
+                    <button class="close-btn" onclick="window.close()">
+                        <i class="fas fa-times"></i>
+                        Close Tab
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="terms-hero">
+        <div class="container">
+            <h1>Terms and Conditions of Service</h1>
+            <p class="hero-subtitle">
+                This document outlines the legal agreement between you and IRONING BOY regarding the use of our services.
+                Please read it carefully.
+            </p>
+            <div class="meta-info">
+                <div class="meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Last Updated: December 12, 2025</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-file-contract"></i>
+                    <span>Effective Immediately</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-gavel"></i>
+                    <span>Governing Law: England & Wales</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Quick Navigation -->
+    <div class="quick-nav-wrapper">
+        <div class="container">
+            <nav class="quick-nav" id="quickNav">
+                <!-- Navigation items will be added by JavaScript -->
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="terms-main">
+        <div class="terms-card">
+            <!-- Clause 1: Introduction -->
+            <section class="clause-section" id="clause1">
+                <div class="clause-header">
+                    <div class="clause-number">1</div>
+                    <h2 class="clause-title">Introduction and Acceptance</h2>
+                </div>
+                
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">1.1</span> Scope of Terms</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            These Terms and Conditions ("Terms") govern your access to and use of the 
+                            website [www.ironingboy.com] (the "Site") and the services (the "Services") 
+                            offered by ironingboy.com ltd ("we," "us," "our," or the "Company"), a company 
+                            registered in England and Wales under company number 16241332 with its 
+                            registered office at 2 Turnpike Lane, Uxbridge, Middlesex, London, England, UB10 0AH.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">1.2</span> Agreement</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            By accessing our Site or placing an order for Services ("Order"), you confirm 
+                            that you have read, understood, and agree to be bound by these Terms. If you 
+                            are acting on behalf of a company or other legal entity, you represent and 
+                            warrant that you have the authority to bind that entity to these Terms.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clause 2: Definitions -->
+            <section class="clause-section" id="clause2">
+                <div class="clause-header">
+                    <div class="clause-number">2</div>
+                    <h2 class="clause-title">Definitions</h2>
+                </div>
+                
+                <div class="definition-box">
+                    <div class="definition-item">
+                        <span class="term">"Customer," "you," "your"</span>
+                        <span class="meaning">means the individual or entity placing an Order.</span>
+                    </div>
+                    <div class="definition-item">
+                        <span class="term">"Order"</span>
+                        <span class="meaning">means a booking for Services made through the Site, via telephone, or by email.</span>
+                    </div>
+                    <div class="definition-item">
+                        <span class="term">"Service Provider"</span>
+                        <span class="meaning">means the independent dry cleaning or laundry provider who fulfils the Order.</span>
+                    </div>
+                    <div class="definition-item">
+                        <span class="term">"Services"</span>
+                        <span class="meaning">means the dry cleaning, laundry, and related services provided by the Service Provider.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clause 3: Our Role as an Agent -->
+            <section class="clause-section" id="clause3">
+                <div class="clause-header">
+                    <div class="clause-number">3</div>
+                    <h2 class="clause-title">Our Role as an Agent</h2>
+                </div>
+                
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">3.1</span> Dual Contract Structure</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            We act as a disclosed commercial agent for a network of independent Service Providers. 
+                            When you place an Order through us, you are entering into two distinct contracts:
+                        </p>
+                        <ul class="styled-list">
+                            <li>A contract with us for the use of our booking and agency services as described in these Terms.</li>
+                            <li>A separate, direct contract with the Service Provider for the provision of the cleaning Services.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">3.2</span> Limitation of Liability</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            We are not the provider of the cleaning Services. We are not a party to the contract 
+                            between you and the Service Provider, and we accept no liability for any acts or 
+                            omissions of the Service Provider in the performance of the Services.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">3.3</span> No Guarantee of Service Providers</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            Any descriptions of Service Providers as "vetted" or similar indicate only that we have 
+                            performed specified checks at the time of our engagement with them. We do not guarantee 
+                            the accuracy of third-party information used in these checks, nor do we guarantee the 
+                            ongoing suitability, quality, or safety of the Services provided. You engage Service 
+                            Providers at your own risk.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clause 4: Intellectual Property -->
+            <section class="clause-section" id="clause4">
+                <div class="clause-header">
+                    <div class="clause-number">4</div>
+                    <h2 class="clause-title">Intellectual Property</h2>
+                </div>
+                
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">4.1</span> Ownership</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            All content on this Site, including text, graphics, logos, and software, is our property 
+                            or the property of our licensors and is protected by intellectual property laws. You may 
+                            print or download extracts for your personal, non-commercial reference.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">4.2</span> Restrictions</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            You must not modify any materials, use any content separately from its accompanying 
+                            context, or use any part of the Site for commercial purposes without our express written 
+                            permission.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clause 5: Customer Responsibilities and Liabilities -->
+            <section class="clause-section" id="clause5">
+                <div class="clause-header">
+                    <div class="clause-number">5</div>
+                    <h2 class="clause-title">Customer Responsibilities and Liabilities</h2>
+                </div>
+                
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">5.1</span> Customer Responsibilities</h3>
+                    <div class="sub-clause-content">
+                        <p>You are solely responsible for:</p>
+                        <ul class="styled-list">
+                            <li>Removing all items from pockets, including collar stiffeners and cuff links.</li>
+                            <li>Informing us of any special instructions or specific stains prior to cleaning.</li>
+                            <li>Ensuring that all items given for a service wash are suitable for washing and tumble drying, unless otherwise agreed.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">5.2</span> Acknowledgement of Risks</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            You acknowledge that the cleaning of garments carries inherent risks. We and our 
+                            Service Providers will exercise reasonable care but cannot be held responsible for 
+                            pre-existing wear and tear, or damage resulting from inherent fabric weaknesses or 
+                            manufacturing defects that become apparent during the cleaning process.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clause 6: Liability and Claims Procedure -->
+            <section class="clause-section" id="clause6">
+                <div class="clause-header">
+                    <div class="clause-number">6</div>
+                    <h2 class="clause-title">Liability and Claims Procedure</h2>
+                </div>
+                
+                <div class="warning-box">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="warning-content">
+                        <h4>Important Limitations</h4>
+                        <p>
+                            Please read this section carefully as it limits our liability and outlines the procedure 
+                            for making claims regarding lost or damaged items.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">6.1</span> Limitation of Liability</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            To the fullest extent permitted by law, the total aggregate liability of the Service 
+                            Provider, and consequently our liability as agent, for any loss of or damage to your 
+                            garments, shall not exceed fifteen (15) times the cost of cleaning the affected item 
+                            or five hundred pounds (£500), whichever is lower. Under no circumstances will 
+                            compensation exceed the original purchase value of the item, for which you may be 
+                            required to provide proof of purchase.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">6.2</span> Claims Window</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            Any claim for lost or damaged items must be notified to us in writing within 
+                            <strong>48 hours</strong> of delivery of your Order.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">6.3</span> Claims Process</h3>
+                    <div class="sub-clause-content">
+                        <ul class="styled-list">
+                            <li>Upon notification, we will arrange for the collection of the affected item(s) for inspection by the Service Provider.</li>
+                            <li>The Service Provider will assess the cause of the damage and, where possible, recommend and perform remedial work at their discretion.</li>
+                            <li>If the damage is not remediable or you are dissatisfied with the outcome, compensation will be considered in accordance with clause 6.1.</li>
+                            <li>In the event of a dispute regarding the cause of damage, we reserve the right to seek an independent expert evaluation, the findings of which shall be final and binding.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">6.4</span> Proof of Purchase</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            Compensation for lost or damaged items is conditional upon you providing satisfactory 
+                            proof of purchase (e.g., a receipt or bank statement). Claims cannot be processed 
+                            without such evidence, which must be submitted within six (6) months of the claim 
+                            being raised.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">6.5</span> Uncollected Items</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            Items uncollected by you for a period of three (3) months after the Order is completed 
+                            will be deemed abandoned and may be disposed of or donated to charity.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clause 7: Payment and Pricing -->
+            <section class="clause-section" id="clause7">
+                <div class="clause-header">
+                    <div class="clause-number">7</div>
+                    <h2 class="clause-title">Payment and Pricing</h2>
+                </div>
+                
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">7.1</span> Payment Terms</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            Payment for Services is due in full prior to the delivery of your Order.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">7.2</span> Prices</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            All prices are inclusive of any applicable VAT or sales tax.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">7.3</span> Changes and Fraud Prevention</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            We reserve the right to change our prices at any time. We also reserve the right to 
+                            delay delivery if payment fails or is suspected to be fraudulent. In cases of 
+                            suspected fraud, we may require payment via an alternative method, such as bank transfer.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clause 8: Referral Programme -->
+            <section class="clause-section" id="clause8">
+                <div class="clause-header">
+                    <div class="clause-number">8</div>
+                    <h2 class="clause-title">Referral Programme</h2>
+                </div>
+                
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">8.1</span> Eligibility</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            The ironingboy referral programme ("Programme") is available to users aged 18 and over 
+                            who have completed at least one Order.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">8.2</span> Data Permission</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            By sharing your unique referral code, you confirm you have the recipient's permission 
+                            to share their details. We will use their data to administer the Programme and send 
+                            introductory communications.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">8.3</span> Credits</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            Credits ("Credits") will be applied to your account after a referred friend places their 
+                            first Order. Credits are non-transferable, have no cash value, and must be used within 
+                            six (6) months. A minimum Order value may apply.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">8.4</span> Usage Restrictions</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            The Programme is for personal, non-commercial use. Commercial distribution, use of 
+                            automated systems, or any attempt to manipulate the Programme is strictly prohibited 
+                            and will result in the forfeiture of Credits and potential account termination.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">8.5</span> Programme Changes</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            We reserve the right to modify, suspend, or terminate the Programme at any time.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clause 9: Data Privacy -->
+            <section class="clause-section" id="clause9">
+                <div class="clause-header">
+                    <div class="clause-number">9</div>
+                    <h2 class="clause-title">Data Privacy</h2>
+                </div>
+                
+                <div class="sub-clause-content">
+                    <p>
+                        Your privacy is important to us. Our collection and use of your personal information is 
+                        governed by our Privacy Policy, which is incorporated into these Terms by reference.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Clause 10: General Provisions -->
+            <section class="clause-section" id="clause10">
+                <div class="clause-header">
+                    <div class="clause-number">10</div>
+                    <h2 class="clause-title">General Provisions</h2>
+                </div>
+                
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">10.1</span> Assignment</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            We may transfer our rights and obligations under these Terms to another entity. You may 
+                            not transfer your rights or obligations without our prior written consent.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">10.2</span> Severability</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            If any provision of these Terms is found to be unenforceable, the remaining provisions 
+                            will remain in full force and effect.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">10.3</span> Governing Law and Jurisdiction</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            These Terms are governed by the laws of England and Wales. You agree to submit to the 
+                            exclusive jurisdiction of the courts of England and Wales for any dispute arising from 
+                            these Terms.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sub-clause">
+                    <h3 class="sub-clause-title"><span class="number">10.4</span> Changes to Terms</h3>
+                    <div class="sub-clause-content">
+                        <p>
+                            We reserve the right to amend these Terms at any time. The updated version will be 
+                            posted on the Site, and your continued use of our Services constitutes acceptance of 
+                            the new Terms.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clause 11: Contact Us -->
+            <section class="clause-section" id="clause11">
+                <div class="clause-header">
+                    <div class="clause-number">11</div>
+                    <h2 class="clause-title">Contact Us</h2>
+                </div>
+                
+                <div class="contact-card">
+                    <h3>Get in Touch</h3>
+                    <div class="contact-details">
+                        <p><strong>ironingboy.com ltd</strong></p>
+                        <p>2 Turnpike Lane, Uxbridge, Middlesex</p>
+                        <p>London, England, UB10 0AH</p>
+                        <p>Registered Company Number: 16241332</p>
+                        <p style="margin-top: 15px;">
+                            <i class="fas fa-envelope"></i> Or via the contact details provided on our Website.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Legal Disclaimer -->
+            <!-- <div class="legal-disclaimer">
+                <div class="disclaimer-icon">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div class="disclaimer-content">
+                    <h4>Legal Disclaimer</h4>
+                    <p>
+                        This is a revised template and does not constitute legal advice. It is strongly 
+                        recommended that you have your Terms and Conditions reviewed by a qualified legal 
+                        professional to ensure they are fully compliant with all applicable laws and 
+                        specific to your business operations.
+                    </p>
+                </div>
+            </div> -->
+        </div>
+    </main>
+
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+        <button class="fab fab-print" onclick="window.print()" title="Print Terms">
+            <i class="fas fa-print"></i>
+        </button>
+        <button class="fab fab-top" onclick="scrollToTop()" title="Back to Top">
+            <i class="fas fa-chevron-up"></i>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="terms-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h2>IRONING BOY</h2>
+                    <p class="footer-tagline">Professional Laundry Services</p>
+                </div>
+                <div class="footer-copyright">
+                    © 2025 ironingboy.com ltd. All rights reserved. | Company No. 16241332
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation setup
+        document.addEventListener('DOMContentLoaded', function() {
+            // Define navigation items
+            const navItems = [
+                { id: 'clause1', label: 'Introduction' },
+                { id: 'clause2', label: 'Definitions' },
+                { id: 'clause3', label: 'Our Role' },
+                { id: 'clause4', label: 'Intellectual Property' },
+                { id: 'clause5', label: 'Responsibilities' },
+                { id: 'clause6', label: 'Liability & Claims' },
+                { id: 'clause7', label: 'Payment' },
+                { id: 'clause8', label: 'Referral Programme' },
+                { id: 'clause9', label: 'Data Privacy' },
+                { id: 'clause10', label: 'General' },
+                { id: 'clause11', label: 'Contact' }
+            ];
+
+            const quickNav = document.getElementById('quickNav');
+            
+            // Create navigation items
+            navItems.forEach((item, index) => {
+                const navItem = document.createElement('button');
+                navItem.className = 'nav-item';
+                navItem.textContent = item.label;
+                navItem.dataset.target = item.id;
+                
+                navItem.addEventListener('click', () => {
+                    scrollToSection(item.id);
+                    setActiveNav(index);
+                });
+                
+                quickNav.appendChild(navItem);
+            });
+
+            // Set first item as active
+            document.querySelector('.nav-item').classList.add('active');
+
+            // Scroll spy for navigation
+            const observerOptions = {
+                root: null,
+                rootMargin: '-180px 0px -70% 0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const sectionId = entry.target.id;
+                        const index = navItems.findIndex(item => item.id === sectionId);
+                        if (index !== -1) {
+                            setActiveNav(index);
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections
+            navItems.forEach(item => {
+                const section = document.getElementById(item.id);
+                if (section) observer.observe(section);
+            });
+        });
+
+        // Scroll to section function
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                window.scrollTo({
+                    top: section.offsetTop - 150,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Set active navigation
+        function setActiveNav(index) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            if (navItems[index]) {
+                navItems[index].classList.add('active');
+            }
+        }
+
+        // Scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+P for print
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+            // Escape to close (only works if window was opened by JavaScript)
+            if (e.key === 'Escape') {
+                window.close();
+            }
+        });
+    </script>
+</body>
+</html>
