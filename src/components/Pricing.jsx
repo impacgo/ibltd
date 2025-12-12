@@ -67,7 +67,7 @@ export default function Pricing() {
                 <tbody>
                   {group.items.map((item, i) => (
                     <tr key={i}>
-                      <td className="service-name">{item.name}</td>
+                      <td className="service-name" style={{color:"wheat"}}>{item.name}</td>
                       <td className="service-price">{item.price}</td>
                     </tr>
                   ))}

@@ -6,6 +6,20 @@ import { useAuth } from "../context/AuthContext";
 
 const API_BASE = "https://api.ironingboy.com";
 
+// SLUGIFY FUNCTION - Define it outside the component so it's always available
+const slugify = (text) => {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+};
+
 // Optimized SVG Icons with better styling
 const AppleIcon = () => (
   <svg className="store-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -289,13 +303,14 @@ const Header = () => {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - UPDATED SERVICES DROPDOWN */}
             <nav className="nav desktop" aria-label="Primary navigation">
               <ul className="nav-list">
                 <li>
                   <Link className={`nav-link ${isActive("/")}`} to="/">Home</Link>
                 </li>
 
+                {/* SERVICES DROPDOWN - IMPROVED */}
                 <li className="dropdown" ref={dropdownRef}>
                   <button
                     className={`nav-link dropdown-toggle ${isServiceOpen ? "active" : ""}`}
@@ -306,22 +321,28 @@ const Header = () => {
                     Services <ArrowIcon isOpen={isServiceOpen} />
                   </button>
 
-                  <ul className={`dropdown-menu ${isServiceOpen ? "show" : ""}`} role="menu">
-                    {categories.length > 0 ? (
-                      categories.map((category) => (
-                        <li key={category.id}>
-                          <Link 
-  to={`/category/${category.id}`} 
-  onClick={() => setIsServiceOpen(false)}
->
-  {category.name}
-</Link>
+                  <div className={`dropdown-container ${isServiceOpen ? "show" : ""}`}>
+                    <ul className="dropdown-menu" role="menu">
+                      {categories.length > 0 ? (
+                        categories.map((category) => (
+                          <li key={category.id}>
+                            <Link 
+                              to={`/category/${slugify(category.name)}`} 
+                              onClick={() => setIsServiceOpen(false)}
+                              className="dropdown-item"
+                            >
+                              <span className="dropdown-icon">✨</span>
+                              <span className="dropdown-text">{category.name}</span>
+                            </Link>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="dropdown-loading">
+                          <span className="dropdown-placeholder">Loading services...</span>
                         </li>
-                      ))
-                    ) : (
-                      <li><span className="dropdown-placeholder">Loading...</span></li>
-                    )}
-                  </ul>
+                      )}
+                    </ul>
+                  </div>
                 </li>
 
                 <li><Link className={`nav-link ${isActive("/areas")}`} to="/areas">Areas</Link></li>
@@ -491,7 +512,7 @@ const Header = () => {
                     categories.map((category) => (
                       <Link 
                         key={category.id}
-                        to={`/category/${category.id}`} 
+                        to={`/category/${slugify(category.name)}`} 
                         onClick={closeMenu}
                         className="dropdown-link"
                       >

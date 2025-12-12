@@ -564,15 +564,15 @@ export default function QuickBooking() {
   const prepareOrderData = useCallback(() => {
     if (!selectedCollectSlot || !selectedDeliverSlot) return null;
 
-    const normalizedCollectSlot = normalizeTimeFormat(selectedCollectSlot.start);
-    const normalizedDeliverySlot = normalizeTimeFormat(selectedDeliverSlot.start);
-
     const order = {
       address_id: selectedDeliveryId,
       pickup_address_id: useSameAddress ? selectedDeliveryId : selectedPickupId,
       use_same_address: useSameAddress,
-      collect_slot: normalizedCollectSlot,
-      delivery_slot: normalizedDeliverySlot,
+
+      // ✅ FIX: Use backend slot label directly
+      collect_slot: selectedCollectSlot.label,
+      delivery_slot: selectedDeliverSlot.label,
+
       notes: notes.trim() || null,
       images: [],
       change_manager_requested: false,
@@ -581,7 +581,7 @@ export default function QuickBooking() {
       discount_amount: discountApplied ? discountAmount : 0,
       service_charge: serviceCharge,
       topup_amount: topUpAmount,
-      total_amount: Math.round(finalTotal * 100), // pence for Stripe
+      total_amount: Math.round(finalTotal * 100),
       currency: "gbp",
     };
 
@@ -654,6 +654,12 @@ export default function QuickBooking() {
       return;
     }
 
+    // ✅ FIX: Check if addresses are loaded and selected
+    if (addresses.length === 0) {
+      showToast("Please add a delivery address first");
+      return;
+    }
+
     if (!selectedDeliveryId) {
       showToast("Please select a delivery address");
       return;
@@ -674,17 +680,21 @@ export default function QuickBooking() {
       return;
     }
 
-    await calculateDiscountAndServiceCharge();
-
-    const preparedOrder = prepareOrderData();
-    if (!preparedOrder) {
-      showToast("Failed to prepare order data");
-      return;
-    }
-
+    // ✅ FIX: Don't await calculateDiscountAndServiceCharge before showing payment
+    // Just set loading states and proceed with payment
     setPaymentProcessing(true);
 
     try {
+      // Calculate discount in background
+      await calculateDiscountAndServiceCharge();
+
+      const preparedOrder = prepareOrderData();
+      if (!preparedOrder) {
+        showToast("Failed to prepare order data");
+        setPaymentProcessing(false);
+        return;
+      }
+
       const token = localStorage.getItem("jwtToken");
       const res = await fetch(`${API_BASE}/stripe/create-payment-intent`, {
         method: "POST",
@@ -715,6 +725,7 @@ export default function QuickBooking() {
       showToast(error.message || "Unable to start payment");
     } finally {
       setPaymentProcessing(false);
+      setCalculatingDiscount(false);
     }
   };
 
@@ -770,6 +781,7 @@ export default function QuickBooking() {
     setCollectDate(newDate);
     setSelectedCollectSlot(null);
 
+    // ✅ FIX: Reset delivery date if pickup date changes to later date
     if (deliverDate && newDate > deliverDate) {
       const tomorrow = new Date(newDate);
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -821,6 +833,7 @@ export default function QuickBooking() {
 
     setSelectedCollectSlot(slot);
 
+    // ✅ FIX: If same day, refetch delivery slots to ensure 8-hour gap
     if (collectDate === deliverDate) {
       setTimeout(() => {
         fetchDeliverySlots();
@@ -867,6 +880,17 @@ export default function QuickBooking() {
       fetchDeliverySlots();
     }
   }, [user, deliverDate, fetchDeliverySlots]);
+
+  // ✅ FIX: Calculate button disabled state properly
+  const isConfirmButtonDisabled = () => {
+    if (!user) return true;
+    if (loading || paymentProcessing || calculatingDiscount) return true;
+    if (addresses.length === 0) return true;
+    if (!selectedDeliveryId) return true;
+    if (!useSameAddress && !selectedPickupId) return true;
+    if (!selectedCollectSlot || !selectedDeliverSlot) return true;
+    return false;
+  };
 
   const today = new Date().toISOString().split("T")[0];
   const minDeliveryDate = collectDate || today;
@@ -958,36 +982,6 @@ export default function QuickBooking() {
     return parts;
   };
 
-  const DebugPanel = () => {
-    if (process.env.NODE_ENV === "production") return null;
-
-    return (
-      <div className="qb-debug-panel">
-        <h4>Debug Info</h4>
-        <p>
-          <strong>Timezone Offset:</strong> {debugInfo.timezoneOffset} minutes
-        </p>
-        <p>
-          <strong>Last API Call:</strong> {debugInfo.lastApiCall?.timestamp}
-        </p>
-        <p>
-          <strong>Last Error:</strong> {debugInfo.lastError || "None"}
-        </p>
-        <p>
-          <strong>Discount Applied:</strong> {discountApplied ? "Yes" : "No"}
-        </p>
-        <p>
-          <strong>Service Charge:</strong> £{serviceCharge.toFixed(2)}
-        </p>
-        <p>
-          <strong>Top-Up Amount:</strong> £{topUpAmount.toFixed(2)}
-        </p>
-        <p>
-          <strong>Final Total:</strong> £{finalTotal.toFixed(2)}</p>
-      </div>
-    );
-  };
-
   /* ---------------------------------- JSX --------------------------------- */
 
   return (
@@ -1000,8 +994,6 @@ export default function QuickBooking() {
             We'll handle everything from pickup to delivery.
           </p>
         </div>
-
-        {process.env.NODE_ENV !== "production" && <DebugPanel />}
 
         {!user && (
           <div className="qb-login-prompt">
@@ -1396,14 +1388,7 @@ export default function QuickBooking() {
                 type="button"
                 className="qb-submit-btn"
                 onClick={handleConfirmBooking}
-                disabled={
-                  !user ||
-                  loading ||
-                  !selectedCollectSlot ||
-                  !selectedDeliverSlot ||
-                  paymentProcessing ||
-                  calculatingDiscount
-                }
+                disabled={isConfirmButtonDisabled()}
               >
                 <i className="fas fa-check-circle"></i>
                 {paymentProcessing

@@ -1,223 +1,454 @@
+// src/components/ServiceDetail.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Star, Truck, Shield, Users } from "lucide-react";
+import { ArrowLeft, Clock, Shield, Truck, Star, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import "./ServiceDetail.css";
 
 const API_BASE = "https://api.ironingboy.com";
 
+// Add this function at the top of ServiceDetail.jsx, after the imports
+const slugify = (text) => {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+};
+
 const ServiceDetail = () => {
-  const { categoryId } = useParams();
+  const { categorySlug } = useParams();
   const navigate = useNavigate();
   const [category, setCategory] = useState(null);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
-  // Clean, professional Unsplash images
-  const serviceImages = {
-    1: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    2: "https://images.unsplash.com/photo-1558769132-cb1f3c706b83?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    3: "https://images.unsplash.com/photo-1600585154340-8734d4adab31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    4: "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    5: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    6: "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    7: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    8: "https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    9: "https://images.unsplash.com/photo-1602052577122-f73b9710adba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
+  const [showAllPrices, setShowAllPrices] = useState(false);
+  const [categoryId, setCategoryId] = useState(null);
+  const [debugInfo, setDebugInfo] = useState("");
+
+  // Category icons mapping
+  const categoryIcons = {
+    1: "🧺", // Laundry
+    2: "🛌", // Dry Cleaning
+    3: "🛍️", // Home
+    4: "🛋️", // Footwear
+    5: "👖", // Clothing
+    6: "🫧", // Bags
+    7: "👔", // Upholstery
+    8: "🧥", // Baby Items
+    9: "👟", // Professional
+    10: "🛠️",
   };
 
-  const defaultImage = "https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80";
+  // Get category icon
+  const getCategoryIcon = (id) => {
+    return categoryIcons[id] || "✨";
+  };
 
   useEffect(() => {
-    const fetchCategory = async () => {
+    const fetchCategoryData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE}/categories/${categoryId}`);
+        setDebugInfo(`Starting fetch for slug: ${categorySlug}`);
         
-        if (response.ok) {
-          const data = await response.json();
-          setCategory(data.data || data);
-        } else {
-          setError("Service not found");
+        // First, fetch all categories to find the matching slug
+        setDebugInfo("Fetching categories...");
+        const categoriesResponse = await fetch(`${API_BASE}/categories`);
+        
+        if (!categoriesResponse.ok) {
+          throw new Error(`Failed to fetch categories: ${categoriesResponse.status}`);
         }
+        
+        const categoriesData = await categoriesResponse.json();
+        setDebugInfo(`Categories response: ${JSON.stringify(categoriesData).substring(0, 200)}...`);
+        
+        // Handle different response formats
+        let categories = [];
+        if (Array.isArray(categoriesData)) {
+          categories = categoriesData;
+        } else if (categoriesData.data && Array.isArray(categoriesData.data)) {
+          categories = categoriesData.data;
+        } else if (categoriesData.categories && Array.isArray(categoriesData.categories)) {
+          categories = categoriesData.categories;
+        }
+        
+        setDebugInfo(`Found ${categories.length} categories`);
+        
+        // Find the category that matches the slug
+        const foundCategory = categories.find(cat => {
+          const catSlug = slugify(cat.name);
+          const match = catSlug === categorySlug;
+          if (match) {
+            setDebugInfo(`Matched: ${cat.name} (ID: ${cat.id}) -> ${catSlug}`);
+          }
+          return match;
+        });
+        
+        if (!foundCategory) {
+          setDebugInfo(`No category found for slug: ${categorySlug}. Available categories: ${categories.map(c => slugify(c.name)).join(', ')}`);
+          throw new Error("Category not found");
+        }
+        
+        setCategory(foundCategory);
+        setCategoryId(foundCategory.id);
+        setDebugInfo(`Found category: ${foundCategory.name} (ID: ${foundCategory.id})`);
+        
+        // Try multiple endpoints for products
+        const productEndpoints = [
+          `${API_BASE}/products`,
+          `${API_BASE}/products1`,
+          `${API_BASE}/services`,
+          `${API_BASE}/items`
+        ];
+        
+        let products = [];
+        let lastError = "";
+        
+        for (const endpoint of productEndpoints) {
+          try {
+            setDebugInfo(`Trying endpoint: ${endpoint}`);
+            const prodResponse = await fetch(endpoint);
+            
+            if (prodResponse.ok) {
+              const prodJson = await prodResponse.json();
+              setDebugInfo(`Endpoint ${endpoint} response structure: ${JSON.stringify(prodJson).substring(0, 100)}...`);
+              
+              // Handle different response formats
+              if (Array.isArray(prodJson)) {
+                products = prodJson;
+              } else if (prodJson.data && Array.isArray(prodJson.data)) {
+                products = prodJson.data;
+              } else if (prodJson.products && Array.isArray(prodJson.products)) {
+                products = prodJson.products;
+              } else if (prodJson.services && Array.isArray(prodJson.services)) {
+                products = prodJson.services;
+              } else if (prodJson.items && Array.isArray(prodJson.items)) {
+                products = prodJson.items;
+              }
+              
+              if (products.length > 0) {
+                setDebugInfo(`Found ${products.length} products from ${endpoint}`);
+                break;
+              }
+            }
+          } catch (err) {
+            lastError = err.message;
+            setDebugInfo(`Failed to fetch from ${endpoint}: ${err.message}`);
+          }
+        }
+        
+        // Filter products for this category and format them
+        const categoryServices = products
+          .filter(p => {
+            // Try different property names for category_id
+            const catId = p.category_id || p.categoryId || p.category || p.cat_id;
+            return catId && catId.toString() === foundCategory.id.toString();
+          })
+          .map((p, index) => ({
+            id: p.id || index,
+            name: p.name || p.title || p.service_name || "Service",
+            price: p.price ?? p.standard_price ?? p.cost ?? p.amount ?? 0,
+            estimated_time: p.estimated_time || p.duration || p.time || "1-2 hours",
+            is_popular: p.popular || p.is_popular || p.featured || false,
+          }));
+        
+        setServices(categoryServices);
+        setDebugInfo(`Found ${categoryServices.length} services for category ${foundCategory.name}`);
+        
+        if (categoryServices.length === 0) {
+          setError("No services available in this category yet");
+          setDebugInfo(prev => prev + "\nNo services found. Products data sample: " + JSON.stringify(products[0]));
+        }
+        
       } catch (error) {
-        console.error("Error fetching category:", error);
-        setError("Failed to load service details");
+        console.error("Error fetching data:", error);
+        setError(`Failed to load service details: ${error.message}`);
+        setDebugInfo(prev => prev + `\nError: ${error.message}`);
       } finally {
         setLoading(false);
       }
     };
 
-    if (categoryId) {
-      fetchCategory();
+    if (categorySlug) {
+      fetchCategoryData();
     }
-  }, [categoryId]);
+  }, [categorySlug]);
 
-  const handleBookNow = () => {
+  const handleBookNow = (service) => {
+    // Store selected service in localStorage for QuickBooking
+    const serviceData = {
+      id: service.id,
+      name: service.name,
+      price: service.price,
+      category: category?.name || "Service",
+      icon: getCategoryIcon(categoryId)
+    };
+    localStorage.setItem("selectedService", JSON.stringify(serviceData));
     navigate("/quick-booking");
-  };
-
-  const handleGetPrices = () => {
-    navigate("/pricing");
   };
 
   const handleBack = () => {
     navigate(-1);
   };
 
+  const toggleAllPrices = () => {
+    setShowAllPrices(!showAllPrices);
+  };
+
   if (loading) {
     return (
-      <div className="service-loading">
-        <div className="spinner"></div>
-        <p>Loading service details...</p>
+      <div className="service-page">
+        <div className="service-loading">
+          <div className="spinner-container">
+            <div className="service-spinner"></div>
+            <p>Loading service details...</p>
+            <p className="service-debug-info">{debugInfo}</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !category) {
     return (
-      <div className="service-error">
-        <div className="error-content">
-          <div className="error-icon">!</div>
-          <h2>Service Not Found</h2>
-          <p>The service you're looking for doesn't exist or is temporarily unavailable.</p>
-          <button 
-            className="btn-primary"
-            onClick={() => navigate("/")}
-          >
-            Back to Home
-          </button>
+      <div className="service-page">
+        <div className="service-error">
+          <div className="service-error-card">
+            <div className="service-error-icon">⚠️</div>
+            <h2>Service Not Available</h2>
+            <p>{error || "The service you're looking for doesn't exist."}</p>
+            {debugInfo && (
+              <div className="service-debug-info">
+                <details>
+                  <summary>Debug Info</summary>
+                  <pre>{debugInfo}</pre>
+                </details>
+              </div>
+            )}
+            <div className="service-error-actions">
+              <button className="service-btn-secondary" onClick={handleBack}>
+                Go Back
+              </button>
+              <button className="service-btn-primary" onClick={() => navigate("/services")}>
+                Browse All Services
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  const serviceImage = serviceImages[categoryId] || defaultImage;
-  const serviceTitle = category.name.toUpperCase();
+  const categoryIcon = getCategoryIcon(categoryId);
+  const categoryName = category.name;
+  const displayedServices = showAllPrices ? services : services.slice(0, 5);
 
   return (
-    <div className="service-detail-container">
-      {/* Header */}
-      <header className="service-header">
-        <div className="container">
-          <button className="back-button" onClick={handleBack}>
-            <ArrowLeft size={20} />
-            <span>Back</span>
-          </button>
-          <div className="logo">IRONING BOY</div>
+    <div className="service-page">
+      {/* Debug info - remove in production */}
+      {process.env.NODE_ENV === 'development' && debugInfo && (
+        <div className="service-debug-info" style={{
+          background: '#f0f0f0',
+          padding: '10px',
+          margin: '10px',
+          borderRadius: '5px',
+          fontSize: '12px',
+          display: 'none' // Change to 'block' to see debug info
+        }}>
+          <details>
+            <summary>Debug Info</summary>
+            <pre>{debugInfo}</pre>
+          </details>
         </div>
-      </header>
+      )}
 
-      {/* Hero Section */}
-      <section className="service-hero" style={{ backgroundImage: `url(${serviceImage})` }}>
-        <div className="hero-overlay">
-          <div className="container">
-            <div className="hero-content">
-              <h1 className="hero-title">{serviceTitle}</h1>
-              <p className="hero-subtitle">
-                Professional cleaning service with premium treatment and care
+      {/* Service Info Card */}
+      <div className="service-container">
+        <div className="service-card">
+          <div className="service-card-header">
+            <div className="service-card-icon">
+              <span className="service-icon-large">{categoryIcon}</span>
+            </div>
+            <div className="service-card-header-content">
+              <h1 className="service-card-title">{categoryName} Services</h1>
+              <p className="service-card-description">
+                Expert cleaning with quality guarantee and free pickup & delivery
               </p>
-              <div className="hero-badge">
+            </div>
+          </div>
+
+          <div className="service-highlights">
+            <div className="service-highlight-item">
+              <div className="service-highlight-icon">
                 <Truck size={20} />
-                <span>Free Pickup & Delivery</span>
+              </div>
+              <div className="service-highlight-content">
+                <span className="service-highlight-title">Free Pickup & Delivery</span>
+                <span className="service-highlight-subtitle">At your convenience</span>
+              </div>
+            </div>
+            <div className="service-highlight-item">
+              <div className="service-highlight-icon">
+                <Shield size={20} />
+              </div>
+              <div className="service-highlight-content">
+                <span className="service-highlight-title">100% Satisfaction</span>
+                <span className="service-highlight-subtitle">Quality guaranteed</span>
+              </div>
+            </div>
+            <div className="service-highlight-item">
+              <div className="service-highlight-icon">
+                <Clock size={20} />
+              </div>
+              <div className="service-highlight-content">
+                <span className="service-highlight-title">Same Day Service</span>
+                <span className="service-highlight-subtitle">Fast turnaround</span>
               </div>
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Main Content */}
-      <main className="service-main">
-        <div className="container">
-          {/* Service Features */}
-          <div className="service-features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Check size={24} />
-              </div>
-              <h3>Premium Stain Treatment</h3>
-              <p>Advanced cleaning solutions for toughest stains</p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Shield size={24} />
-              </div>
-              <h3>Quality Guaranteed</h3>
-              <p>100% satisfaction or your money back</p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Star size={24} />
-              </div>
-              <h3>Eco-Friendly</h3>
-              <p>Environmentally safe cleaning products</p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Users size={24} />
-              </div>
-              <h3>10,000+ Happy Customers</h3>
-              <p>Trusted by families and businesses</p>
-            </div>
-          </div>
-
-          {/* Service Description */}
-          <div className="service-description">
-            <h2>About This Service</h2>
-            <p>
-              Our {category.name.toLowerCase()} service provides professional cleaning with the highest 
-              standards of care. Using premium equipment and eco-friendly detergents, 
-              we ensure your items receive the best treatment possible.
-            </p>
-            <ul className="service-benefits">
-              <li><Check size={16} /> Professional grade equipment</li>
-              <li><Check size={16} /> Eco-friendly detergents</li>
-              <li><Check size={16} /> Same-day service available</li>
-              <li><Check size={16} /> Quality inspection guarantee</li>
-            </ul>
-          </div>
-
-          {/* CTA Section */}
-          <div className="service-cta">
-            <div className="cta-card">
+        
+        {/* CTA Section */}
+        <div className="service-cta-section">
+          <div className="service-cta-card">
+            <div className="service-cta-icon">🚀</div>
+            <div className="service-cta-content">
               <h2>Ready to Get Started?</h2>
-              <p>Book now and experience premium cleaning service</p>
-              <div className="cta-buttons">
+              <p>Book your service in just 60 seconds with our easy booking process</p>
+            </div>
+            <div className="service-cta-actions">
+              {services.length > 0 ? (
                 <button 
-                  className="btn-primary btn-large"
-                  onClick={handleBookNow}
+                  className="service-btn-primary service-btn-large"
+                  onClick={() => handleBookNow(services[0])}
                 >
-                  BOOK NOW
+                  <Calendar size={20} />
+                  Book Now
                 </button>
+              ) : (
                 <button 
-                  className="btn-secondary btn-large"
-                  onClick={handleGetPrices}
+                  className="service-btn-primary service-btn-large"
+                  onClick={() => navigate("/contact")}
                 >
-                  VIEW PRICING
+                  Contact Us
                 </button>
+              )}
+              <button 
+                className="service-btn-secondary service-btn-large"
+                onClick={() => navigate("/services")}
+              >
+                Browse All Services
+              </button>
+            </div>
+            <div className="service-cta-benefits">
+              <div className="service-benefit-item">
+                <div className="service-benefit-icon">✅</div>
+                <span>No hidden fees</span>
               </div>
-              <div className="cta-note">
-                <Check size={16} />
-                <span>Free pickup & delivery included in all orders</span>
+              <div className="service-benefit-item">
+                <div className="service-benefit-icon">✅</div>
+                <span>Flexible scheduling</span>
+              </div>
+              <div className="service-benefit-item">
+                <div className="service-benefit-icon">✅</div>
+                <span>Quality guarantee</span>
               </div>
             </div>
           </div>
         </div>
-      </main>
 
-      {/* Footer */}
-      <footer className="service-footer">
-        <div className="container">
-          <p>© 2024 IRONING BOY Professional Laundry Services. All rights reserved.</p>
-          <div className="footer-links">
-            <a href="#">Terms of Service</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Contact Us</a>
+        {/* Pricing Section */}
+        <div className="service-pricing-section">
+          <div className="service-pricing-header">
+            <h2>Service Pricing</h2>
+            <p>Transparent pricing with no hidden fees</p>
           </div>
+
+          {services.length > 0 ? (
+            <div className="service-pricing-content">
+              <div className="service-price-table-container">
+                <div className="service-price-table-header">
+                  <div className="service-table-header-item service-col">Service</div>
+                  <div className="service-table-header-item price-col">Price</div>
+                </div>
+                
+                <div className="service-price-table-body">
+                  {displayedServices.map((service, index) => (
+                    <div key={service.id} className={`service-price-row ${service.is_popular ? 'popular' : ''}`}>
+                      <div className="service-row-item service-col">
+                        <div className="service-name-wrapper">
+                          <span className="service-number">#{index + 1}</span>
+                          <div className="service-details">
+                            <span className="service-name">{service.name}</span>
+                            {service.is_popular && (
+                              <span className="service-popular-badge">
+                                <Star size={12} />
+                                Popular
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="service-row-item price-col">
+                        <div className="service-price-amount">
+                          £{parseFloat(service.price).toFixed(2)}
+                        </div>
+                        <div className="service-price-note">Starting from</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {services.length > 5 && (
+                  <div className="service-view-more-section">
+                    <button 
+                      className="service-view-more-btn"
+                      onClick={toggleAllPrices}
+                    >
+                      {showAllPrices ? (
+                        <>
+                          <ChevronUp size={16} />
+                          Show Less Prices
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown size={16} />
+                          View All {services.length} Prices
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              <div className="service-pricing-note">
+                <div className="service-note-icon">💡</div>
+                <div className="service-note-content">
+                  <h4>Price Guarantee</h4>
+                  <p>Our prices are all-inclusive with no hidden charges. The price you see is the price you pay.</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="service-no-services">
+              <div className="service-no-services-icon">📋</div>
+              <h3>No Services Available</h3>
+              <p>We're currently updating our service offerings. Please check back soon or contact us for custom quotes.</p>
+              <button 
+                className="service-btn-secondary"
+                onClick={() => navigate("/services")}
+              >
+                Browse Other Categories
+              </button>
+            </div>
+          )}
         </div>
-      </footer>
+      </div>
     </div>
   );
 };

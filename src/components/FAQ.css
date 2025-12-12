@@ -2,13 +2,24 @@
 .faq {
   padding: 80px 0;
   background: #0d0d0d;
-  min-height: 100vh;
+  min-height: 80vh;
+  display: flex; /* Add this */
+  flex-direction: column; /* Add this */
+  align-items: center; /* Add this - centers horizontally */
+  justify-content: center; /* Add this - centers vertically */
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  width: 100%; /* Add this */
+  display: flex; /* Add this */
+  flex-direction: column; /* Add this */
+  align-items: center; /* Add this - centers content inside */
+  box-sizing: border-box; /* Add this */
 }
 
 .section-title {
@@ -17,11 +28,17 @@
   font-size: 2.4rem;
   color: white;
   font-weight: 700;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 /* Search Container */
 .faq-search-container {
   margin-bottom: 40px;
+  width: 100%; /* Add this */
+  display: flex; /* Add this */
+  flex-direction: column; /* Add this */
+  align-items: center; /* Add this - centers the search */
 }
 
 .search-input-wrapper {
@@ -33,6 +50,8 @@
   border-radius: 50px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .faq-search-input {
@@ -42,6 +61,8 @@
   font-size: 1.1rem;
   background: transparent;
   outline: none;
+  box-sizing: border-box; /* Add this */
+  width: 100%; /* Add this */
 }
 
 .faq-search-input::placeholder {
@@ -60,6 +81,7 @@
   padding: 8px;
   border-radius: 50%;
   transition: all 0.3s ease;
+  box-sizing: border-box; /* Add this */
 }
 
 .clear-search-button:hover {
@@ -81,6 +103,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box; /* Add this */
 }
 
 .search-button:hover:not(:disabled) {
@@ -98,12 +121,16 @@
   flex-direction: column;
   align-items: center;
   gap: 15px;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .search-results-count {
   color: #ccc;
   font-size: 1rem;
   margin: 0;
+  text-align: center; /* Add this */
+  width: 100%; /* Add this */
 }
 
 .view-all-button {
@@ -115,6 +142,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
+  box-sizing: border-box; /* Add this */
 }
 
 .view-all-button:hover {
@@ -126,6 +154,8 @@
 .faq-list {
   max-width: 800px;
   margin: 0 auto;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .faq-item {
@@ -135,6 +165,8 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   background: white;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .faq-item:hover {
@@ -155,6 +187,7 @@
   justify-content: space-between;
   align-items: center;
   transition: background 0.3s ease;
+  box-sizing: border-box; /* Add this */
 }
 
 .faq-question:hover {
@@ -165,6 +198,7 @@
   flex: 1;
   margin-right: 15px;
   color: #2e3a47;
+  word-wrap: break-word; /* Add this */
 }
 
 .faq-icon {
@@ -180,6 +214,8 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.4s ease, padding 0.4s ease;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .faq-answer.show {
@@ -191,6 +227,7 @@
   margin: 0;
   line-height: 1.6;
   color: #555;
+  word-wrap: break-word; /* Add this */
 }
 
 /* Search Prompt */
@@ -198,6 +235,8 @@
   text-align: center;
   padding: 60px 20px;
   color: #ccc;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .prompt-icon {
@@ -219,11 +258,14 @@
 
 .popular-searches {
   margin-top: 30px;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .popular-searches p {
   margin-bottom: 15px;
   font-weight: 600;
+  text-align: center; /* Add this */
 }
 
 .search-tags {
@@ -231,6 +273,8 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 10px;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .search-tags button {
@@ -242,6 +286,8 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
+  box-sizing: border-box; /* Add this */
+  max-width: 100%; /* Add this */
 }
 
 .search-tags button:hover {
@@ -254,6 +300,8 @@
   text-align: center;
   padding: 60px 20px;
   color: #ccc;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .no-results-icon {
@@ -271,6 +319,7 @@
   font-size: 1.1rem;
   margin-bottom: 25px;
   opacity: 0.9;
+  text-align: center; /* Add this */
 }
 
 .suggestions {
@@ -278,6 +327,8 @@
   padding: 20px;
   border-radius: 10px;
   margin: 25px 0;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .suggestions ul {
@@ -288,6 +339,8 @@
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 10px;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .suggestions li {
@@ -295,6 +348,8 @@
   padding: 5px 12px;
   border-radius: 15px;
   font-size: 0.9rem;
+  max-width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
 }
 
 .cta-button {
@@ -308,167 +363,14 @@
   font-weight: 600;
   transition: background 0.3s ease;
   margin-top: 20px;
+  box-sizing: border-box; /* Add this */
+  max-width: 100%; /* Add this */
 }
 
 .cta-button:hover {
   background: #45a049;
 }
 
-/* Responsive Design */
-/* Tablets */
-@media (max-width: 1024px) {
-  .faq {
-    padding: 60px 0;
-  }
-  
-  .section-title {
-    font-size: 2.2rem;
-    margin-bottom: 35px;
-  }
-  
-  .search-input-wrapper {
-    max-width: 500px;
-  }
-  
-  .faq-search-input {
-    padding: 16px 55px 16px 22px;
-    font-size: 1rem;
-  }
-}
-
-/* Mobile Phones */
-@media (max-width: 768px) {
-  .faq {
-    padding: 40px 0;
-  }
-  
-  .container {
-    padding: 0 15px;
-  }
-  
-  .section-title {
-    font-size: 1.8rem;
-    margin-bottom: 30px;
-  }
-  
-  .search-input-wrapper {
-    max-width: 100%;
-    border-radius: 25px;
-  }
-  
-  .faq-search-input {
-    padding: 14px 50px 14px 20px;
-    font-size: 1rem;
-  }
-  
-  .clear-search-button {
-    right: 50px;
-    padding: 6px;
-  }
-  
-  .search-button {
-    width: 50px;
-  }
-  
-  .faq-question {
-    padding: 18px 20px;
-    font-size: 1rem;
-  }
-  
-  .faq-answer.show {
-    padding: 20px;
-  }
-  
-  .search-prompt {
-    padding: 40px 15px;
-  }
-  
-  .prompt-icon {
-    font-size: 3rem;
-  }
-  
-  .search-prompt h3 {
-    font-size: 1.5rem;
-  }
-  
-  .no-results {
-    padding: 40px 15px;
-  }
-  
-  .no-results-icon {
-    font-size: 3rem;
-  }
-  
-  .no-results h3 {
-    font-size: 1.5rem;
-  }
-  
-  .search-tags {
-    gap: 8px;
-  }
-  
-  .search-tags button {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-  }
-}
-
-/* Small Mobile Phones */
-@media (max-width: 480px) {
-  .section-title {
-    font-size: 1.6rem;
-  }
-  
-  .faq-search-input::placeholder {
-    font-size: 0.9rem;
-  }
-  
-  .faq-question {
-    padding: 15px 18px;
-    font-size: 0.95rem;
-  }
-  
-  .question-text {
-    margin-right: 10px;
-  }
-  
-  .faq-icon {
-    font-size: 1.3rem;
-  }
-  
-  .search-info {
-    gap: 10px;
-  }
-  
-  .search-results-count {
-    font-size: 0.9rem;
-  }
-  
-  .view-all-button {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-  }
-  
-  .suggestions ul {
-    gap: 5px;
-  }
-  
-  .suggestions li {
-    padding: 4px 10px;
-    font-size: 0.8rem;
-  }
-}
-
-/* Large Desktops */
-@media (min-width: 1440px) {
-  .container {
-    max-width: 1400px;
-  }
-  
-  .faq-list {
-    max-width: 900px;
-  }
-}
 /* Center FAQ Header Beautifully */
 .faq-header-block {
   width: 100%;
@@ -484,4 +386,260 @@
   font-weight: 700;
   color: white;
   max-width: fit-content;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
+}
+
+/* Responsive Design - UPDATED FOR BETTER MOBILE CENTERING */
+/* Tablets */
+@media (max-width: 1024px) {
+  .faq {
+    padding: 60px 20px; /* Changed to include horizontal padding */
+  }
+  
+  .container {
+    padding: 0 15px;
+    width: 100%;
+  }
+  
+  .section-title {
+    font-size: 2.2rem;
+    margin-bottom: 35px;
+  }
+  
+  .search-input-wrapper {
+    max-width: 500px;
+    width: 100%;
+  }
+  
+  .faq-search-input {
+    padding: 16px 55px 16px 22px;
+    font-size: 1rem;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 768px) {
+  .faq {
+    padding: 40px 15px; /* Added horizontal padding */
+    width: 100vw; /* Ensure full viewport width */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+  
+  .container {
+    padding: 0 10px;
+    width: 100%;
+  }
+  
+  .section-title {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  
+  .search-input-wrapper {
+    max-width: 100%;
+    border-radius: 25px;
+    width: 100%;
+  }
+  
+  .faq-search-input {
+    padding: 14px 50px 14px 20px;
+    font-size: 1rem;
+    width: 100%;
+  }
+  
+  .clear-search-button {
+    right: 50px;
+    padding: 6px;
+  }
+  
+  .search-button {
+    width: 50px;
+  }
+  
+  .faq-question {
+    padding: 18px 20px;
+    font-size: 1rem;
+    width: 100%;
+  }
+  
+  .faq-answer.show {
+    padding: 20px;
+  }
+  
+  .search-prompt {
+    padding: 40px 15px;
+    width: 100%;
+  }
+  
+  .prompt-icon {
+    font-size: 3rem;
+  }
+  
+  .search-prompt h3 {
+    font-size: 1.5rem;
+  }
+  
+  .no-results {
+    padding: 40px 15px;
+    width: 100%;
+  }
+  
+  .no-results-icon {
+    font-size: 3rem;
+  }
+  
+  .no-results h3 {
+    font-size: 1.5rem;
+  }
+  
+  .search-tags {
+    gap: 8px;
+    justify-content: center;
+  }
+  
+  .search-tags button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    max-width: calc(50% - 10px); /* Better fit on mobile */
+  }
+  
+  .faq-list {
+    width: 100%;
+  }
+}
+
+/* Small Mobile Phones */
+@media (max-width: 480px) {
+  .faq {
+    padding: 30px 10px;
+  }
+  
+  .container {
+    padding: 0 5px;
+  }
+  
+  .section-title {
+    font-size: 1.6rem;
+    padding: 0 10px;
+  }
+  
+  .faq-search-input::placeholder {
+    font-size: 0.9rem;
+  }
+  
+  .faq-search-input {
+    padding: 12px 45px 12px 15px;
+    font-size: 0.9rem;
+  }
+  
+  .clear-search-button {
+    right: 45px;
+    padding: 5px;
+  }
+  
+  .search-button {
+    width: 45px;
+  }
+  
+  .faq-question {
+    padding: 15px 15px;
+    font-size: 0.95rem;
+  }
+  
+  .question-text {
+    margin-right: 10px;
+  }
+  
+  .faq-icon {
+    font-size: 1.3rem;
+  }
+  
+  .search-info {
+    gap: 10px;
+    padding: 0 10px;
+  }
+  
+  .search-results-count {
+    font-size: 0.9rem;
+  }
+  
+  .view-all-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .suggestions ul {
+    gap: 5px;
+    justify-content: center;
+  }
+  
+  .suggestions li {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .search-tags {
+    justify-content: center;
+    padding: 0 5px;
+  }
+  
+  .search-tags button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    max-width: calc(50% - 5px);
+  }
+}
+
+/* Very Small Screens */
+@media (max-width: 360px) {
+  .faq {
+    padding: 25px 8px;
+  }
+  
+  .section-title {
+    font-size: 1.4rem;
+  }
+  
+  .search-input-wrapper {
+    border-radius: 20px;
+  }
+  
+  .faq-search-input {
+    padding: 10px 40px 10px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .clear-search-button {
+    right: 40px;
+  }
+  
+  .search-button {
+    width: 40px;
+  }
+  
+  .search-tags button {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    max-width: 45%;
+  }
+}
+
+/* Large Desktops */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1400px;
+  }
+  
+  .faq-list {
+    max-width: 900px;
+  }
+}
+
+/* Prevent horizontal scrolling globally */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
 }

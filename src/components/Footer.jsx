@@ -1,13 +1,70 @@
 // src/components/Footer.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Footer.css';
 import logo from "../images/logo1.svg";
 
+const API_BASE = "https://api.ironingboy.com";
+
+// Add this function at the top of Footer.jsx, after the imports
+const slugify = (text) => {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+};
+
 const Footer = () => {
   const [email, setEmail] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_BASE}/categories`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        
+        const data = await response.json();
+        
+        // Handle both possible response formats
+        if (Array.isArray(data)) {
+          setCategories(data);
+        } else if (data.data && Array.isArray(data.data)) {
+          setCategories(data.data);
+        } else {
+          setCategories([]);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setCategories([]); // Fallback to empty array
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Handle category click - navigate to service detail page with slug
+  const handleCategoryClick = (category) => {
+    const categorySlug = slugify(category.name);
+    navigate(`/category/${categorySlug}`);
+  };
+
+  // Handle subscribe form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email) {
@@ -16,6 +73,7 @@ const Footer = () => {
     }
   };
 
+  // Handle app download buttons
   const handleGetApp = () => {
     navigate('/coming-soon', {
       state: {
@@ -26,6 +84,29 @@ const Footer = () => {
       }
     });
   };
+
+  // Open Terms & Conditions from public folder
+  const handleTermsClick = () => {
+    window.open('/TermsPage.html', '_blank', 'noopener,noreferrer,width=1200,height=800');
+  };
+
+  // Open Privacy Policy
+  const handlePrivacyClick = () => {
+    window.open('/PrivacyPolicy.html', '_blank', 'noopener,noreferrer,width=1200,height=800');
+  };
+
+  // Split categories into two columns
+  const splitCategoriesIntoColumns = () => {
+    if (categories.length === 0) return { leftColumn: [], rightColumn: [] };
+    
+    const half = Math.ceil(categories.length / 2);
+    return {
+      leftColumn: categories.slice(0, half),
+      rightColumn: categories.slice(half)
+    };
+  };
+
+  const { leftColumn, rightColumn } = splitCategoriesIntoColumns();
 
   return (
     <footer className="footer">
@@ -57,7 +138,13 @@ const Footer = () => {
               <div className="phone-mockup">
                 <div className="phone-screen">
                   <div className="app-preview">
-                    <div className="app-icon"><img src={logo} style={{height:"70px",width:"70px",borderRadius:"25%"}}/></div>
+                    <div className="app-icon">
+                      <img 
+                        src={logo} 
+                        alt="Ironing Boy App" 
+                        style={{height:"70px",width:"70px",borderRadius:"25%"}}
+                      />
+                    </div>
                     <span>Ironing Boy</span>
                   </div>
                 </div>
@@ -91,23 +178,58 @@ const Footer = () => {
           </div>
 
           <div className="footer-links">
-            <div className="footer-column">
+            <div className="footer-column services-column">
               <h4>Our Services</h4>
-              <ul>
-                <li><a href="#">Cloth Clean & Iron</a></li>
-                <li><a href="#">Dry Cleaning</a></li>
-                <li><a href="#">Alterations & Repairs</a></li>
-                <li><a href="#">Household Items</a></li>
-              </ul>
+              <div className="services-grid">
+                {loading ? (
+                  <div className="loading-text">Loading services...</div>
+                ) : categories.length === 0 ? (
+                  <div className="no-services-text">No services available</div>
+                ) : (
+                  <>
+                    <div className="services-column-left">
+                      <ul className="services-list">
+                        {leftColumn.map((category) => (
+                          <li key={category.id}>
+                            <button 
+                              className="category-link"
+                              onClick={() => handleCategoryClick(category)}
+                              aria-label={`View ${category.name} services`}
+                            >
+                              {category.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="services-column-right">
+                      <ul className="services-list">
+                        {rightColumn.map((category) => (
+                          <li key={category.id}>
+                            <button 
+                              className="category-link"
+                              onClick={() => handleCategoryClick(category)}
+                              aria-label={`View ${category.name} services`}
+                            >
+                              {category.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="footer-column">
               <h4>Quick Links</h4>
               <ul>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">How It Works</a></li>
-                <li><a href="#">Pricing</a></li>
-                <li><a href="#">Testimonials</a></li>
+                <li><button onClick={() => navigate('/services')} className="footer-link">Services</button></li>
+                <li><button onClick={() => navigate('/areas')} className="footer-link">Areas</button></li>
+                <li><button onClick={() => navigate('/pricing')} className="footer-link">Pricing</button></li>
+                <li><button onClick={() => navigate('/how-it-works')} className="footer-link">How It Works</button></li>
+                <li><button onClick={() => navigate('/faq')} className="footer-link">FAQ</button></li>
               </ul>
             </div>
 
@@ -116,11 +238,11 @@ const Footer = () => {
               <ul className="contact-info">
                 <li>
                   <i className="fas fa-phone"></i>
-                  <span>+44 7438502936</span>
+                  <span>+44 02031231010</span>
                 </li>
                 <li>
                   <i className="fas fa-envelope"></i>
-                  <span>munish.rana@ironingboy.com</span>
+                  <span>support@ironingboy.com</span>
                 </li>
                 <li>
                   <i className="fas fa-map-marker-alt"></i>
@@ -140,8 +262,13 @@ const Footer = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    aria-label="Email for newsletter subscription"
                   />
-                  <button type="submit" className="send-button">
+                  <button 
+                    type="submit" 
+                    className="send-button"
+                    aria-label="Subscribe to newsletter"
+                  >
                     <i className="fas fa-paper-plane"></i>
                   </button>
                 </div>
@@ -164,8 +291,20 @@ const Footer = () => {
           <div className="copyright">
             <p>&copy; 2025 Ironing Boy. All rights reserved.</p>
             <div className="legal-links">
-              <a href="#">Privacy Policy</a>
-              <a href="#">Terms of Service</a>
+              <button 
+                onClick={handlePrivacyClick} 
+                className="footer-link legal-link"
+                title="Opens Privacy Policy in new window"
+              >
+                Privacy Policy <i className="fas fa-external-link-alt external-icon"></i>
+              </button>
+              <button 
+                onClick={handleTermsClick} 
+                className="footer-link legal-link"
+                title="Opens Terms & Conditions in new window"
+              >
+                Terms & Conditions <i className="fas fa-external-link-alt external-icon"></i>
+              </button>
             </div>
           </div>
         </div>

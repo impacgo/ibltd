@@ -349,7 +349,7 @@ const LoginPopup = ({ close, onSuccess }) => {
   };
 
   // -------------------------------------------------------
-  // GOOGLE LOGIN
+  // GOOGLE LOGIN (ENHANCED FOR PRODUCTION)
   // -------------------------------------------------------
   const handleGoogleLogin = async () => {
     setErrorMsg("");
@@ -359,30 +359,59 @@ const LoginPopup = ({ close, onSuccess }) => {
     try {
       const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
+      
+      // Add these scopes for better compatibility
+      provider.addScope('profile');
+      provider.addScope('email');
+      
+      // Configure OAuth settings
+      provider.setCustomParameters({
+        prompt: 'select_account' // Force account selection
+      });
+
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Send googleSignIn to backend — backend should create or return user + token
+      // Enhanced error handling for production
+      if (!user || !user.email) {
+        throw new Error("Google authentication failed - no user data received");
+      }
+
+      // Send googleSignIn to backend with better error handling
       const res = await fetch(`${API_BASE}/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({
           identifier: user.email,
-          name: user.displayName,
+          name: user.displayName || user.email.split('@')[0],
           googleSignIn: true,
+          photoURL: user.photoURL || null,
+          uid: user.uid // Send Firebase UID for better tracking
         }),
       });
 
       if (!res.ok) {
         const payload = await safeJson(res);
-        setErrorMsg(payload.message || "Google login failed");
+        // Check if it's a user creation error (user doesn't exist)
+        if (payload.message && payload.message.includes("not exist") || res.status === 404) {
+          // Try to create user via signup endpoint for Google users
+          return await handleGoogleSignup(user);
+        }
+        setErrorMsg(payload.message || `Google login failed (${res.status})`);
         setLoading(false);
         return;
       }
 
       const data = await safeJson(res);
       if (data.success === true) {
-        saveSession({ token: data.token, user_id: data.user_id, identifier: user.email });
+        saveSession({ 
+          token: data.token, 
+          user_id: data.user_id, 
+          identifier: user.email 
+        });
         onSuccess && onSuccess();
         close && close();
       } else {
@@ -390,10 +419,75 @@ const LoginPopup = ({ close, onSuccess }) => {
       }
     } catch (err) {
       console.error("Google auth error:", err);
-      setErrorMsg("Google login failed or cancelled");
+      
+      // More specific error messages for production
+      if (err.code === 'auth/popup-blocked') {
+        setErrorMsg("Popup blocked. Please allow popups for Google login.");
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setErrorMsg("Login cancelled");
+      } else if (err.code === 'auth/network-request-failed') {
+        setErrorMsg("Network error. Please check your internet connection.");
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setErrorMsg("Unauthorized domain. Please contact support.");
+      } else {
+        setErrorMsg("Google login failed. Please try again or use email/password.");
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  // -------------------------------------------------------
+  // GOOGLE SIGNUP (Fallback when user doesn't exist)
+  // -------------------------------------------------------
+  const handleGoogleSignup = async (user) => {
+    try {
+      const res = await fetch(`${API_BASE}/signup`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          name: user.displayName || user.email.split('@')[0],
+          email: user.email,
+          phone: "", // Google doesn't provide phone
+          password: "", // No password for Google auth
+          googleSignIn: true,
+          photoURL: user.photoURL || null,
+          uid: user.uid
+        }),
+      });
+
+      if (!res.ok) {
+        const payload = await safeJson(res);
+        setErrorMsg(payload.message || "Failed to create account with Google");
+        return;
+      }
+
+      const data = await safeJson(res);
+      if (data.success === true) {
+        saveSession({ 
+          token: data.token, 
+          user_id: data.user_id, 
+          identifier: user.email 
+        });
+        onSuccess && onSuccess();
+        close && close();
+      } else {
+        setErrorMsg(data.message || "Google signup failed");
+      }
+    } catch (err) {
+      console.error("Google signup error:", err);
+      setErrorMsg("Failed to create account with Google. Please try email signup.");
+    }
+  };
+
+  // -------------------------------------------------------
+  // APPLE LOGIN (Placeholder - needs proper setup)
+  // -------------------------------------------------------
+  const handleAppleLogin = () => {
+    setErrorMsg("Apple login is currently unavailable. Please use Google or email.");
   };
 
   // -------------------------------------------------------
@@ -450,19 +544,29 @@ const LoginPopup = ({ close, onSuccess }) => {
                 onKeyPress={(e) => e.key === 'Enter' && checkUserExists()}
               />
             </div>
-            <button className="login-btn"  onClick={checkUserExists} disabled={loading}>
+            <button className="login-btn" onClick={checkUserExists} disabled={loading}>
               {loading ? "Checking..." : "Continue"}
             </button>
             
             <div className="login-divider"><span>Or continue with</span></div>
 
             <div className="login-social-row">
-              <div className="social-btn" onClick={handleGoogleLogin}>
+              <button 
+                className="social-btn" 
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                aria-label="Sign in with Google"
+              >
                 <img src={Google} alt="Google" />
-              </div>
-              <div className="social-btn">
+              </button>
+              <button 
+                className="social-btn"
+                onClick={handleAppleLogin}
+                disabled={loading}
+                aria-label="Sign in with Apple"
+              >
                 <img src={apple} alt="Apple" />
-              </div>
+              </button>
             </div>
           </>
         )}
@@ -484,6 +588,7 @@ const LoginPopup = ({ close, onSuccess }) => {
                 className="password-toggle-btn"
                 onClick={() => setShowPwd(!showPwd)}
                 type="button"
+                aria-label={showPwd ? "Hide password" : "Show password"}
               >
                 {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -493,7 +598,11 @@ const LoginPopup = ({ close, onSuccess }) => {
               {loading ? "Logging in..." : "Login"}
             </button>
             
-            <button className="forgot-password-btn" onClick={handleForgotPassword}>
+            <button 
+              className="forgot-password-btn" 
+              onClick={handleForgotPassword}
+              disabled={loading}
+            >
               Forgot Password?
             </button>
           </>
@@ -545,6 +654,7 @@ const LoginPopup = ({ close, onSuccess }) => {
                 className="password-toggle-btn"
                 onClick={() => setShowPwd(!showPwd)}
                 type="button"
+                aria-label={showPwd ? "Hide password" : "Show password"}
               >
                 {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -602,6 +712,7 @@ const LoginPopup = ({ close, onSuccess }) => {
                 className="password-toggle-btn"
                 onClick={() => setShowPwd(!showPwd)}
                 type="button"
+                aria-label={showPwd ? "Hide password" : "Show password"}
               >
                 {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -631,10 +742,14 @@ const LoginPopup = ({ close, onSuccess }) => {
           <div className="login-footer">
             <p className="login-footer-text">
               Don't have an account?{" "}
-              <button className="login-footer-link" onClick={() => {
-                setStep(3);
-                setSignupEmail(identifier);
-              }}>
+              <button 
+                className="login-footer-link" 
+                onClick={() => {
+                  setStep(3);
+                  setSignupEmail(identifier);
+                }}
+                disabled={loading}
+              >
                 Sign up
               </button>
             </p>
@@ -642,7 +757,7 @@ const LoginPopup = ({ close, onSuccess }) => {
         )}
 
         {/* Close Button */}
-        <button className="login-close" onClick={close}>
+        <button className="login-close" onClick={close} disabled={loading}>
           Cancel
         </button>
       </div>
