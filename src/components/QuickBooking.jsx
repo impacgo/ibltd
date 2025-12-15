@@ -34,99 +34,94 @@ const StripeSetupForm = ({
 }) => {
   const stripe = useStripe();
   const elements = useElements();
+
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!stripe || !elements) return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!stripe || !elements) return;
 
-    setError(null);
-    setSubmitting(true);
+  setSubmitting(true);
+  setError(null);
 
-    try {
-      // Confirm the SetupIntent
-      const { error: stripeError, setupIntent } = await stripe.confirmSetup({
-        elements,
-        redirect: "if_required",
-        confirmParams: {
-          return_url: `${window.location.origin}/booking/success`,
-        },
-      });
+  try {
+    const result = await stripe.confirmSetup({
+      elements,
+      redirect: "if_required",
+    });
 
-      if (stripeError) {
-        setError(stripeError.message);
-        onSetupError(stripeError.message);
-        setSubmitting(false);
-        return;
-      }
-
-      if (setupIntent?.status === "succeeded") {
-        // Card saved successfully - NOW SET IT AS DEFAULT
-        await onSetupSuccess(setupIntent);
-      } else if (setupIntent?.status === "requires_action") {
-        // Handle 3DS authentication
-        const { error: confirmError } = await stripe.confirmCardSetup(
-          setupIntent.client_secret
-        );
-        
-        if (confirmError) {
-          setError(confirmError.message);
-          onSetupError(confirmError.message);
-        } else {
-          // After 3DS success, set as default
-          await onSetupSuccess(setupIntent);
-        }
-      } else {
-        const msg = `Card setup was not successful: ${setupIntent?.status}`;
-        setError(msg);
-        onSetupError(msg);
-      }
-    } catch (err) {
-      const msg = err.message || "Failed to save card. Please try again.";
-      setError(msg);
-      onSetupError(msg);
-    } finally {
-      setSubmitting(false);
+    if (result.error) {
+      throw result.error;
     }
-  };
+
+    const setupIntent = result.setupIntent;
+
+    if (!setupIntent || !setupIntent.payment_method) {
+      throw new Error("Payment method not saved");
+    }
+
+    // ✅ SUCCESS — card saved safely for off-session use
+    await onSetupSuccess(setupIntent);
+
+  } catch (err) {
+    setError(err.message || "Card save failed");
+    onSetupError(err.message);
+  } finally {
+    setSubmitting(false);
+  }
+};
+const [selectedCollectSlotStart, setSelectedCollectSlotStart] = useState(null);
+const isSameDay = (a, b) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+const pickupIsToday = () => {
+  if (!collectDate) return false;
+  const today = new Date();
+  const d = new Date(collectDate);
+  return isSameDay(today, d);
+};
+
+const pickupBefore10 = () => {
+  if (!selectedCollectSlotStart) return false;
+  return selectedCollectSlotStart.getHours() < 10;
+};
+const apply8HourRule = (slots) => {
+  if (!selectedCollectSlotStart || !collectDate) return slots;
+
+  const pickupDate = new Date(collectDate);
+  const pickupDateTime = new Date(
+    pickupDate.getFullYear(),
+    pickupDate.getMonth(),
+    pickupDate.getDate(),
+    selectedCollectSlotStart.getHours(),
+    selectedCollectSlotStart.getMinutes()
+  );
+
+  const minDeliveryTime = new Date(pickupDateTime.getTime() + 8 * 60 * 60 * 1000);
+
+  return slots.filter((slot) => {
+    const start = new Date(slot.start);
+    return start >= minDeliveryTime;
+  });
+};
+
+
 
   return (
     <div className="stripe-payment-modal">
       <div className="payment-header">
         <h3>Save Your Payment Method</h3>
-        <p>Your card will be charged only after we send you the invoice</p>
-      </div>
-
-      <div className="payment-summary">
-        <div className="summary-item">
-          <span>Payment Terms</span>
-          <span>Invoice-Based Billing</span>
-        </div>
-        <div className="summary-item">
-          <span>Minimum Charge</span>
-          <span>£20.00 + £2.00 service fee</span>
-        </div>
-        <div className="payment-note">
-          <i className="fas fa-info-circle"></i>
-          <small>
-            <strong>IMPORTANT:</strong> This card will be saved as your default payment method.
-            It will be automatically charged when we send you the invoice.
-          </small>
-        </div>
+        <p>Your card will be charged only after invoice is issued</p>
       </div>
 
       <form onSubmit={handleSubmit} className="payment-form">
-        <div className="form-group">
-          <label htmlFor="payment-element">Card Details</label>
-          <div className="card-element-wrapper">
-            <PaymentElement id="payment-element" />
-          </div>
-        </div>
+        <PaymentElement />
 
         {error && (
           <div className="payment-error">
-            <i className="fas fa-exclamation-circle"></i>
             <span>{error}</span>
           </div>
         )}
@@ -134,49 +129,24 @@ const StripeSetupForm = ({
         <div className="payment-actions">
           <button
             type="button"
-            className="payment-cancel-btn"
             onClick={onCancel}
-            disabled={setupProcessing || submitting}
+            disabled={submitting || setupProcessing}
           >
-            <i className="fas fa-times"></i> Cancel
+            Cancel
           </button>
+
           <button
             type="submit"
-            className="payment-submit-btn"
-            disabled={!stripe || setupProcessing || submitting}
+            disabled={!stripe || submitting || setupProcessing}
           >
-            {(setupProcessing || submitting) ? (
-              <>
-                <div className="payment-spinner"></div>
-                Saving Card...
-              </>
-            ) : (
-              <>
-                <i className="fas fa-lock"></i>
-                Save Card & Confirm Booking
-              </>
-            )}
+            {submitting ? "Saving Card..." : "Save Card & Confirm Booking"}
           </button>
         </div>
       </form>
-
-      <div className="payment-security">
-        <div className="security-badges">
-          <i className="fas fa-shield-alt"></i>
-          <span>Secure SSL Encryption</span>
-        </div>
-        <div className="security-badges">
-          <i className="fab fa-cc-stripe"></i>
-          <span>Powered by Stripe</span>
-        </div>
-        <div className="security-badges">
-          <i className="fas fa-credit-card"></i>
-          <span>Card saved for auto-payment</span>
-        </div>
-      </div>
     </div>
   );
 };
+
 
 /* -------------------------------------------------------------------------- */
 /*                           Main QuickBooking Page                           */
@@ -537,67 +507,41 @@ export default function QuickBooking() {
   };
 
   const fetchTimeSlots = useCallback(
-    async (dateIso, isDelivery = false) => {
-      if (!dateIso || !user) return [];
+  async (dateIso, isDelivery = false) => {
+    if (!dateIso || !user) return [];
 
-      const tzOffset = -new Date().getTimezoneOffset();
+    const tzOffset = -new Date().getTimezoneOffset();
+    const params = new URLSearchParams({
+      date: dateIso,
+      tzOffset: tzOffset.toString(),
+      isDelivery: String(isDelivery),
+      format: "12",
+    });
 
-      try {
-        const params = new URLSearchParams({
-          date: dateIso,
-          tzOffset: tzOffset.toString(),
-          isDelivery: isDelivery.toString(),
-          format: "12",
-        });
+    // 👇 EXACTLY LIKE FLUTTER
+    if (isDelivery && selectedCollectSlotStart && collectDate) {
+      const h = selectedCollectSlotStart.getHours().toString().padStart(2, "0");
+      const m = selectedCollectSlotStart.getMinutes().toString().padStart(2, "0");
+      params.set("pickupDate", collectDate);
+      params.set("pickupSlotStart", `${h}:${m}`);
+    }
 
-        if (isDelivery && selectedCollectSlot && collectDate) {
-          const pickupTime = new Date(selectedCollectSlot.start);
-          const pickupSlotStart = `${pickupTime
-            .getUTCHours()
-            .toString()
-            .padStart(2, "0")}:${pickupTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, "0")}`;
+    const res = await fetch(`${API_BASE}/time-slots?${params.toString()}`);
+    if (!res.ok) throw new Error("Failed to fetch slots");
 
-          params.set("pickupDate", collectDate);
-          params.set("pickupSlotStart", pickupSlotStart);
-        }
+    const data = await res.json();
+    let slots = data.slots || [];
 
-        const url = `${API_BASE}/time-slots?${params.toString()}`;
-        const res = await fetch(url);
+    // 🔥 APPLY SAME FLUTTER RULES
+    if (isDelivery) {
+      slots = apply8HourRule(slots);
+    }
 
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`Failed to fetch slots: ${res.status} - ${errorText}`);
-        }
+    return slots;
+  },
+  [user, selectedCollectSlotStart, collectDate]
+);
 
-        const data = await res.json();
-        const normalizedSlots = (data.slots || []).map((slot) => ({
-          ...slot,
-          label: slot.label ? normalizeTimeFormat(slot.label) : slot.label,
-        }));
-
-        setDebugInfo((prev) => ({
-          ...prev,
-          lastApiCall: {
-            url,
-            date: dateIso,
-            isDelivery,
-            timestamp: new Date().toISOString(),
-            slotsCount: normalizedSlots.length || 0,
-          },
-        }));
-
-        return normalizedSlots;
-      } catch (error) {
-        setDebugInfo((prev) => ({ ...prev, lastError: error.message }));
-        showToast("Unable to load available time slots");
-        return [];
-      }
-    },
-    [user, selectedCollectSlot, collectDate]
-  );
 
   const fetchCollectSlots = useCallback(async () => {
     if (!collectDate || !user) return;
@@ -726,7 +670,14 @@ export default function QuickBooking() {
   setSetupProcessing(true);
 
   try {
-    const paymentMethodId = setupIntent.payment_method;
+    const paymentMethodId =
+  setupIntent.payment_method ||
+  setupIntent.latest_attempt?.payment_method;
+
+if (!paymentMethodId) {
+  throw new Error("Payment method not returned by Stripe");
+}
+
     
     if (!paymentMethodId) {
       throw new Error("No payment method ID returned from Stripe");
@@ -953,38 +904,28 @@ export default function QuickBooking() {
   };
 
   const handleCollectSlotSelect = (slot) => {
-    if (!user) {
-      setShowLogin(true);
-      return;
-    }
+  if (!slot.enabled) return;
 
-    if (!slot.enabled) {
-      showToast("This time slot is not available");
-      return;
-    }
+  setSelectedCollectSlot(slot);
+  setSelectedCollectSlotStart(new Date(slot.start));
 
-    setSelectedCollectSlot(slot);
+  // ⛔ SAME-DAY DELIVERY BLOCK AFTER 10 AM
+  if (pickupIsToday() && !pickupBefore10()) {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const iso = tomorrow.toISOString().split("T")[0];
 
-    if (collectDate === deliverDate) {
-      setTimeout(() => {
-        fetchDeliverySlots();
-      }, 100);
-    }
-  };
+    setDeliverDate(iso);
+    setSelectedDeliverSlot(null);
+  }
+};
+
 
   const handleDeliverSlotSelect = (slot) => {
-    if (!user) {
-      setShowLogin(true);
-      return;
-    }
+  if (!slot.enabled) return;
+  setSelectedDeliverSlot(slot);
+};
 
-    if (!slot.enabled) {
-      showToast("This time slot is not available");
-      return;
-    }
-
-    setSelectedDeliverSlot(slot);
-  };
 
   const handleToggleSameAddress = (e) => {
     if (!user) {
