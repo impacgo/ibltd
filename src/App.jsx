@@ -27,6 +27,7 @@ import { AuthProvider } from './context/AuthContext';
 import OrderHistory from './components/OrderHistory';
 import ServiceDetail from './components/ServiceDetail';
 import TermsPage from "./components/TermsLink";
+import ThankYouPage from './components/ThankYouPage';
 
 // Define API_BASE constant for backward compatibility component
 const API_BASE = "https://api.ironingboy.com";

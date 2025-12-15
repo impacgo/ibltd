@@ -23,63 +23,132 @@ export const AREAS = [
 ];
 
 /**
- * Your services array (kept exactly as provided — images link to imported assets)
+ * Your services array with updated descriptions matching the titles
  */
 export const SERVICES = [
   {
     id: 1,
-    title: "Cloth Clean & Iron",
-    slug: "cloth-clean-iron",
-    description: "We professionally clean and press your clothes with care and precision.",
-    image,
+    title: "Accessories",
+    slug: "accessories",
+    description: "Professional cleaning and care for bags, scarves, ties, and fashion accessories.",
+    image: image,
   },
   {
     id: 2,
-    title: "Iron Only",
-    slug: "iron-only",
-    description: "Need just a perfect press? We iron everything to crisp, clean standards.",
+    title: "Bedding",
+    slug: "bedding",
+    description: "Deep cleaning for duvets, pillows, sheets, and all bed linens for fresh, hygienic sleep.",
     image: image2,
   },
   {
     id: 3,
-    title: "Dry Cleaning",
-    slug: "dry-cleaning",
-    description: "Delicate dry cleaning for suits, dresses, and specialty items.",
+    title: "Full Body",
+    slug: "fullbody",
+    description: "Complete garment care including washing, drying, and expert pressing for full outfits.",
     image: image3,
   },
   {
     id: 4,
-    title: "Leather & Suede",
-    slug: "leather-suede",
-    description: "Careful cleaning for leather jackets, suede items, and more.",
+    title: "HouseHold",
+    slug: "household",
+    description: "Comprehensive cleaning for curtains, cushion covers, tablecloths, and home textiles.",
     image: image4,
   },
   {
     id: 5,
-    title: "Bedding & Household",
-    slug: "bedding-household",
-    description: "Comforters, bedsheets, curtains — all freshly washed.",
+    title: "Lower",
+    slug: "lower",
+    description: "Specialized care for trousers, skirts, jeans, and all lower body garments.",
     image: image6,
   },
   {
     id: 6,
-    title: "Shoes & Bags",
-    slug: "shoes-bags",
-    description: "Full care service for shoes, handbags, and accessories.",
+    title: "ServiceWash",
+    slug: "servicewash",
+    description: "Complete laundry service: we collect, wash, dry, and return your clothes folded.",
     image: image5,
   },
   {
     id: 7,
-    title: "Repair & Alteration",
-    slug: "repair-alteration",
-    description: "Stitching, hemming, zip repairs and clothing alterations.",
+    title: "Shirts",
+    slug: "shirts",
+    description: "Professional washing, starching, and crisp ironing for dress and casual shirts.",
     image: image7,
   },
   {
     id: 8,
-    title: "Service Wash",
-    slug: "service-wash",
-    description: "Drop your laundry — we wash, dry, and fold it for you.",
+    title: "Upper",
+    slug: "upper",
+    description: "Expert cleaning for tops, blouses, jackets, and all upper body clothing.",
+    image: image8,
+  },
+  {
+    id: 9,
+    title: "Shoes",
+    slug: "shoes",
+    description: "Professional shoe cleaning, polishing, and leather care for all footwear types.",
+    image: image8,
+  },
+  {
+    id: 10,
+    title: "Repair & Alteration",
+    slug: "repair-alteration",
+    description: "Expert mending, hemming, zipper repairs, and clothing alterations for perfect fit.",
     image: image8,
   },
 ];
+
+// Helper function to create slug from service name
+export const createSlug = (name) => {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+};
+
+// API function to fetch services from backend
+export const fetchServicesFromBackend = async () => {
+  try {
+    const API_BASE = "https://api.ironingboy.com";
+    const response = await fetch(`${API_BASE}/categories`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const backendServices = data.data || data; // Handle both array and object responses
+    
+    // Transform backend services to frontend format
+    return backendServices.map((service, index) => {
+      const serviceName = service.name || `Service ${index + 1}`;
+      const slug = createSlug(serviceName);
+      
+      // Find matching service from local SERVICES to get description and image
+      const matchingService = SERVICES.find(s => 
+        s.title.toLowerCase() === serviceName.toLowerCase() || 
+        s.slug === slug
+      );
+      
+      return {
+        id: service.id || index + 1,
+        title: serviceName,
+        slug: slug,
+        description: matchingService?.description || service.description || `Professional ${serviceName.toLowerCase()} service.`,
+        image: matchingService?.image || image, // Use local image if available
+        backendId: service.id,
+        originalData: service
+      };
+    });
+    
+  } catch (error) {
+    console.error("Error fetching services from backend:", error);
+    return null; // Return null to indicate error
+  }
+};
+
+// Export as FALLBACK_SERVICES for backward compatibility
+export const FALLBACK_SERVICES = SERVICES;

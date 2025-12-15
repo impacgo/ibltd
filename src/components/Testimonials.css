@@ -54,7 +54,7 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 0 55px;
-  height: 360px;          /* Reduced height slightly */
+  height: 400px;          /* Reduced height slightly */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -253,7 +253,7 @@
   }
 
   .testimonials-wrapper {
-    height: 320px;
+    height: 390px;
     padding: 0 20px;
   }
 
@@ -353,6 +353,7 @@
   }
 
   .customer-avatar {
+    display: none;
     width: 42px;
     height: 42px;
     font-size: 1rem;
@@ -363,6 +364,7 @@
   }
 
   .verified-customer {
+    display: none;
     font-size: 0.8rem;
   }
 }

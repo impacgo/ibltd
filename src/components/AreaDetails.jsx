@@ -1,40 +1,74 @@
 // src/pages/AreaDetails.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { AREAS, SERVICES } from "./areasAndServices";
+import { AREAS, SERVICES, fetchServicesFromBackend } from "./areasAndServices";
 import "./AreaDetails.css";
 
-// Import images
-import imageFullBody from "../images/shirtshang.webp";
-import imageIronOnly from "../images/irononly.webp";
-import imageDry from "../images/dryclean.webp";
-import imageLeather from "../images/leather.webp";
-import imageShoes from "../images/shoes.webp";
-import imageBedding from "../images/bedding.webp";
-import imageRepair from "../images/repair.webp";
-import imageServiceWash from "../images/servicewash.webp";
+// Import all local images for services
+import accessoriesImg from "../images/accessories.webp"; //upadte
+import beddingImg from "../images/bedding.webp";
+import fullBodyImg from "../images/shirtshang.webp";
+import householdImg from "../images/household.webp"; // update
+import lowerImg from "../images/lower.webp";  //update
+import serviceWashImg from "../images/servicewash.webp";
+import shirtsImg from "../images/shirtshang.webp";  //update
+import upperImg from "../images/upper.webp";
+import shoesImg from "../images/shoes.webp";
+import repairImg from "../images/repair.webp";
 
 export default function AreaDetails() {
   const { slug } = useParams();
   const navigate = useNavigate();
 
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const area = AREAS.find((a) => a.slug === slug);
   if (!area) return <div className="page-empty">Area Not Found</div>;
 
-  // Map service slugs to images
+  // Image mapping for services
   const serviceImages = {
-    "full-body": imageFullBody,
-    "iron-only": imageIronOnly,
-    "dry-cleaning": imageDry,
-    "leather": imageLeather,
-    "accessories": imageShoes,
-    "bedding": imageBedding,
-    "repair": imageRepair,
-    "service-wash": imageServiceWash,
-    // Add fallbacks for any missing mappings
-    "fullbody": imageFullBody,
-    "dryclean": imageDry,
+    "accessories": accessoriesImg,
+    "bedding": beddingImg,
+    "fullbody": fullBodyImg,
+    "household": householdImg,
+    "lower": lowerImg,
+    "servicewash": serviceWashImg,
+    "shirts": shirtsImg,
+    "upper": upperImg,
+    "shoes": shoesImg,
+    "repair-alteration": repairImg,
+    "repair-altration": repairImg, // For backward compatibility with typo
   };
+
+  // Fetch services from backend on component mount
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoading(true);
+        const backendServices = await fetchServicesFromBackend();
+        
+        if (backendServices && backendServices.length > 0) {
+          // Use services from backend
+          setServices(backendServices);
+        } else {
+          // Use local services if backend fails
+          setServices(SERVICES);
+        }
+        setError(null);
+      } catch (err) {
+        console.error("Failed to load services:", err);
+        setError("Unable to load services. Please try again.");
+        // Use local services on error
+        setServices(SERVICES);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServices();
+  }, []);
 
   const handleSchedulePickup = () => {
     navigate("/quick-booking");
@@ -43,6 +77,44 @@ export default function AreaDetails() {
   const handleBookServiceWash = () => {
     navigate("/quick-booking");
   };
+
+  // Function to get image for service
+  const getImageForService = (service) => {
+    // First try direct slug match
+    if (serviceImages[service.slug]) {
+      return serviceImages[service.slug];
+    }
+    
+    // Try to find by partial slug match
+    for (const [key, image] of Object.entries(serviceImages)) {
+      if (service.slug.includes(key) || key.includes(service.slug)) {
+        return image;
+      }
+    }
+    
+    // Default image
+    return accessoriesImg;
+  };
+
+  if (loading) {
+    return (
+      <div className="area-page">
+        <header className="area-hero">
+          <div className="area-hero-overlay"></div>
+          <div className="area-hero-content container">
+            <div className="area-breadcrumbs">
+              <Link to="/">Home</Link> / <Link to="/areas">Areas</Link> / {area.name}
+            </div>
+            <h1 className="area-title">{area.name} Laundry & Dry Cleaning</h1>
+            <div className="loading-spinner">
+              <div className="spinner"></div>
+              <p>Loading services...</p>
+            </div>
+          </div>
+        </header>
+      </div>
+    );
+  }
 
   return (
     <div className="area-page">
@@ -85,16 +157,19 @@ export default function AreaDetails() {
               service wash and more.
             </p>
 
+            {error && (
+              <div className="error-message">
+                <p>{error}</p>
+              </div>
+            )}
+
             <div className="service-cards-grid">
-              {SERVICES.map((service) => {
-                // Get image for this service, fallback to first image if not found
-                const serviceImage = serviceImages[service.slug] || 
-                                    serviceImages[service.slug.toLowerCase()] || 
-                                    imageFullBody;
+              {services.map((service) => {
+                const serviceImage = getImageForService(service);
                 
                 return (
                   <Link
-                    key={service.slug}
+                    key={service.id}
                     to={`/areas/${slug}/${service.slug}`}
                     className="service-card"
                   >
@@ -120,6 +195,7 @@ export default function AreaDetails() {
                 <li><strong>Postcodes:</strong> {area.postcodes.join(", ")}</li>
                 <li><strong>Free Pickup:</strong> Yes</li>
                 <li><strong>Delivery Time:</strong> 24–48 hrs</li>
+                <li><strong>Services Available:</strong> {services.length}</li>
               </ul>
 
               <button
@@ -153,9 +229,9 @@ export default function AreaDetails() {
 
           <ul className="seo-list">
             <li><Link to={`/areas/${slug}`}>/areas/{slug}</Link></li>
-            {SERVICES.map((s) => (
-              <li key={s.slug}>
-                <Link to={`/areas/${slug}/${s.slug}`}>/areas/{slug}/{s.slug}</Link>
+            {services.map((service) => (
+              <li key={service.slug}>
+                <Link to={`/areas/${slug}/${service.slug}`}>/areas/{slug}/{service.slug}</Link>
               </li>
             ))}
           </ul>

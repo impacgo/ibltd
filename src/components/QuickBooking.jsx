@@ -10,9 +10,9 @@ import "./QuickBooking.css";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
-  PaymentElement,
   useStripe,
   useElements,
+  PaymentElement,
 } from "@stripe/react-stripe-js";
 
 const API_BASE = "https://api.ironingboy.com";
@@ -23,15 +23,14 @@ const stripePromise = loadStripe(
 );
 
 /* -------------------------------------------------------------------------- */
-/*                          Stripe Payment Form (UI)                          */
+/*                       Stripe SetupIntent Form (UI)                         */
 /* -------------------------------------------------------------------------- */
 
-const StripePaymentForm = ({
-  orderData,
-  onPaymentSuccess,
-  onPaymentError,
+const StripeSetupForm = ({
+  onSetupSuccess,
+  onSetupError,
   onCancel,
-  paymentProcessing,
+  setupProcessing,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -46,29 +45,47 @@ const StripePaymentForm = ({
     setSubmitting(true);
 
     try {
-      const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
+      // Confirm the SetupIntent
+      const { error: stripeError, setupIntent } = await stripe.confirmSetup({
         elements,
-        redirect: "if_required", // stay on page unless 3DS requires redirect
+        redirect: "if_required",
+        confirmParams: {
+          return_url: `${window.location.origin}/booking/success`,
+        },
       });
 
       if (stripeError) {
         setError(stripeError.message);
-        onPaymentError(stripeError.message);
+        onSetupError(stripeError.message);
         setSubmitting(false);
         return;
       }
 
-      if (paymentIntent?.status === "succeeded") {
-        onPaymentSuccess(paymentIntent);
+      if (setupIntent?.status === "succeeded") {
+        // Card saved successfully - NOW SET IT AS DEFAULT
+        await onSetupSuccess(setupIntent);
+      } else if (setupIntent?.status === "requires_action") {
+        // Handle 3DS authentication
+        const { error: confirmError } = await stripe.confirmCardSetup(
+          setupIntent.client_secret
+        );
+        
+        if (confirmError) {
+          setError(confirmError.message);
+          onSetupError(confirmError.message);
+        } else {
+          // After 3DS success, set as default
+          await onSetupSuccess(setupIntent);
+        }
       } else {
-        const msg = `Payment was not successful: ${paymentIntent?.status}`;
+        const msg = `Card setup was not successful: ${setupIntent?.status}`;
         setError(msg);
-        onPaymentError(msg);
+        onSetupError(msg);
       }
     } catch (err) {
-      const msg = err.message || "Payment failed. Please try again.";
+      const msg = err.message || "Failed to save card. Please try again.";
       setError(msg);
-      onPaymentError(msg);
+      onSetupError(msg);
     } finally {
       setSubmitting(false);
     }
@@ -77,28 +94,31 @@ const StripePaymentForm = ({
   return (
     <div className="stripe-payment-modal">
       <div className="payment-header">
-        <h3>Complete Your Payment</h3>
-        <p>Secure payment processed by Stripe</p>
+        <h3>Save Your Payment Method</h3>
+        <p>Your card will be charged only after we send you the invoice</p>
       </div>
 
       <div className="payment-summary">
         <div className="summary-item">
-          <span>Service</span>
-          <span>Express Laundry Booking</span>
+          <span>Payment Terms</span>
+          <span>Invoice-Based Billing</span>
         </div>
         <div className="summary-item">
-          <span>Minimum Order</span>
-          <span>£{(orderData.total_amount / 100).toFixed(2)}</span>
+          <span>Minimum Charge</span>
+          <span>£20.00 + £2.00 service fee</span>
         </div>
-        <div className="summary-total">
-          <span>Total Amount</span>
-          <span>£{(orderData.total_amount / 100).toFixed(2)}</span>
+        <div className="payment-note">
+          <i className="fas fa-info-circle"></i>
+          <small>
+            <strong>IMPORTANT:</strong> This card will be saved as your default payment method.
+            It will be automatically charged when we send you the invoice.
+          </small>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="payment-form">
         <div className="form-group">
-          <label htmlFor="payment-element">Payment Details</label>
+          <label htmlFor="payment-element">Card Details</label>
           <div className="card-element-wrapper">
             <PaymentElement id="payment-element" />
           </div>
@@ -116,24 +136,24 @@ const StripePaymentForm = ({
             type="button"
             className="payment-cancel-btn"
             onClick={onCancel}
-            disabled={paymentProcessing || submitting}
+            disabled={setupProcessing || submitting}
           >
             <i className="fas fa-times"></i> Cancel
           </button>
           <button
             type="submit"
             className="payment-submit-btn"
-            disabled={!stripe || paymentProcessing || submitting}
+            disabled={!stripe || setupProcessing || submitting}
           >
-            {(paymentProcessing || submitting) ? (
+            {(setupProcessing || submitting) ? (
               <>
                 <div className="payment-spinner"></div>
-                Processing...
+                Saving Card...
               </>
             ) : (
               <>
                 <i className="fas fa-lock"></i>
-                Pay £{(orderData.total_amount / 100).toFixed(2)}
+                Save Card & Confirm Booking
               </>
             )}
           </button>
@@ -148,6 +168,10 @@ const StripePaymentForm = ({
         <div className="security-badges">
           <i className="fab fa-cc-stripe"></i>
           <span>Powered by Stripe</span>
+        </div>
+        <div className="security-badges">
+          <i className="fas fa-credit-card"></i>
+          <span>Card saved for auto-payment</span>
         </div>
       </div>
     </div>
@@ -165,10 +189,10 @@ export default function QuickBooking() {
   const [showLogin, setShowLogin] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
+  const [showPaymentSetup, setShowPaymentSetup] = useState(false);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [setupProcessing, setSetupProcessing] = useState(false);
 
   const [loadingSlots, setLoadingSlots] = useState({
     collect: false,
@@ -187,8 +211,6 @@ export default function QuickBooking() {
   const [selectedCollectSlot, setSelectedCollectSlot] = useState(null);
   const [selectedDeliverSlot, setSelectedDeliverSlot] = useState(null);
 
-  const [orderData, setOrderData] = useState(null);
-
   const [debugInfo, setDebugInfo] = useState({
     lastApiCall: null,
     lastError: null,
@@ -197,18 +219,15 @@ export default function QuickBooking() {
 
   const [notes, setNotes] = useState("");
 
-  const [discountData, setDiscountData] = useState(null);
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [discountAmount, setDiscountAmount] = useState(0);
-  const [serviceCharge, setServiceCharge] = useState(0);
-  const [finalTotal, setFinalTotal] = useState(20.0); // default £20
-  const [topUpAmount, setTopUpAmount] = useState(0);
-  const [minimumOrderAmount, setMinimumOrderAmount] = useState(20.0);
-  const [discountApplied, setDiscountApplied] = useState(false);
-  const [calculatingDiscount, setCalculatingDiscount] = useState(false);
+  // Stripe setup intent
+  const [setupClientSecret, setSetupClientSecret] = useState(null);
+  const [customerId, setCustomerId] = useState(null);
 
-  // Stripe client secret from backend
-  const [paymentClientSecret, setPaymentClientSecret] = useState(null);
+  // State for address menu
+  const [showMenuForAddress, setShowMenuForAddress] = useState(null);
+
+  const SERVICE_CHARGE = 2.0; // Fixed £2 service charge
+  const MINIMUM_ORDER_AMOUNT = 20.0; // Minimum order amount
 
   /* ----------------------- Init / cleanup on mount ----------------------- */
 
@@ -221,8 +240,9 @@ export default function QuickBooking() {
     setSelectedDeliverSlot(null);
     setNotes("");
     setUseSameAddress(true);
-    setOrderData(null);
-    setPaymentClientSecret(null);
+    setSetupClientSecret(null);
+    setCustomerId(null);
+    setShowMenuForAddress(null);
     localStorage.removeItem("quickBookingOrder");
   }, []);
 
@@ -234,6 +254,7 @@ export default function QuickBooking() {
 
     if (user) {
       fetchAddresses();
+      ensureStripeCustomer();
     }
 
     const handleBeforeUnload = () => {
@@ -321,6 +342,151 @@ export default function QuickBooking() {
       showToast("Unable to update default address");
     }
   }, []);
+
+  /* ------------------------- Delete Address Function ------------------------- */
+
+  const deleteAddress = async (addressId) => {
+    if (!user) return;
+
+    const token = localStorage.getItem("jwtToken");
+    if (!token) return;
+
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/addresses/${addressId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to delete address: ${res.status} - ${errorText}`);
+      }
+
+      // Remove address from state
+      setAddresses((prev) => prev.filter(addr => String(addr.address_id) !== String(addressId)));
+      
+      // Update selection if deleted address was selected
+      if (String(selectedDeliveryId) === String(addressId)) {
+        const remainingAddresses = addresses.filter(addr => String(addr.address_id) !== String(addressId));
+        if (remainingAddresses.length > 0) {
+          const newDefault = remainingAddresses.find(a => a.is_selected) || remainingAddresses[0];
+          setSelectedDeliveryId(String(newDefault.address_id));
+          if (useSameAddress) {
+            setSelectedPickupId(String(newDefault.address_id));
+          }
+        } else {
+          setSelectedDeliveryId(null);
+          setSelectedPickupId(null);
+        }
+      }
+      
+      if (String(selectedPickupId) === String(addressId)) {
+        const remainingAddresses = addresses.filter(addr => String(addr.address_id) !== String(addressId));
+        if (remainingAddresses.length > 0) {
+          const newPickup = remainingAddresses.find(a => a.is_selected) || remainingAddresses[0];
+          setSelectedPickupId(String(newPickup.address_id));
+        } else {
+          setSelectedPickupId(null);
+        }
+      }
+
+      // Close menu
+      setShowMenuForAddress(null);
+      showToast("Address deleted successfully!");
+    } catch (error) {
+      showToast("Failed to delete address");
+      console.error("Delete address error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ------------------------- Stripe Customer Setup ------------------------ */
+
+  const ensureStripeCustomer = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const token = localStorage.getItem("jwtToken");
+      const res = await fetch(`${API_BASE}/stripe/create-customer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCustomerId(data.customerId);
+      }
+    } catch (error) {
+      console.log("Stripe customer creation might be handled later");
+    }
+  }, [user]);
+
+  const createSetupIntent = useCallback(async () => {
+    if (!user) {
+      setShowLogin(true);
+      return null;
+    }
+
+    try {
+      const token = localStorage.getItem("jwtToken");
+      const res = await fetch(`${API_BASE}/stripe/init-setup-intent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to create setup intent");
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      showToast(error.message || "Failed to setup payment");
+      return null;
+    }
+  }, [user]);
+
+  /* ---------------------- Set Card as Default ---------------------- */
+
+  const setPaymentMethodAsDefault = async (customerId, paymentMethodId) => {
+    try {
+      const token = localStorage.getItem("jwtToken");
+      
+      // Update Stripe customer to set this payment method as default
+      const response = await fetch(`${API_BASE}/stripe/set-default-payment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          customerId,
+          paymentMethodId,
+        }),
+      });
+
+      if (!response.ok) {
+        console.warn("Failed to set card as default, but card is still saved");
+      }
+      
+      return response.ok;
+    } catch (error) {
+      console.error("Error setting default payment method:", error);
+      return false;
+    }
+  };
 
   /* --------------------------- Utility functions -------------------------- */
 
@@ -503,6 +669,7 @@ export default function QuickBooking() {
   const handleLoggedIn = () => {
     setShowLogin(false);
     fetchAddresses();
+    ensureStripeCustomer();
   };
 
   const handleAddressSaved = (newAddress) => {
@@ -514,54 +681,7 @@ export default function QuickBooking() {
     showToast("Address added successfully!");
   };
 
-  const calculateDiscountAndServiceCharge = useCallback(async () => {
-    if (!user) return;
-
-    const subtotal = 20.0;
-    setCalculatingDiscount(true);
-
-    try {
-      const token = localStorage.getItem("jwtToken");
-      if (!token) return;
-
-      const url = `${API_BASE}/calculate-discount?amount=${subtotal}`;
-      const response = await fetch(url, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.status === 200) {
-        const serviceChargeVal = parseFloat(data.serviceCharge || 0);
-        const minimumOrderAmountVal = parseFloat(data.minimumOrderAmount || 20.0);
-        const topUpAmountVal = parseFloat(data.topupAmount || 0);
-        const finalTotalVal = parseFloat(data.finalTotal || subtotal);
-
-        setServiceCharge(serviceChargeVal);
-        setMinimumOrderAmount(minimumOrderAmountVal);
-        setTopUpAmount(topUpAmountVal);
-        setFinalTotal(finalTotalVal);
-
-        if (data.success === true) {
-          setDiscountData(data);
-          setDiscountPercent(parseFloat(data.discountPercent || 0));
-          setDiscountAmount(parseFloat(data.discountAmount || 0));
-          setDiscountApplied(true);
-        } else {
-          setDiscountApplied(false);
-        }
-      }
-    } catch {
-      // ignore: fallback is no discount
-    } finally {
-      setCalculatingDiscount(false);
-    }
-  }, [user]);
-
-  const prepareOrderData = useCallback(() => {
+  const prepareOrderData = useCallback((paymentMethodId = null) => {
     if (!selectedCollectSlot || !selectedDeliverSlot) return null;
 
     const order = {
@@ -569,19 +689,25 @@ export default function QuickBooking() {
       pickup_address_id: useSameAddress ? selectedDeliveryId : selectedPickupId,
       use_same_address: useSameAddress,
 
-      // ✅ FIX: Use backend slot label directly
       collect_slot: selectedCollectSlot.label,
       delivery_slot: selectedDeliverSlot.label,
 
       notes: notes.trim() || null,
       images: [],
       change_manager_requested: false,
-      subtotal: 20.0,
-      discount_percent: discountApplied ? discountPercent : 0,
-      discount_amount: discountApplied ? discountAmount : 0,
-      service_charge: serviceCharge,
-      topup_amount: topUpAmount,
-      total_amount: Math.round(finalTotal * 100),
+      
+      // Payment information
+      minimum_order_amount: MINIMUM_ORDER_AMOUNT,
+      service_charge: SERVICE_CHARGE,
+      
+      // Payment status - card saved, invoice pending
+      payment_status: "card_saved",
+      payment_type: "invoice_based",
+      stripe_customer_id: customerId,
+      payment_method_id: paymentMethodId,
+      
+      // Initial estimated total (will be updated by laundry manager)
+      estimated_total: 0,
       currency: "gbp",
     };
 
@@ -593,57 +719,91 @@ export default function QuickBooking() {
     selectedPickupId,
     useSameAddress,
     notes,
-    discountApplied,
-    discountPercent,
-    discountAmount,
-    serviceCharge,
-    topUpAmount,
-    finalTotal,
+    customerId,
   ]);
 
-  const handlePaymentSuccess = async (paymentIntent) => {
-    setPaymentProcessing(true);
+  const handleSetupSuccess = async (setupIntent) => {
+  setSetupProcessing(true);
 
-    try {
-      const order = prepareOrderData();
-      if (!order) throw new Error("Order data is missing");
-
-      order.payment_intent_id = paymentIntent.id;
-      order.payment_status = paymentIntent.status;
-
-      const token = localStorage.getItem("jwtToken");
-      if (!token) throw new Error("No authentication token found");
-
-      const res = await fetch(`${API_BASE}/express_order`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Order creation failed");
-      }
-
-      clearBookingData();
-      setShowPayment(false);
-      setShowSuccess(true);
-
-      setTimeout(() => {
-        navigate("/orders", { state: { orderId: data.order_id, isExpress: true } });
-      }, 1500);
-    } catch (error) {
-      showToast(error.message || "Failed to create order");
-    } finally {
-      setPaymentProcessing(false);
+  try {
+    const paymentMethodId = setupIntent.payment_method;
+    
+    if (!paymentMethodId) {
+      throw new Error("No payment method ID returned from Stripe");
     }
-  };
 
-  const handlePaymentError = (errorMessage) => {
-    showToast(errorMessage || "Payment failed. Please try again.");
+    // CRITICAL STEP: Set this card as the default payment method
+    if (customerId) {
+      const defaultSet = await setPaymentMethodAsDefault(customerId, paymentMethodId);
+      if (!defaultSet) {
+        console.warn("Card saved but not set as default. Auto-payment might fail.");
+      }
+    }
+
+    const order = prepareOrderData(paymentMethodId);
+    if (!order) throw new Error("Order data is missing");
+
+    // Add setup intent details to order
+    order.setup_intent_id = setupIntent.id;
+    order.payment_method_id = paymentMethodId;
+
+    const token = localStorage.getItem("jwtToken");
+    if (!token) throw new Error("No authentication token found");
+
+    // Save order to backend
+    const res = await fetch(`${API_BASE}/express_order`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(order),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Order creation failed");
+    }
+
+    // Save order to localStorage for ThankYou page
+    localStorage.setItem('lastOrder', JSON.stringify({
+      orderId: data.order_id || data.orderId,
+      status: 'Confirmed',
+      estimatedDelivery: order.delivery_slot || '24-48 hours',
+      pickupTime: order.collect_slot || 'Today, 4-6 PM',
+      paymentStatus: 'card_saved',
+      paymentNote: 'Card saved as default. Payment will be automatically charged after invoice.',
+      customerId: customerId,
+      paymentMethodId: paymentMethodId,
+      // Add these fields for ThankYou page
+      totalAmount: '£0.00 (Will be charged after invoice)',
+      serviceType: 'Express Laundry',
+      paymentMethod: 'Card saved for auto-payment'
+    }));
+
+    clearBookingData();
+    setShowPaymentSetup(false);
+    
+    // Navigate directly to ThankYou page (no delay)
+    navigate("/thankyou", { 
+      state: { 
+        orderId: data.order_id,
+        isExpress: true,
+        paymentStatus: 'card_saved',
+        paymentMethodId: paymentMethodId
+      } 
+    });
+    
+  } catch (error) {
+    console.error("Setup success error:", error);
+    showToast(error.message || "Failed to create order");
+  } finally {
+    setSetupProcessing(false);
+  }
+};
+
+  const handleSetupError = (errorMessage) => {
+    showToast(errorMessage || "Failed to save card. Please try again.");
   };
 
   /* ------------------------- Confirm booking flow ------------------------- */
@@ -654,7 +814,6 @@ export default function QuickBooking() {
       return;
     }
 
-    // ✅ FIX: Check if addresses are loaded and selected
     if (addresses.length === 0) {
       showToast("Please add a delivery address first");
       return;
@@ -680,52 +839,26 @@ export default function QuickBooking() {
       return;
     }
 
-    // ✅ FIX: Don't await calculateDiscountAndServiceCharge before showing payment
-    // Just set loading states and proceed with payment
-    setPaymentProcessing(true);
+    setSetupProcessing(true);
 
     try {
-      // Calculate discount in background
-      await calculateDiscountAndServiceCharge();
+      // Ensure stripe customer exists
+      await ensureStripeCustomer();
 
-      const preparedOrder = prepareOrderData();
-      if (!preparedOrder) {
-        showToast("Failed to prepare order data");
-        setPaymentProcessing(false);
-        return;
+      // Create setup intent for saving card
+      const setupData = await createSetupIntent();
+      if (!setupData || !setupData.setupIntentClientSecret) {
+        throw new Error("Failed to setup payment");
       }
 
-      const token = localStorage.getItem("jwtToken");
-      const res = await fetch(`${API_BASE}/stripe/create-payment-intent`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-        body: JSON.stringify({
-          amount: preparedOrder.total_amount, // already in pence
-          currency: "gbp",
-          metadata: {
-            order_type: "express_order",
-            order_data: JSON.stringify(preparedOrder),
-          },
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.clientSecret) {
-        throw new Error(data.error || "Failed to start payment. Please try again.");
-      }
-
-      setOrderData(preparedOrder);
-      setPaymentClientSecret(data.clientSecret);
-      setShowPayment(true);
+      setSetupClientSecret(setupData.setupIntentClientSecret);
+      setCustomerId(setupData.customerId || customerId);
+      
+      setShowPaymentSetup(true);
     } catch (error) {
-      showToast(error.message || "Unable to start payment");
+      showToast(error.message || "Unable to setup payment");
     } finally {
-      setPaymentProcessing(false);
-      setCalculatingDiscount(false);
+      setSetupProcessing(false);
     }
   };
 
@@ -781,7 +914,6 @@ export default function QuickBooking() {
     setCollectDate(newDate);
     setSelectedCollectSlot(null);
 
-    // ✅ FIX: Reset delivery date if pickup date changes to later date
     if (deliverDate && newDate > deliverDate) {
       const tomorrow = new Date(newDate);
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -833,7 +965,6 @@ export default function QuickBooking() {
 
     setSelectedCollectSlot(slot);
 
-    // ✅ FIX: If same day, refetch delivery slots to ensure 8-hour gap
     if (collectDate === deliverDate) {
       setTimeout(() => {
         fetchDeliverySlots();
@@ -881,10 +1012,9 @@ export default function QuickBooking() {
     }
   }, [user, deliverDate, fetchDeliverySlots]);
 
-  // ✅ FIX: Calculate button disabled state properly
   const isConfirmButtonDisabled = () => {
     if (!user) return true;
-    if (loading || paymentProcessing || calculatingDiscount) return true;
+    if (loading || setupProcessing) return true;
     if (addresses.length === 0) return true;
     if (!selectedDeliveryId) return true;
     if (!useSameAddress && !selectedPickupId) return true;
@@ -993,6 +1123,13 @@ export default function QuickBooking() {
             Skip the item selection and book your laundry service in just a few clicks.
             We'll handle everything from pickup to delivery.
           </p>
+          <div className="qb-payment-info">
+            <i className="fas fa-info-circle"></i>
+            <span>
+              <strong>Card required for booking.</strong> No upfront charge. 
+              Card saved as default for auto-payment after invoice (£{MINIMUM_ORDER_AMOUNT} min + £{SERVICE_CHARGE} service fee).
+            </span>
+          </div>
         </div>
 
         {!user && (
@@ -1020,6 +1157,7 @@ export default function QuickBooking() {
           </div>
         ) : (
           <>
+            {/* DELIVERY ADDRESS SECTION */}
             {user && (
               <div className="qb-card">
                 <div className="qb-card-header">
@@ -1048,7 +1186,6 @@ export default function QuickBooking() {
                               ? "selected"
                               : ""
                           }`}
-                          onClick={() => handleSelectAddress(addr.address_id)}
                         >
                           <div className="qb-address-header">
                             <h3 className="qb-address-name">
@@ -1059,11 +1196,47 @@ export default function QuickBooking() {
                               ></i>
                               {addr.name || addr.address_type || "Address"}
                             </h3>
-                            {addr.is_selected && (
-                              <span className="qb-default-badge">Default</span>
-                            )}
+                            <div className="qb-address-actions">
+                              {addr.is_selected && (
+                                <span className="qb-default-badge">Default</span>
+                              )}
+                              <div className="qb-address-menu">
+                                <button
+                                  className="qb-address-menu-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowMenuForAddress(
+                                      showMenuForAddress === String(addr.address_id) 
+                                        ? null 
+                                        : String(addr.address_id)
+                                    );
+                                  }}
+                                >
+                                  <i className="fas fa-ellipsis-v"></i>
+                                </button>
+                                {showMenuForAddress === String(addr.address_id) && (
+                                  <div className="qb-address-menu-dropdown">
+                                    <button
+                                      className="qb-address-menu-item delete"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm("Are you sure you want to delete this address?")) {
+                                          deleteAddress(addr.address_id);
+                                        }
+                                      }}
+                                    >
+                                      <i className="fas fa-trash-alt"></i>
+                                      Delete Address
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div className="qb-address-details">
+                          <div 
+                            className="qb-address-details"
+                            onClick={() => handleSelectAddress(addr.address_id)}
+                          >
                             {formatAddressDisplay(addr)}
                           </div>
                           {selectedDeliveryId === String(addr.address_id) && (
@@ -1115,7 +1288,6 @@ export default function QuickBooking() {
                                   ? "selected"
                                   : ""
                               }`}
-                              onClick={() => handleSelectAddress(addr.address_id, false)}
                             >
                               <div className="qb-address-header">
                                 <h3 className="qb-address-name">
@@ -1126,8 +1298,44 @@ export default function QuickBooking() {
                                   ></i>
                                   {addr.name || addr.address_type || "Pickup"}
                                 </h3>
+                                <div className="qb-address-actions">
+                                  <div className="qb-address-menu">
+                                    <button
+                                      className="qb-address-menu-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowMenuForAddress(
+                                          showMenuForAddress === `pickup-${addr.address_id}` 
+                                            ? null 
+                                            : `pickup-${addr.address_id}`
+                                        );
+                                      }}
+                                    >
+                                      <i className="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    {showMenuForAddress === `pickup-${addr.address_id}` && (
+                                      <div className="qb-address-menu-dropdown">
+                                        <button
+                                          className="qb-address-menu-item delete"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (window.confirm("Are you sure you want to delete this address?")) {
+                                              deleteAddress(addr.address_id);
+                                            }
+                                          }}
+                                        >
+                                          <i className="fas fa-trash-alt"></i>
+                                          Delete Address
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="qb-address-details">
+                              <div 
+                                className="qb-address-details"
+                                onClick={() => handleSelectAddress(addr.address_id, false)}
+                              >
                                 {formatAddressDisplay(addr)}
                               </div>
                               {selectedPickupId === String(addr.address_id) && (
@@ -1145,6 +1353,7 @@ export default function QuickBooking() {
               </div>
             )}
 
+            {/* SCHEDULE PICKUP & DELIVERY SECTION */}
             {user && (
               <div className="qb-card">
                 <div className="qb-card-header">
@@ -1350,6 +1559,7 @@ export default function QuickBooking() {
               </div>
             )}
 
+            {/* SPECIAL INSTRUCTIONS SECTION */}
             {user && (
               <div className="qb-card">
                 <div className="qb-card-header">
@@ -1375,6 +1585,44 @@ export default function QuickBooking() {
               </div>
             )}
 
+            {/* PAYMENT INFORMATION SECTION */}
+            {user && (
+              <div className="qb-card">
+                <div className="qb-card-header">
+                  <div className="qb-card-icon">
+                    <i className="fas fa-credit-card"></i>
+                  </div>
+                  <h2 className="qb-card-title">Payment Information</h2>
+                </div>
+                <div className="qb-payment-summary">
+                  <div className="qb-payment-notice">
+                    <i className="fas fa-credit-card"></i>
+                    <div className="qb-payment-notice-content">
+                      <h4>Card Required for Booking</h4>
+                      <p>
+                        <strong>This card will be saved as your DEFAULT payment method.</strong><br/>
+                        It will be automatically charged when we send you the invoice.
+                        No upfront charge.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="qb-payment-details">
+                    <h5>Auto-Payment Terms:</h5>
+                    <ul>
+                      <li><i className="fas fa-pound-sign"></i> Minimum charge: £{MINIMUM_ORDER_AMOUNT}.00 + £{SERVICE_CHARGE}.00 service fee</li>
+                      <li><i className="fas fa-file-invoice"></i> Invoice sent after driver collects your items</li>
+                      <li><i className="fas fa-bolt"></i> <strong>AUTO-CHARGE:</strong> Card charged automatically when invoice is sent</li>
+                      <li><i className="fas fa-shield-alt"></i> Securely saved via Stripe</li>
+                      <li><i className="fas fa-exclamation-circle"></i> Invoice amount &lt; £20 = Charge £{(MINIMUM_ORDER_AMOUNT + SERVICE_CHARGE).toFixed(2)}</li>
+                      <li><i className="fas fa-exclamation-circle"></i> Invoice amount ≥ £20 = Charge invoice amount + £{SERVICE_CHARGE}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ACTION BUTTONS */}
             <div className="qb-actions">
               <button
                 type="button"
@@ -1391,33 +1639,35 @@ export default function QuickBooking() {
                 disabled={isConfirmButtonDisabled()}
               >
                 <i className="fas fa-check-circle"></i>
-                {paymentProcessing
-                  ? "Processing..."
-                  : calculatingDiscount
-                  ? "Calculating..."
+                {setupProcessing
+                  ? "Setting up payment..."
                   : loading
                   ? "Processing..."
-                  : `Confirm Booking (£${finalTotal.toFixed(2)})`}
+                  : `Save Card & Confirm Booking`}
               </button>
             </div>
           </>
         )}
       </main>
 
-      {/* Payment Modal */}
-      {showPayment && orderData && paymentClientSecret && (
+      {/* Payment Setup Modal */}
+      {showPaymentSetup && setupClientSecret && (
         <div className="payment-modal-backdrop">
           <div className="payment-modal">
             <Elements
               stripe={stripePromise}
-              options={{ clientSecret: paymentClientSecret }}
+              options={{
+                clientSecret: setupClientSecret,
+                appearance: {
+                  theme: 'stripe',
+                },
+              }}
             >
-              <StripePaymentForm
-                orderData={orderData}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-                onCancel={() => setShowPayment(false)}
-                paymentProcessing={paymentProcessing}
+              <StripeSetupForm
+                onSetupSuccess={handleSetupSuccess}
+                onSetupError={handleSetupError}
+                onCancel={() => setShowPaymentSetup(false)}
+                setupProcessing={setupProcessing}
               />
             </Elements>
           </div>
@@ -1441,7 +1691,7 @@ export default function QuickBooking() {
         <SuccessModal
           open={true}
           title="Booking Confirmed!"
-          subtitle="Your quick laundry booking has been successfully placed. We'll contact you soon."
+          subtitle="Your card has been saved as default. It will be automatically charged when we send the invoice."
           onClose={() => setShowSuccess(false)}
         />
       )}

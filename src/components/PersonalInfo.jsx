@@ -10,27 +10,29 @@ const PersonalInfo = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  // Form states
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: ""
+  });
 
-  const [editName, setEditName] = useState(false);
-  const [editPhone, setEditPhone] = useState(false);
-  const [editEmail, setEditEmail] = useState(false);
+  const [editingField, setEditingField] = useState(null);
+  const [originalData, setOriginalData] = useState({});
 
-  const [originalName, setOriginalName] = useState("");
-  const [originalPhone, setOriginalPhone] = useState("");
-  const [originalEmail, setOriginalEmail] = useState("");
-
+  // Fetch user profile
   const loadProfile = async () => {
     const token = localStorage.getItem("jwtToken");
     if (!token) {
       setLoading(false);
+      setError("Please login to view profile");
       return;
     }
 
     try {
+      setError(null);
       const res = await fetch(`${API_BASE}/profile`, {
         headers: {
           "Content-Type": "application/json",
@@ -41,15 +43,25 @@ const PersonalInfo = () => {
       if (res.ok) {
         const data = await res.json();
         setUserData(data);
-        setName(data.name || "");
-        setPhone(data.phone || "");
-        setEmail(data.email || "");
-        setOriginalName(data.name || "");
-        setOriginalPhone(data.phone || "");
-        setOriginalEmail(data.email || "");
+        setFormData({
+          name: data.name || "",
+          phone: data.phone || "",
+          email: data.email || ""
+        });
+        setOriginalData({
+          name: data.name || "",
+          phone: data.phone || "",
+          email: data.email || ""
+        });
+      } else if (res.status === 401) {
+        localStorage.removeItem("jwtToken");
+        setError("Session expired. Please login again.");
+      } else {
+        setError("Failed to load profile data");
       }
     } catch (err) {
       console.error("Error loading profile:", err);
+      setError("Network error. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -59,11 +71,17 @@ const PersonalInfo = () => {
     loadProfile();
   }, []);
 
-  const updateField = async (field, value) => {
+  // Update user profile
+  const updateProfile = async (field, value) => {
     const token = localStorage.getItem("jwtToken");
-    if (!token) return;
+    if (!token) {
+      setError("Please login to update profile");
+      return;
+    }
 
     setSaving(true);
+    setError(null);
+
     try {
       const res = await fetch(`${API_BASE}/profile`, {
         method: "PUT",
@@ -74,61 +92,94 @@ const PersonalInfo = () => {
         body: JSON.stringify({ [field]: value }),
       });
 
+      const responseData = await res.json();
+
       if (res.ok) {
         // Update local state
-        setUserData({ ...userData, [field]: value });
+        setUserData(prev => ({ ...prev, [field]: value }));
+        setOriginalData(prev => ({ ...prev, [field]: value }));
+        setEditingField(null);
         
-        // Update original values
-        if (field === "name") {
-          setOriginalName(value);
-          setEditName(false);
-        }
-        if (field === "phone") {
-          setOriginalPhone(value);
-          setEditPhone(false);
-        }
-        if (field === "email") {
-          setOriginalEmail(value);
-          setEditEmail(false);
-        }
-
-        // Show success feedback
-        showToast(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully!`);
+        // Show success message
+        showMessage(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully!`, "success");
       } else {
-        showToast(`Failed to update ${field}. Please try again.`, "error");
+        // Revert form data on error
+        setFormData(prev => ({ ...prev, [field]: originalData[field] }));
+        setError(responseData.message || `Failed to update ${field}`);
+        showMessage(`Failed to update ${field}`, "error");
       }
     } catch (err) {
       console.error("Error updating profile:", err);
-      showToast("Connection error. Please try again.", "error");
+      setError("Network error. Please try again.");
+      showMessage("Network error. Please try again.", "error");
+      // Revert form data on error
+      setFormData(prev => ({ ...prev, [field]: originalData[field] }));
     } finally {
       setSaving(false);
     }
   };
 
-  const cancelEdit = (field) => {
-    if (field === "name") {
-      setName(originalName);
-      setEditName(false);
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const startEditing = (field) => {
+    setEditingField(field);
+  };
+
+  const cancelEditing = (field) => {
+    setEditingField(null);
+    setFormData(prev => ({ ...prev, [field]: originalData[field] }));
+  };
+
+  const saveField = async (field) => {
+    const value = formData[field];
+    
+    // Validation
+    if (!value.trim()) {
+      showMessage(`${field} cannot be empty`, "error");
+      return;
     }
-    if (field === "phone") {
-      setPhone(originalPhone);
-      setEditPhone(false);
-    }
+
     if (field === "email") {
-      setEmail(originalEmail);
-      setEditEmail(false);
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        showMessage("Please enter a valid email address", "error");
+        return;
+      }
     }
+
+    if (field === "phone") {
+      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+      const cleanedPhone = value.replace(/\D/g, '');
+      if (!phoneRegex.test(cleanedPhone)) {
+        showMessage("Please enter a valid phone number", "error");
+        return;
+      }
+    }
+
+    // Check if value actually changed
+    if (value === originalData[field]) {
+      setEditingField(null);
+      return;
+    }
+
+    await updateProfile(field, value);
   };
 
-  const logout = () => {
+  // Logout
+  const handleLogout = () => {
     if (window.confirm("Are you sure you want to logout?")) {
-      localStorage.clear();
-      navigate("/");
+      localStorage.removeItem("jwtToken");
+      localStorage.removeItem("userData");
+      showMessage("Logged out successfully", "success");
+      setTimeout(() => navigate("/"), 1000);
     }
   };
 
-  const deleteAccount = async () => {
-    if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+  // Delete account
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("⚠️ WARNING: This will permanently delete your account and all your data. This action cannot be undone. Are you sure?")) {
       return;
     }
 
@@ -145,45 +196,42 @@ const PersonalInfo = () => {
       });
 
       if (res.ok) {
-        showToast("Account deleted successfully", "success");
-        setTimeout(() => {
-          localStorage.clear();
-          navigate("/");
-        }, 1500);
+        showMessage("Account deleted successfully", "success");
+        localStorage.clear();
+        setTimeout(() => navigate("/"), 1500);
       } else {
-        showToast("Failed to delete account", "error");
+        const errorData = await res.json();
+        showMessage(errorData.message || "Failed to delete account", "error");
       }
     } catch (err) {
       console.error("Error deleting account:", err);
-      showToast("Server error. Please try again.", "error");
+      showMessage("Network error. Please try again.", "error");
     }
   };
 
-  const showToast = (message, type = "success") => {
-    // Remove existing toast if any
-    const existingToast = document.querySelector('.profile-toast');
-    if (existingToast) existingToast.remove();
+  const showMessage = (message, type = "info") => {
+    const existingMsg = document.querySelector('.message-toast');
+    if (existingMsg) existingMsg.remove();
 
-    const toast = document.createElement('div');
-    toast.className = `profile-toast ${type}`;
-    toast.innerHTML = `
-      <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-      <span>${message}</span>
+    const msgElement = document.createElement('div');
+    msgElement.className = `message-toast ${type}`;
+    msgElement.innerHTML = `
+      <div class="message-content">
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+      </div>
     `;
-    document.body.appendChild(toast);
+    document.body.appendChild(msgElement);
 
-    // Show toast
-    setTimeout(() => toast.classList.add('show'), 10);
-
-    // Remove toast after 3 seconds
+    setTimeout(() => msgElement.classList.add('show'), 10);
     setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 300);
+      msgElement.classList.remove('show');
+      setTimeout(() => msgElement.remove(), 300);
     }, 3000);
   };
 
   const getInitials = () => {
-    if (!name) return "?";
+    const name = formData.name || "User";
     const parts = name.split(' ');
     if (parts.length > 1) {
       return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
@@ -191,40 +239,36 @@ const PersonalInfo = () => {
     return name.charAt(0).toUpperCase();
   };
 
-  const formatPhoneNumber = (phoneNumber) => {
-    if (!phoneNumber) return "";
-    // Format: (XXX) XXX-XXXX
-    const cleaned = phoneNumber.replace(/\D/g, '');
+  const formatPhone = (phone) => {
+    if (!phone) return "";
+    const cleaned = phone.replace(/\D/g, '');
     const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-    if (match) {
-      return `(${match[1]}) ${match[2]}-${match[3]}`;
-    }
-    return phoneNumber;
+    return match ? `(${match[1]}) ${match[2]}-${match[3]}` : phone;
   };
 
   if (loading) {
     return (
-      <div className="profile-loader">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
+      <div className="loading-screen">
+        <div className="loading-content">
+          <div className="loader"></div>
           <p>Loading your profile...</p>
         </div>
       </div>
     );
   }
 
-  if (!userData) {
+  if (error && !userData) {
     return (
-      <div className="profile-empty">
-        <div className="empty-container">
-          <i className="fas fa-user-slash"></i>
-          <h3>Not Logged In</h3>
-          <p>Please login to view your profile</p>
+      <div className="error-screen">
+        <div className="error-content">
+          <i className="fas fa-exclamation-triangle"></i>
+          <h3>Unable to Load Profile</h3>
+          <p>{error}</p>
           <button 
-            className="login-btn"
-            onClick={() => navigate("/")}
+            className="primary-btn"
+            onClick={() => navigate("/login")}
           >
-            Go to Home
+            <i className="fas fa-sign-in-alt"></i> Go to Login
           </button>
         </div>
       </div>
@@ -232,270 +276,237 @@ const PersonalInfo = () => {
   }
 
   return (
-    <>
-      <div className="personal-info-page">
-        <div className="profile-background">
-          <div className="profile-container">
-            
-            {/* Header with back button */}
-            <div className="profile-header">
-              <button 
-                className="back-button"
-                onClick={() => navigate(-1)}
-                aria-label="Go back"
-              >
-                <i className="fas fa-arrow-left"></i>
-              </button>
-              <h1 className="page-title">Personal Information</h1>
-              <div className="header-placeholder"></div>
-            </div>
+    <div className="personal-info-container">
+      {/* Header */}
+      <div className="profile-header">
+        <button 
+          className="back-btn"
+          onClick={() => navigate(-1)}
+          aria-label="Go back"
+        >
+          <i className="fas fa-arrow-left"></i>
+        </button>
+        <h1 className="page-title" style={{color:"black"}}>Personal Information</h1>
+        <div className="header-actions">
+          <button 
+            className="refresh-btn"
+            onClick={loadProfile}
+            aria-label="Refresh"
+            disabled={loading}
+          >
+            <i className={`fas fa-sync-alt ${loading ? 'fa-spin' : ''}`}></i>
+          </button>
+        </div>
+      </div>
 
-            {/* User Profile Card */}
-            <div className="profile-card">
-              {/* Avatar Section */}
-              <div className="avatar-section">
-                <div className="avatar-container">
-                  <div className="avatar-circle">
-                    {getInitials()}
-                  </div>
-                  <div className="avatar-status">
-                    <div className="status-dot"></div>
-                    <span>Active</span>
-                  </div>
-                </div>
-                <div className="user-info">
-                  <h2 className="user-name">{name || "User"}</h2>
-                  <p className="user-email">{email || "No email provided"}</p>
-                  <div className="member-since">
-                    <i className="fas fa-crown"></i>
-                    <span>Member since {new Date().getFullYear()}</span>
-                  </div>
-                </div>
-              </div>
+      {/* Error Banner */}
+      {error && userData && (
+        <div className="error-banner">
+          <i className="fas fa-exclamation-circle"></i>
+          <span>{error}</span>
+          <button onClick={() => setError(null)}>
+            <i className="fas fa-times"></i>
+          </button>
+        </div>
+      )}
 
-              {/* Information Sections */}
-              <div className="info-sections">
-                <div className="section-header">
-                  <i className="fas fa-user-circle"></i>
-                  <h3>Personal Details</h3>
-                </div>
-
-                {/* Name Field */}
-                <div className={`info-field ${editName ? 'editing' : ''}`}>
-                  <div className="field-label">
-                    <i className="fas fa-user"></i>
-                    <span>Full Name</span>
-                  </div>
-                  <div className="field-content">
-                    {editName ? (
-                      <div className="edit-mode">
-                        <input
-                          type="text"
-                          className="edit-input"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          autoFocus
-                          placeholder="Enter your full name"
-                        />
-                        <div className="edit-actions">
-                          <button
-                            className="action-btn save-btn"
-                            onClick={() => updateField("name", name)}
-                            disabled={saving || !name.trim()}
-                          >
-                            {saving ? (
-                              <i className="fas fa-spinner fa-spin"></i>
-                            ) : (
-                              <i className="fas fa-check"></i>
-                            )}
-                          </button>
-                          <button
-                            className="action-btn cancel-btn"
-                            onClick={() => cancelEdit("name")}
-                            disabled={saving}
-                          >
-                            <i className="fas fa-times"></i>
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="display-mode">
-                        <span className="field-value">{name || "Not set"}</span>
-                        <button
-                          className="edit-trigger"
-                          onClick={() => setEditName(true)}
-                          aria-label="Edit name"
-                        >
-                          <i className="fas fa-pen"></i>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Phone Field */}
-                <div className={`info-field ${editPhone ? 'editing' : ''}`}>
-                  <div className="field-label">
-                    <i className="fas fa-phone"></i>
-                    <span>Phone Number</span>
-                  </div>
-                  <div className="field-content">
-                    {editPhone ? (
-                      <div className="edit-mode">
-                        <input
-                          type="tel"
-                          className="edit-input"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          autoFocus
-                          placeholder="Enter your phone number"
-                        />
-                        <div className="edit-actions">
-                          <button
-                            className="action-btn save-btn"
-                            onClick={() => updateField("phone", phone)}
-                            disabled={saving || !phone.trim()}
-                          >
-                            {saving ? (
-                              <i className="fas fa-spinner fa-spin"></i>
-                            ) : (
-                              <i className="fas fa-check"></i>
-                            )}
-                          </button>
-                          <button
-                            className="action-btn cancel-btn"
-                            onClick={() => cancelEdit("phone")}
-                            disabled={saving}
-                          >
-                            <i className="fas fa-times"></i>
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="display-mode">
-                        <span className="field-value">{formatPhoneNumber(phone) || "Not set"}</span>
-                        <button
-                          className="edit-trigger"
-                          onClick={() => setEditPhone(true)}
-                          aria-label="Edit phone"
-                        >
-                          <i className="fas fa-pen"></i>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Email Field */}
-                <div className={`info-field ${editEmail ? 'editing' : ''}`}>
-                  <div className="field-label">
-                    <i className="fas fa-envelope"></i>
-                    <span>Email Address</span>
-                  </div>
-                  <div className="field-content">
-                    {editEmail ? (
-                      <div className="edit-mode">
-                        <input
-                          type="email"
-                          className="edit-input"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          autoFocus
-                          placeholder="Enter your email address"
-                        />
-                        <div className="edit-actions">
-                          <button
-                            className="action-btn save-btn"
-                            onClick={() => updateField("email", email)}
-                            disabled={saving || !email.trim()}
-                          >
-                            {saving ? (
-                              <i className="fas fa-spinner fa-spin"></i>
-                            ) : (
-                              <i className="fas fa-check"></i>
-                            )}
-                          </button>
-                          <button
-                            className="action-btn cancel-btn"
-                            onClick={() => cancelEdit("email")}
-                            disabled={saving}
-                          >
-                            <i className="fas fa-times"></i>
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="display-mode">
-                        <span className="field-value">{email || "Not set"}</span>
-                        <button
-                          className="edit-trigger"
-                          onClick={() => setEditEmail(true)}
-                          aria-label="Edit email"
-                        >
-                          <i className="fas fa-pen"></i>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Account Security Section */}
-                <div className="section-header">
-                  <i className="fas fa-shield-alt"></i>
-                  <h3>Account Security</h3>
-                </div>
-
-                {/* Logout Button */}
-                <div className="action-field logout-field" onClick={logout}>
-                  <div className="field-label">
-                    <i className="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                  </div>
-                  <div className="field-arrow">
-                    <i className="fas fa-chevron-right"></i>
-                  </div>
-                </div>
-
-                {/* Delete Account Button */}
-                <div className="action-field delete-field" onClick={deleteAccount}>
-                  <div className="field-label">
-                    <i className="fas fa-trash-alt"></i>
-                    <span>Delete Account</span>
-                  </div>
-                  <div className="field-warning">
-                    <i className="fas fa-exclamation-triangle"></i>
-                  </div>
-                </div>
-
-                {/* Stats Section */}
-                <div className="stats-section">
-                  <div className="stat-item">
-                    <i className="fas fa-shopping-bag"></i>
-                    <div className="stat-details">
-                      <div className="stat-label">Total Orders</div>
-                      <div className="stat-value">0</div>
-                    </div>
-                  </div>
-                  <div className="stat-item">
-                    <i className="fas fa-star"></i>
-                    <div className="stat-details">
-                      <div className="stat-label">Member Since</div>
-                      <div className="stat-value">{new Date().getFullYear()}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer Note */}
-              <div className="profile-footer">
-                <i className="fas fa-info-circle"></i>
-                <p>Your information is securely stored and protected.</p>
-              </div>
+      {/* Profile Card */}
+      <div className="profile-card">
+        {/* Avatar Section */}
+        <div className="avatar-section">
+          <div className="avatar-circle">
+            <div className="avatar-initials">{getInitials()}</div>
+          </div>
+          <div className="user-info">
+            <h2 className="user-name">{formData.name || "User"}</h2>
+            <p className="user-email">{formData.email || "No email set"}</p>
+            <div className="account-status">
+              <span className="status-dot"></span>
+              Active Account
             </div>
           </div>
         </div>
+
+        {/* Personal Information Section */}
+        <div className="info-section">
+          <h3 className="section-title" style={{color:"black"}}>Personal Details</h3>
+          
+          {/* Name Field */}
+          <div className={`field-group ${editingField === 'name' ? 'editing' : ''}`}>
+            <label>
+              <i className="fas fa-user"></i>
+              Full Name
+            </label>
+            <div className="field-content">
+              {editingField === 'name' ? (
+                <div className="edit-mode">
+                  <input
+                    type="text"
+                    className="edit-input"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Enter your name"
+                    autoFocus
+                  />
+                  <div className="edit-buttons">
+                    <button
+                      className="btn save-btn"
+                      onClick={() => saveField('name')}
+                      disabled={saving}
+                      aria-label="Save name"
+                    >
+                      {saving ? <i className="fas fa-spinner fa-spin"></i> : 'Save'}
+                    </button>
+                    <button
+                      className="btn cancel-btn"
+                      onClick={() => cancelEditing('name')}
+                      disabled={saving}
+                      aria-label="Cancel"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="view-mode">
+                  <span className="field-value">{formData.name || "Not set"}</span>
+                  <button
+                    className="edit-btn"
+                    onClick={() => startEditing('name')}
+                    aria-label="Edit name"
+                  >
+                    <i className="fas fa-edit"></i>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Phone Field */}
+          <div className={`field-group ${editingField === 'phone' ? 'editing' : ''}`}>
+            <label>
+              <i className="fas fa-phone"></i>
+              Phone Number
+            </label>
+            <div className="field-content">
+              {editingField === 'phone' ? (
+                <div className="edit-mode">
+                  <input
+                    type="tel"
+                    className="edit-input"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    placeholder="Enter your phone number"
+                    autoFocus
+                  />
+                  <div className="edit-buttons">
+                    <button
+                      className="btn save-btn"
+                      onClick={() => saveField('phone')}
+                      disabled={saving}
+                      aria-label="Save phone"
+                    >
+                      {saving ? <i className="fas fa-spinner fa-spin"></i> : 'Save'}
+                    </button>
+                    <button
+                      className="btn cancel-btn"
+                      onClick={() => cancelEditing('phone')}
+                      disabled={saving}
+                      aria-label="Cancel"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="view-mode">
+                  <span className="field-value">{formatPhone(formData.phone) || "Not set"}</span>
+                  <button
+                    className="edit-btn"
+                    onClick={() => startEditing('phone')}
+                    aria-label="Edit phone"
+                  >
+                    <i className="fas fa-edit"></i>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Email Field */}
+          <div className={`field-group ${editingField === 'email' ? 'editing' : ''}`}>
+            <label>
+              <i className="fas fa-envelope"></i>
+              Email Address
+            </label>
+            <div className="field-content">
+              {editingField === 'email' ? (
+                <div className="edit-mode">
+                  <input
+                    type="email"
+                    className="edit-input"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="Enter your email address"
+                    autoFocus
+                  />
+                  <div className="edit-buttons">
+                    <button
+                      className="btn save-btn"
+                      onClick={() => saveField('email')}
+                      disabled={saving}
+                      aria-label="Save email"
+                    >
+                      {saving ? <i className="fas fa-spinner fa-spin"></i> : 'Save'}
+                    </button>
+                    <button
+                      className="btn cancel-btn"
+                      onClick={() => cancelEditing('email')}
+                      disabled={saving}
+                      aria-label="Cancel"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="view-mode">
+                  <span className="field-value">{formData.email || "Not set"}</span>
+                  <button
+                    className="edit-btn"
+                    onClick={() => startEditing('email')}
+                    aria-label="Edit email"
+                  >
+                    <i className="fas fa-edit"></i>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Account Actions */}
+        <div className="actions-section">
+          <h3 className="section-title" style={{color:"black"}}>Account Actions</h3>
+          <div className="action-buttons">
+            <button 
+              className="btn logout-btn"
+              onClick={handleLogout}
+            >
+              <i className="fas fa-sign-out-alt"></i>
+              Logout
+            </button>
+            <button 
+              className="btn delete-btn"
+              onClick={handleDeleteAccount}
+            >
+              <i className="fas fa-trash-alt"></i>
+              Delete Account
+            </button>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 
