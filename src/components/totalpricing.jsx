@@ -1,10 +1,128 @@
 import React, { useEffect, useState } from "react";
 import "./totalpricing.css";
-//<<<<<<< HEAD
-//=======
-//>>>>>>> f7e627f (Upadte ibltd page with atteched backend connection)
 
 const API_BASE = "https://api.ironingboy.com";
+
+// Function to convert text to camel case (Title Case)
+const toCamelCase = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  
+  return text
+    .toLowerCase() // First convert to lowercase
+    .split(' ') // Split by spaces
+    .map(word => {
+      // Handle special cases like hyphens, slashes, colons
+      if (word.includes('-')) {
+        return word
+          .split('-')
+          .map(subWord => subWord.charAt(0).toUpperCase() + subWord.slice(1))
+          .join('-');
+      }
+      if (word.includes('/')) {
+        return word
+          .split('/')
+          .map(subWord => subWord.charAt(0).toUpperCase() + subWord.slice(1))
+          .join('/');
+      }
+      if (word.includes(':')) {
+        return word
+          .split(':')
+          .map((subWord, idx) => {
+            if (idx === 0) {
+              return subWord.charAt(0).toUpperCase() + subWord.slice(1);
+            }
+            return subWord;
+          })
+          .join(':');
+      }
+      // Capitalize first letter of each word
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ')
+    .replace(/\s+/g, ' ') // Remove extra spaces
+    .trim();
+};
+
+// Alternative simpler function for proper title case
+const toProperCase = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  
+  // Convert to lowercase first
+  let result = text.toLowerCase();
+  
+  // Capitalize first letter of each word
+  result = result.replace(/\b\w/g, char => char.toUpperCase());
+  
+  // Handle special words that should remain lowercase (like 'and', 'or', 'the', etc.)
+  const smallWords = ['and', 'or', 'but', 'the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'by'];
+  
+  // Split into words, apply small word rules
+  const words = result.split(' ');
+  const processedWords = words.map((word, index) => {
+    // Keep small words lowercase except first word
+    if (index > 0 && smallWords.includes(word.toLowerCase())) {
+      return word.toLowerCase();
+    }
+    return word;
+  });
+  
+  return processedWords.join(' ');
+};
+
+// Function specifically for laundry service names
+const formatServiceName = (name) => {
+  if (!name || typeof name !== 'string') return '';
+  
+  // Common laundry terms that should remain as-is
+  const laundryTerms = {
+    'dry clean': 'Dry Clean',
+    'wash & press': 'Wash & Press',
+    'press only': 'Press Only',
+    'wash & presence': 'Wash & Presence',
+    'child\'s': 'Child\'s',
+    'men\'s': 'Men\'s',
+    'women\'s': 'Women\'s',
+    'kids\'': 'Kids\'',
+    'baby\'s': 'Baby\'s',
+    'silk': 'Silk',
+    'wool': 'Wool',
+    'linen': 'Linen',
+    'cotton': 'Cotton',
+    'polyester': 'Polyester',
+    'folded': 'Folded',
+    'hang': 'Hang',
+    'iron': 'Iron',
+    'steam': 'Steam',
+    'starch': 'Starch',
+  };
+  
+  // Convert to lowercase for processing
+  let formatted = name.toLowerCase();
+  
+  // Replace common laundry terms with proper casing
+  Object.entries(laundryTerms).forEach(([lower, proper]) => {
+    const regex = new RegExp(`\\b${lower}\\b`, 'gi');
+    formatted = formatted.replace(regex, proper);
+  });
+  
+  // Capitalize first letter of each word (for any remaining words)
+  formatted = formatted
+    .split(' ')
+    .map(word => {
+      // If word already has proper casing (from laundryTerms), leave it
+      if (Object.values(laundryTerms).includes(word)) {
+        return word;
+      }
+      // Capitalize first letter of each remaining word
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+  
+  // Clean up multiple spaces
+  formatted = formatted.replace(/\s+/g, ' ').trim();
+  
+  return formatted;
+};
 
 const TotalPricing = () => {
   const [categories, setCategories] = useState([]);
@@ -33,7 +151,8 @@ const TotalPricing = () => {
 
         catList.forEach((c) => {
           tempCatMap[c.id] = c.name;
-          categoryNames.push(c.name);
+          // Format category names as well
+          categoryNames.push(formatServiceName(c.name));
         });
 
         // Fetch products
@@ -53,9 +172,11 @@ const TotalPricing = () => {
           if (!categoryName) return; // skip invalid categories
 
           const priceValue = p.price ?? p.standard_price ?? 0;
+          const formattedCategory = formatServiceName(categoryName);
+          const formattedName = formatServiceName(p.name);
 
-          grouped[categoryName].push({
-            name: p.name,
+          grouped[formattedCategory].push({
+            name: formattedName,
             price: "£" + Number(priceValue).toFixed(2),
           });
         });
@@ -162,4 +283,3 @@ const TotalPricing = () => {
 };
 
 export default TotalPricing;
-

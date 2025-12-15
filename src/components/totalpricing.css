@@ -151,87 +151,138 @@
 }
 
 /* ---------------------------- */
-/* PERFECT MOBILE FIX (640px↓) */
-/* Show Name + Price always    */
+/* MOBILE RESPONSIVE STYLES     */
+/* Better text wrapping & layout */
 /* ---------------------------- */
 
 @media (max-width: 640px) {
-
   .tp-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
+    text-align: center;
+    margin-bottom: 30px;
+  }
 
+  .tp-title {
+    margin-top: 10px;
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: #fff;
+  }
+  
   /* Remove table stretching */
   .tp-table {
     min-width: 0 !important;
     width: 100% !important;
   }
 
- .tp-title {
-  margin-top: 10px;
-  font-size: 1.9rem;
-  font-weight: 800;
-  color: #fff;
-}
   .tp-table-wrapper {
     overflow-x: hidden !important;
     padding: 0 12px 16px;
   }
 
-  /* Convert row to flex */
-  .tp-table tr {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  /* Convert row to grid for better control */
+  .tp-table tbody tr {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    grid-template-areas: 
+      "number name price";
+    align-items: flex-start;
     gap: 10px;
     padding: 12px 0;
     border-bottom: 1px solid #1e293b;
     width: 100%;
+    min-height: 44px; /* Minimum row height */
   }
 
-  /* Hide header */
+  /* Hide table header */
   .tp-table thead {
     display: none;
   }
 
+  /* Reset td styles */
   .tp-table td {
     display: block;
     padding: 0;
     border-bottom: none;
+    align-self: center; /* Vertically center content */
   }
 
-  /* Number */
+  /* Number cell */
   .tp-table td:nth-child(1) {
-    flex-shrink: 0;
-    width: 22px;
-    font-size: 0.75rem;
+    grid-area: number;
+    width: 30px;
+    font-size: 0.8rem;
     color: #94a3b8;
+    text-align: center;
+    align-self: flex-start;
+    padding-top: 2px; /* Align with first line of text */
   }
 
-  /* Service name */
+  /* Service name cell */
   .tp-table td:nth-child(2) {
-    flex: 1;
+    grid-area: name;
     color: #e2e8f0;
-
-    /* AUTO SHRINK TEXT IF TOO LONG */
-    white-space: nowrap;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word; /* Allow text to wrap */
+    overflow-wrap: break-word; /* Break long words */
+    hyphens: auto; /* Add hyphenation where appropriate */
+    padding-right: 8px;
+    
+    /* Allow text to wrap naturally */
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Limit to 3 lines max */
+    -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: clamp(0.78rem, 3vw, 0.95rem);
   }
 
-  /* Price */
+  /* Price cell */
   .tp-table td:nth-child(3) {
-    flex-shrink: 0;
-    white-space: nowrap;
+    grid-area: price;
     color: #22c55e;
     font-weight: 700;
-
-    /* AUTO SHRINK PRICE IF CONTEXT IS LONG */
-    font-size: clamp(0.85rem, 3.2vw, 1rem);
-
+    font-size: 0.95rem;
     text-align: right;
-    padding-left: 6px;
+    white-space: nowrap; /* Keep price on one line */
+    min-width: 70px; /* Minimum width for price */
+    align-self: flex-start;
+    padding-top: 2px; /* Align with first line of text */
+  }
+
+  /* For very long service names, ensure proper spacing */
+  .tp-table tr {
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+  }
+}
+
+/* Extra small mobile devices (below 375px) */
+@media (max-width: 375px) {
+  .tp-table tbody tr {
+    grid-template-columns: 25px 1fr auto;
+    gap: 8px;
+  }
+  
+  .tp-table td:nth-child(1) {
+    width: 25px;
+    font-size: 0.75rem;
+  }
+  
+  .tp-table td:nth-child(2) {
+    font-size: 0.85rem;
+  }
+  
+  .tp-table td:nth-child(3) {
+    font-size: 0.9rem;
+    min-width: 65px;
+  }
+}
+
+/* Landscape mode and tablets */
+@media (min-width: 641px) and (max-width: 768px) {
+  .tp-table td:nth-child(2) {
+    max-width: 400px; /* Limit text width on medium screens */
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }
