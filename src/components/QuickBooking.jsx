@@ -71,42 +71,7 @@ const handleSubmit = async (e) => {
     setSubmitting(false);
   }
 };
-const [selectedCollectSlotStart, setSelectedCollectSlotStart] = useState(null);
-const isSameDay = (a, b) =>
-  a.getFullYear() === b.getFullYear() &&
-  a.getMonth() === b.getMonth() &&
-  a.getDate() === b.getDate();
 
-const pickupIsToday = () => {
-  if (!collectDate) return false;
-  const today = new Date();
-  const d = new Date(collectDate);
-  return isSameDay(today, d);
-};
-
-const pickupBefore10 = () => {
-  if (!selectedCollectSlotStart) return false;
-  return selectedCollectSlotStart.getHours() < 10;
-};
-const apply8HourRule = (slots) => {
-  if (!selectedCollectSlotStart || !collectDate) return slots;
-
-  const pickupDate = new Date(collectDate);
-  const pickupDateTime = new Date(
-    pickupDate.getFullYear(),
-    pickupDate.getMonth(),
-    pickupDate.getDate(),
-    selectedCollectSlotStart.getHours(),
-    selectedCollectSlotStart.getMinutes()
-  );
-
-  const minDeliveryTime = new Date(pickupDateTime.getTime() + 8 * 60 * 60 * 1000);
-
-  return slots.filter((slot) => {
-    const start = new Date(slot.start);
-    return start >= minDeliveryTime;
-  });
-};
 
 
 
@@ -168,6 +133,40 @@ export default function QuickBooking() {
     collect: false,
     deliver: false,
   });
+
+  const [selectedCollectSlotStart, setSelectedCollectSlotStart] = useState(null);
+
+const isSameDay = (a, b) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+const pickupIsToday = () => {
+  if (!collectDate) return false;
+  return isSameDay(new Date(), new Date(collectDate));
+};
+
+
+// EXACT match to Flutter rule
+const apply8HourRule = (slots) => {
+  if (!selectedCollectSlotStart || !collectDate) return slots;
+
+  const pickupDate = new Date(collectDate);
+  const pickupDateTime = new Date(
+    pickupDate.getFullYear(),
+    pickupDate.getMonth(),
+    pickupDate.getDate(),
+    selectedCollectSlotStart.getHours(),
+    selectedCollectSlotStart.getMinutes()
+  );
+
+  const minDelivery = new Date(pickupDateTime.getTime() + 8 * 60 * 60 * 1000);
+
+  return slots.filter(s => new Date(s.start) >= minDelivery);
+};
+
+
+
 
   const [addresses, setAddresses] = useState([]);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState(null);
@@ -511,19 +510,23 @@ export default function QuickBooking() {
     if (!dateIso || !user) return [];
 
     const tzOffset = -new Date().getTimezoneOffset();
+
     const params = new URLSearchParams({
       date: dateIso,
-      tzOffset: tzOffset.toString(),
-      isDelivery: String(isDelivery),
       format: "12",
+      tzOffset: tzOffset.toString(),
     });
 
-    // 👇 EXACTLY LIKE FLUTTER
-    if (isDelivery && selectedCollectSlotStart && collectDate) {
-      const h = selectedCollectSlotStart.getHours().toString().padStart(2, "0");
-      const m = selectedCollectSlotStart.getMinutes().toString().padStart(2, "0");
-      params.set("pickupDate", collectDate);
-      params.set("pickupSlotStart", `${h}:${m}`);
+    if (isDelivery) {
+      params.set("isDelivery", "true");
+
+      if (collectDate && selectedCollectSlotStart) {
+        const h = selectedCollectSlotStart.getHours().toString().padStart(2, "0");
+        const m = selectedCollectSlotStart.getMinutes().toString().padStart(2, "0");
+
+        params.set("pickupDate", collectDate);
+        params.set("pickupSlotStart", `${h}:${m}`);
+      }
     }
 
     const res = await fetch(`${API_BASE}/time-slots?${params.toString()}`);
@@ -532,15 +535,18 @@ export default function QuickBooking() {
     const data = await res.json();
     let slots = data.slots || [];
 
-    // 🔥 APPLY SAME FLUTTER RULES
+    // ✅ ONLY frontend rule
     if (isDelivery) {
       slots = apply8HourRule(slots);
     }
 
     return slots;
   },
-  [user, selectedCollectSlotStart, collectDate]
+  [user, collectDate, selectedCollectSlotStart]
 );
+
+
+
 
 
   const fetchCollectSlots = useCallback(async () => {
@@ -567,27 +573,39 @@ export default function QuickBooking() {
   }, [collectDate, fetchTimeSlots, user, selectedCollectSlot]);
 
   const fetchDeliverySlots = useCallback(async () => {
-    if (!deliverDate || !user) return;
-    setLoadingSlots((prev) => ({ ...prev, deliver: true }));
+  if (!deliverDate || !user || !collectDate || !selectedCollectSlotStart) return;
 
-    try {
-      const slots = await fetchTimeSlots(deliverDate, true);
-      setDeliverSlots(slots);
+  setLoadingSlots((prev) => ({ ...prev, deliver: true }));
 
-      if (selectedDeliverSlot) {
-        const normalizedSelectedStart = normalizeTimeFormat(selectedDeliverSlot.start);
-        const stillValid = slots.find(
-          (s) => normalizeTimeFormat(s.start) === normalizedSelectedStart && s.enabled
-        );
-        if (!stillValid) setSelectedDeliverSlot(null);
-      }
-    } catch {
-      setDeliverSlots([]);
-      setSelectedDeliverSlot(null);
-    } finally {
-      setLoadingSlots((prev) => ({ ...prev, deliver: false }));
+  try {
+    const slots = await fetchTimeSlots(deliverDate, true);
+
+    setDeliverSlots(slots);
+
+    if (selectedDeliverSlot) {
+      const stillValid = slots.find(
+        (s) =>
+          s.start === selectedDeliverSlot.start &&
+          s.enabled
+      );
+      if (!stillValid) setSelectedDeliverSlot(null);
     }
-  }, [deliverDate, fetchTimeSlots, user, selectedDeliverSlot]);
+  } catch (err) {
+    console.error("Delivery slot error:", err);
+    setDeliverSlots([]);
+    setSelectedDeliverSlot(null);
+  } finally {
+    setLoadingSlots((prev) => ({ ...prev, deliver: false }));
+  }
+}, [
+  deliverDate,
+  collectDate,
+  selectedCollectSlotStart,
+  fetchTimeSlots,
+  user,
+  selectedDeliverSlot,
+]);
+
 
   const handleSelectAddress = useCallback(
     async (id, isDelivery = true) => {
@@ -812,6 +830,12 @@ if (!paymentMethodId) {
       setSetupProcessing(false);
     }
   };
+  useEffect(() => {
+  // If pickup date changes, delivery must reset
+  setSelectedDeliverSlot(null);
+  setDeliverSlots([]);
+}, [collectDate]);
+
 
   /* ----------------------------- UI helpers ------------------------------ */
 
@@ -856,69 +880,58 @@ if (!paymentMethodId) {
   };
 
   const handleCollectDateChange = (e) => {
-    if (!user) {
-      setShowLogin(true);
-      return;
-    }
+  if (!user) {
+    setShowLogin(true);
+    return;
+  }
 
-    const newDate = e.target.value;
-    setCollectDate(newDate);
-    setSelectedCollectSlot(null);
+  const newDate = e.target.value;
 
-    if (deliverDate && newDate > deliverDate) {
-      const tomorrow = new Date(newDate);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowFormatted = tomorrow.toISOString().split("T")[0];
-      setDeliverDate(tomorrowFormatted);
-      setSelectedDeliverSlot(null);
-    }
+  setCollectDate(newDate);
 
-    if (newDate) {
-      setTimeout(() => {
-        fetchCollectSlots();
-      }, 100);
-    }
-  };
+  // 🔥 CRITICAL RESET (this fixes 80% of your bug)
+  setSelectedCollectSlot(null);
+  setSelectedCollectSlotStart(null);
+  setSelectedDeliverSlot(null);
+};
+
+
 
   const handleDeliverDateChange = (e) => {
-    if (!user) {
-      setShowLogin(true);
-      return;
-    }
+  if (!user) {
+    setShowLogin(true);
+    return;
+  }
 
-    const newDate = e.target.value;
+  const newDate = e.target.value;
 
-    if (collectDate && newDate < collectDate) {
-      showToast("Delivery date cannot be before pickup date");
-      return;
-    }
+  if (collectDate && newDate < collectDate) {
+    showToast("Delivery date cannot be before pickup date");
+    return;
+  }
 
-    setDeliverDate(newDate);
-    setSelectedDeliverSlot(null);
+  setDeliverDate(newDate);
+  setSelectedDeliverSlot(null);
+  setDeliverSlots([]);
+};
 
-    if (newDate) {
-      setTimeout(() => {
-        fetchDeliverySlots();
-      }, 100);
-    }
-  };
 
   const handleCollectSlotSelect = (slot) => {
   if (!slot.enabled) return;
 
+  const start = new Date(slot.start);
+
   setSelectedCollectSlot(slot);
-  setSelectedCollectSlotStart(new Date(slot.start));
+  setSelectedCollectSlotStart(start);
 
-  // ⛔ SAME-DAY DELIVERY BLOCK AFTER 10 AM
-  if (pickupIsToday() && !pickupBefore10()) {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const iso = tomorrow.toISOString().split("T")[0];
-
-    setDeliverDate(iso);
-    setSelectedDeliverSlot(null);
-  }
+  // Reset delivery when pickup changes
+  setSelectedDeliverSlot(null);
+  setDeliverSlots([]);
 };
+
+
+
+
 
 
   const handleDeliverSlotSelect = (slot) => {
@@ -948,10 +961,11 @@ if (!paymentMethodId) {
   }, [user, collectDate, fetchCollectSlots]);
 
   useEffect(() => {
-    if (user && deliverDate) {
-      fetchDeliverySlots();
-    }
-  }, [user, deliverDate, fetchDeliverySlots]);
+  if (user && deliverDate && selectedCollectSlotStart) {
+    fetchDeliverySlots();
+  }
+}, [user, deliverDate, selectedCollectSlotStart, fetchDeliverySlots]);
+
 
   const isConfirmButtonDisabled = () => {
     if (!user) return true;
