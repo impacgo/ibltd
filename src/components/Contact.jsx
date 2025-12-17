@@ -112,11 +112,6 @@ const Contact = () => {
                   </div>
                 </div>
                 
-                <div className="contact-item">
-                  <div className="contact-icon">
-                    <i className="fas fa-map-marker-alt"></i>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -214,3 +209,4 @@ const Contact = () => {
 
 
 export default Contact;
+
