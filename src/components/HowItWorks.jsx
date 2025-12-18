@@ -102,6 +102,12 @@ const HowItWorks = () => {
                   <span>
                     Minimum Order: <strong>£20</strong>
                   </span>
+                </div><br/>
+                <div className="minimum-badge" style={{marginTop:"5px"}}>
+                  <i className="fas fa-tag"></i>
+                  <span>
+                    Service Charge: <strong>£2</strong>
+                  </span>
                 </div>
               </div>
 

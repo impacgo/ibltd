@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
+// src/components/Hero.jsx
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Typewriter } from "react-simple-typewriter";
 import "./Hero.css";
@@ -15,11 +16,46 @@ const Hero = () => {
   const [popupMessage, setPopupMessage] = useState("");
   const [branches, setBranches] = useState([]);
   const [popupType, setPopupType] = useState(""); // "success" or "error"
+  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
+  const locationCardRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     requestAnimationFrame(() => setIsVisible(true));
   }, []);
+
+  // Calculate popup position based on screen size
+  const calculatePopupPosition = () => {
+    if (locationCardRef.current) {
+      const rect = locationCardRef.current.getBoundingClientRect();
+      const isMobile = window.innerWidth <= 768;
+      
+      if (isMobile) {
+        // For mobile: position popup over the location card
+        return {
+          top: rect.top + window.scrollY,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+          transform: 'none'
+        };
+      } else {
+        // For desktop: center on screen
+        return {
+          top: '50%',
+          left: '50%',
+          width: 'auto',
+          transform: 'translate(-50%, -50%)'
+        };
+      }
+    }
+    // Default: center on screen
+    return {
+      top: '50%',
+      left: '50%',
+      width: 'auto',
+      transform: 'translate(-50%, -50%)'
+    };
+  };
 
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
@@ -100,7 +136,19 @@ const Hero = () => {
     setPopupMessage(message);
     setBranches(branchesData || []);
     setPopupType("success");
+    const position = calculatePopupPosition();
+    setPopupPosition(position);
     setShowPopup(true);
+    
+    // Scroll to popup on mobile
+    if (window.innerWidth <= 768) {
+      setTimeout(() => {
+        const popupElement = document.querySelector('.popup-content');
+        if (popupElement) {
+          popupElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    }
   };
 
   // Show error popup
@@ -109,7 +157,19 @@ const Hero = () => {
     setPopupMessage(message);
     setBranches([]);
     setPopupType("error");
+    const position = calculatePopupPosition();
+    setPopupPosition(position);
     setShowPopup(true);
+    
+    // Scroll to popup on mobile
+    if (window.innerWidth <= 768) {
+      setTimeout(() => {
+        const popupElement = document.querySelector('.popup-content');
+        if (popupElement) {
+          popupElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    }
   };
 
   // Close popup
@@ -128,6 +188,13 @@ const Hero = () => {
 
   const handleGetStarted = () => {
     checkServiceAvailability();
+  };
+
+  // Handle Enter key press
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleGetStarted();
+    }
   };
 
   const features = useMemo(
@@ -167,7 +234,17 @@ const Hero = () => {
       {showPopup && (
         <div className="service-availability-popup">
           <div className="popup-overlay" onClick={closePopup}></div>
-          <div className="popup-content">
+          <div 
+            className="popup-content"
+            style={{
+              position: window.innerWidth <= 768 ? 'absolute' : 'fixed',
+              top: popupPosition.top,
+              left: popupPosition.left,
+              width: popupPosition.width,
+              transform: popupPosition.transform,
+              maxWidth: window.innerWidth <= 768 ? 'calc(100% - 40px)' : '500px'
+            }}
+          >
             <div className={`popup-header ${popupType}`}>
               <div className="popup-icon">
                 {popupType === "success" ? "✅" : "⚠️"}
@@ -215,7 +292,10 @@ const Hero = () => {
                   <ul>
                     <li>• Try entering just the postcode (e.g., "SW1A 1AA")</li>
                     <li>• Try entering the area name (e.g., "Westminster")</li>
-                    <li>• Check if you're in our service areas list</li>
+                    <li>• Check if you're in our <button onClick={() => {
+                      closePopup();
+                      navigate("/areas");
+                    }} className="inline-link">service areas list</button></li>
                     <li>• Contact us for expansion requests</li>
                   </ul>
                 </div>
@@ -234,7 +314,7 @@ const Hero = () => {
               ) : (
                 <>
                   <button className="popup-btn-secondary" onClick={closePopup}>
-                    Close
+                    Try Another Location
                   </button>
                   <button 
                     className="popup-btn-primary" 
@@ -309,61 +389,23 @@ const Hero = () => {
 
         {/* RIGHT SECTION — FIND SERVICE CARD */}
         <div className="hero-right">
-          <div className="feature-list" style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.9rem",
-            maxWidth: "380px",
-            width: "100%",
-            alignSelf: "flex-start",
-          }}>
+          <div className="feature-list">
             {features.map((item, i) => (
               <div 
                 className="feature-card" 
                 key={i}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "0.85rem 1.1rem",
-                  borderRadius: "14px",
-                  background: "rgba(255, 255, 255, 0.06)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  backdropFilter: "blur(8px)",
-                  transition: "0.3s"
-                }}
               >
-                {/* Icon at the start */}
-                <div 
-                  className="feature-icon" 
-                  style={{
-                    background: "none",
-                    fontSize: "1.4rem",
-                    marginRight: "1rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minWidth: "1.4rem"
-                  }}
-                >
+                <div className="feature-icon">
                   {item.icon}
                 </div>
-                
-                {/* Text after the gap */}
-                <div 
-                  className="feature-text" 
-                  style={{
-                    color: "white",
-                    fontSize: "0.95rem",
-                    fontWeight: "500"
-                  }}
-                >
+                <div className="feature-text">
                   {item.text}
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="location-card">
+          <div className="location-card" ref={locationCardRef}>
             <div className="location-header">
               <i className="fas fa-crosshairs" />
               <span>Find Service in Your Area</span>
@@ -375,14 +417,14 @@ const Hero = () => {
                 placeholder="Enter your address or zip code..."
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleGetStarted()}
+                onKeyDown={handleKeyDown}
                 disabled={loading}
               />
 
               <button
                 className={`location-btn ${location ? "active" : ""} ${loading ? "loading" : ""}`}
                 onClick={handleGetStarted}
-                disabled={loading}
+                disabled={loading || !location.trim()}
               >
                 {loading ? (
                   <>

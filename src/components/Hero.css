@@ -1248,3 +1248,141 @@
     max-width: 450px;
   }
 }
+
+/* Add these styles to your Hero.css file */
+
+/* Improved popup positioning */
+.service-availability-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.popup-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  pointer-events: all;
+}
+
+.popup-content {
+  position: fixed;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 140, 0, 0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  animation: popupSlideIn 0.3s ease-out;
+  pointer-events: all;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Mobile-specific popup styles */
+@media (max-width: 768px) {
+  .service-availability-popup {
+    position: absolute;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+  
+  .popup-content {
+    position: absolute;
+    margin: 20px;
+    width: calc(100% - 40px) !important;
+    max-width: calc(100% - 40px) !important;
+    transform: none !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .hero-right {
+    position: relative;
+  }
+}
+
+/* Make sure location card is visible */
+.location-card {
+  position: relative;
+  z-index: 1;
+}
+
+/* Inline link in suggestions */
+.inline-link {
+  background: none;
+  border: none;
+  color: #ffcc66;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  display: inline;
+}
+
+.inline-link:hover {
+  color: #ff8c00;
+}
+
+/* Button disabled state improvement */
+.location-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading spinner for button */
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+/* Ensure popup doesn't cover input on mobile */
+@media (max-width: 768px) {
+  .hero-container {
+    padding-bottom: 100px;
+  }
+}
+
+/* Adjust hero layout for better popup visibility */
+.hero-container {
+  position: relative;
+  z-index: 2;
+}
+
+/* Remove pointer-events from hero when popup is open */
+.hero.has-popup {
+  pointer-events: none;
+}
+
+.hero.has-popup .hero-container > * {
+  pointer-events: none;
+}
+
+.hero.has-popup .popup-content {
+  pointer-events: all;
+}
+
+/* Add a class to body when popup is open */
+body.popup-open {
+  overflow: hidden;
+}

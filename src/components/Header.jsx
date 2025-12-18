@@ -13,11 +13,11 @@ const slugify = (text) => {
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-')           // Replace spaces with -
-    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-    .replace(/^-+/, '')             // Trim - from start of text
-    .replace(/-+$/, '');            // Trim - from end of text
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 };
 
 // Optimized SVG Icons with better styling
@@ -77,6 +77,7 @@ const Header = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [userInitial, setUserInitial] = useState("U");
+  const [loginTriggered, setLoginTriggered] = useState(false);
 
   // Use AuthContext for user state
   const { user, logout } = useAuth();
@@ -88,72 +89,53 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Function to get user display name with enhanced debugging
+  // Function to get user display name
   const getUserDisplayName = () => {
-    console.log("🔄 getUserDisplayName called with user:", user);
-    
-    if (!user) {
-      console.log("❌ No user object");
-      return "U";
-    }
-    
-    // Check user object structure
-    console.log("📋 User object keys:", Object.keys(user));
-    console.log("📋 User object values:", user);
+    if (!user) return "U";
     
     // Try multiple possible name fields in priority order
     const nameSources = [
-      user.name,                    // Full name
-      user.full_name,              // Alternative full name field
-      user.first_name,             // First name
-      user.username,               // Username
-      user.email,                  // Email (extract name part)
-      user.phone,                  // Phone (last resort)
-      user.identifier              // Generic identifier
+      user.name,
+      user.full_name,
+      user.first_name,
+      user.username,
+      user.email,
+      user.phone,
+      user.identifier
     ];
     
     for (const source of nameSources) {
       if (source && typeof source === 'string') {
-        console.log("✅ Found name source:", source);
-        
-        // Clean the name source
         const cleanSource = source.trim();
         
         // For email addresses, extract the part before @
         if (cleanSource.includes('@')) {
           const namePart = cleanSource.split('@')[0];
-          // Remove numbers and special characters
           const cleanName = namePart.replace(/[^a-zA-Z]/g, '');
           if (cleanName.length > 0) {
-            console.log("📧 Extracted from email:", cleanName.charAt(0).toUpperCase());
             return cleanName.charAt(0).toUpperCase();
           }
         }
         
         // For phone numbers, check if it's actually a name
         else if (/^\d+$/.test(cleanSource)) {
-          console.log("📱 Source is phone number, skipping");
           continue;
         }
         
         // For regular text, check if it contains letters
         else if (/[a-zA-Z]/.test(cleanSource)) {
-          console.log("🔤 Source contains letters:", cleanSource.charAt(0).toUpperCase());
           return cleanSource.charAt(0).toUpperCase();
         }
       }
     }
     
-    console.log("⚠️ No valid name found, defaulting to 'U'");
     return "U";
   };
 
   // Update user initial when user changes
   useEffect(() => {
     if (user) {
-      console.log("👤 User changed, updating initial");
       const initial = getUserDisplayName();
-      console.log("✅ Setting user initial to:", initial);
       setUserInitial(initial);
     } else {
       setUserInitial("U");
@@ -229,11 +211,30 @@ const Header = () => {
 
   const isActive = (path) => location.pathname === path ? "active" : "";
 
-  const handleLogout = useCallback(() => {
-    console.log("🚪 Logging out user");
-    logout(); // Use logout from AuthContext
-    setShowProfileMenu(false);
-    setUserInitial("U");
+  // FIXED: Handle logout properly without navigation
+  const handleLogout = useCallback(async () => {
+    try {
+      console.log("🚪 Logging out user");
+      
+      // First, close any open menus
+      setShowProfileMenu(false);
+      setIsMenuOpen(false);
+      
+      // Call logout from AuthContext
+      await logout();
+      
+      // Reset user initial
+      setUserInitial("U");
+      
+      // Reset login triggered state
+      setLoginTriggered(false);
+      
+      // Ensure we don't navigate anywhere
+      // Just stay on the current page
+      console.log("✅ Logout successful");
+    } catch (error) {
+      console.error("❌ Logout error:", error);
+    }
   }, [logout]);
 
   const toggleMenu = useCallback(() => {
@@ -263,33 +264,58 @@ const Header = () => {
   }, []);
 
   // Professional app store button handlers
-  const handleAppStoreClick = () => {
-    window.open("https://apps.apple.com", "_blank");
+  const handleAppStoreClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open("https://apps.apple.com", "_blank", "noopener,noreferrer");
   };
 
-  const handlePlayStoreClick = () => {
-    window.open("https://play.google.com", "_blank");
+  const handlePlayStoreClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open("https://play.google.com", "_blank", "noopener,noreferrer");
   };
 
-  const handleLoginSuccess = () => {
+  // Handle profile icon click - FIXED
+  const handleProfileIconClick = useCallback(() => {
+    if (!user) {
+      // If user is not logged in, show login popup
+      setShowLogin(true);
+      setShowProfileMenu(false);
+    } else {
+      // If user is logged in, toggle profile menu
+      setShowProfileMenu(prev => !prev);
+    }
+  }, [user]);
+
+  const handleLoginSuccess = useCallback(() => {
     console.log("✅ Login successful");
     setShowLogin(false);
+    setLoginTriggered(false);
     // AuthContext will automatically update the user state
-  };
+  }, []);
 
   // Navigate to order history
-  const goToOrderHistory = () => {
+  const goToOrderHistory = useCallback(() => {
     console.log("📦 Navigating to order history");
     setShowProfileMenu(false);
+    setIsMenuOpen(false);
     navigate("/orders");
-  };
+  }, [navigate]);
 
   // Navigate to profile
-  const goToProfile = () => {
+  const goToProfile = useCallback(() => {
     console.log("👤 Navigating to profile");
     setShowProfileMenu(false);
+    setIsMenuOpen(false);
     navigate("/profile");
-  };
+  }, [navigate]);
+
+  // Handle login popup close
+  const handleLoginClose = useCallback(() => {
+    setShowLogin(false);
+    setLoginTriggered(false);
+  }, []);
 
   return (
     <>
@@ -303,14 +329,14 @@ const Header = () => {
               </Link>
             </div>
 
-            {/* Desktop Navigation - UPDATED SERVICES DROPDOWN */}
+            {/* Desktop Navigation */}
             <nav className="nav desktop" aria-label="Primary navigation">
               <ul className="nav-list">
                 <li>
                   <Link className={`nav-link ${isActive("/")}`} to="/">Home</Link>
                 </li>
 
-                {/* SERVICES DROPDOWN - IMPROVED */}
+                {/* SERVICES DROPDOWN */}
                 <li className="dropdown" ref={dropdownRef}>
                   <button
                     className={`nav-link dropdown-toggle ${isServiceOpen ? "active" : ""}`}
@@ -380,62 +406,60 @@ const Header = () => {
                 </button>
               </div>
 
-              {/* User Profile Area */}
+              {/* User Profile Area - FIXED */}
               <div ref={profileRef} className="profile-area">
-                {!user ? (
-                  <button 
-                    className="profile-icon-btn" 
-                    onClick={() => setShowLogin(true)}
-                    aria-label="Login or Sign up"
-                  >
-                    <ProfileIcon />
-                  </button>
-                ) : (
-                  <>
+                <div 
+                  className="profile-icon-container"
+                  onClick={handleProfileIconClick}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && handleProfileIconClick()}
+                  aria-label={user ? "User profile menu" : "Login or Sign up"}
+                >
+                  {!user ? (
+                    <div className="profile-icon-btn">
+                      <ProfileIcon />
+                    </div>
+                  ) : (
                     <div 
                       className="profile-avatar-logged" 
-                      onClick={() => setShowProfileMenu(prev => !prev)}
                       title={`User: ${userInitial}`}
-                      aria-label="User profile"
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => e.key === 'Enter' && setShowProfileMenu(prev => !prev)}
                     >
                       {userInitial}
                     </div>
+                  )}
+                </div>
 
-                    {showProfileMenu && (
-                      <div className="profile-dropdown" role="menu">
-                        <div className="profile-header">
-                          <div className="profile-avatar-small">{userInitial}</div>
-                          <div className="profile-info">
-                            <div className="profile-welcome">Welcome</div>
-                            <div className="profile-email">{user.email || user.phone || user.identifier || "User"}</div>
-                          </div>
-                        </div>
-                        <div className="profile-divider"></div>
-                        <button 
-                          className="profile-option" 
-                          onClick={goToProfile}
-                        >
-                          <i className="fas fa-user-circle"></i> Personal Info
-                        </button>
-                        <button 
-                          className="profile-option" 
-                          onClick={goToOrderHistory}
-                        >
-                          <i className="fas fa-history"></i> Order History
-                        </button>
-                        <div className="profile-divider"></div>
-                        <button 
-                          className="profile-option logout-option" 
-                          onClick={handleLogout}
-                        >
-                          <i className="fas fa-sign-out-alt"></i> Logout
-                        </button>
+                {showProfileMenu && user && (
+                  <div className="profile-dropdown" role="menu">
+                    <div className="profile-header">
+                      <div className="profile-avatar-small">{userInitial}</div>
+                      <div className="profile-info">
+                        <div className="profile-welcome">Welcome</div>
+                        <div className="profile-email">{user.email || user.phone || user.identifier || "User"}</div>
                       </div>
-                    )}
-                  </>
+                    </div>
+                    <div className="profile-divider"></div>
+                    <button 
+                      className="profile-option" 
+                      onClick={goToProfile}
+                    >
+                      <i className="fas fa-user-circle"></i> Personal Info
+                    </button>
+                    <button 
+                      className="profile-option" 
+                      onClick={goToOrderHistory}
+                    >
+                      <i className="fas fa-history"></i> Order History
+                    </button>
+                    <div className="profile-divider"></div>
+                    <button 
+                      className="profile-option logout-option" 
+                      onClick={handleLogout}
+                    >
+                      <i className="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -552,7 +576,7 @@ const Header = () => {
 
               <div className="mobile-nav-divider"></div>
 
-              {/* User Section */}
+              {/* User Section - FIXED */}
               {!user ? (
                 <>
                   <li>
@@ -577,8 +601,7 @@ const Header = () => {
                     <button 
                       className="mobile-profile-btn" 
                       onClick={() => { 
-                        navigate("/profile"); 
-                        closeMenu(); 
+                        goToProfile();
                       }}
                     >
                       <span className="menu-item-icon">👤</span>
@@ -589,8 +612,7 @@ const Header = () => {
                     <button 
                       className="mobile-profile-btn" 
                       onClick={() => { 
-                        navigate("/orders"); 
-                        closeMenu(); 
+                        goToOrderHistory();
                       }}
                     >
                       <span className="menu-item-icon">📦</span>
@@ -600,10 +622,7 @@ const Header = () => {
                   <li>
                     <button 
                       className="mobile-profile-btn logout" 
-                      onClick={() => { 
-                        handleLogout(); 
-                        closeMenu(); 
-                      }}
+                      onClick={handleLogout}
                     >
                       <span className="menu-item-icon">🚪</span>
                       <span className="menu-item-text">Logout</span>
@@ -659,7 +678,7 @@ const Header = () => {
       {/* Login Popup */}
       {showLogin && (
         <LoginPopup
-          close={() => setShowLogin(false)}
+          close={handleLoginClose}
           onSuccess={handleLoginSuccess}
         />
       )}

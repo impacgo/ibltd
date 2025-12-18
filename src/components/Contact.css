@@ -316,3 +316,141 @@
     padding: 12px 20px;
   }
 }
+/* Add these styles to your Contact.css */
+
+/* Success & Error Messages */
+.success-message,
+.error-message {
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  animation: slideDown 0.3s ease;
+}
+
+.success-message {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border: 1px solid #10b981;
+}
+
+.error-message {
+  background: linear-gradient(135deg, #fee, #fdd);
+  border: 1px solid #ef4444;
+}
+
+.success-message i {
+  color: #10b981;
+  font-size: 1.5rem;
+  margin-top: 2px;
+}
+
+.error-message i {
+  color: #ef4444;
+  font-size: 1.5rem;
+  margin-top: 2px;
+}
+
+.success-message h4,
+.error-message h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #065f46;
+}
+
+.error-message h4 {
+  color: #991b1b;
+}
+
+.success-message p,
+.error-message p {
+  font-size: 0.9rem;
+  margin: 0;
+  color: #047857;
+}
+
+.error-message p {
+  color: #7f1d1d;
+}
+
+/* Success State Page */
+.success-state {
+  text-align: center;
+  padding: 60px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 25px;
+  color: white;
+  font-size: 2.5rem;
+}
+
+.success-state h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 15px;
+}
+
+.success-state p {
+  color: #64748b;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.back-button {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.back-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Make input names match for EmailJS */
+.form-group input[name="user_name"] {
+  /* If you change 'name' to 'user_name' for EmailJS compatibility */
+}
+
+/* Loading spinner */
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+// src/components/ThankYouPage.jsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './ThankYouPage.css';
 
@@ -14,19 +15,143 @@ const ThankYouPage = () => {
   const [orderDetails, setOrderDetails] = useState({
     orderId: '',
     status: 'Confirmed',
-    estimatedDelivery: '24-48 hours',
+    pickupDate: '',
     pickupTime: '',
+    deliveryDate: '',
+    deliveryTime: '',
     userName: '',
     userEmail: '',
     orderDate: '',
     totalAmount: '£0.00 (Will be charged after invoice)',
     paymentMethod: 'Card saved for auto-payment',
     serviceType: 'Express Laundry',
-    paymentStatus: 'card_saved'
+    paymentStatus: 'card_saved',
+    bookingType: 'Quick Booking'
   });
 
   const [error, setError] = useState(null);
   const [confetti, setConfetti] = useState(true);
+  const [showModal, setShowModal] = useState(true);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  // Parse time range to display format
+  const parseTimeRange = useCallback((timeRange) => {
+    if (!timeRange) return '';
+    
+    // Check if it's already in a readable format
+    if (timeRange.includes(',')) {
+      return timeRange;
+    }
+    
+    // Try to parse 24-hour format like "13:00-14:00"
+    if (timeRange.includes('-')) {
+      const [start, end] = timeRange.split('-');
+      const formatTime = (time) => {
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours);
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${period}`;
+      };
+      return `${formatTime(start)} - ${formatTime(end)}`;
+    }
+    
+    return timeRange;
+  }, []);
+
+  // Format date to readable format
+  const formatDateReadable = useCallback((dateString) => {
+    if (!dateString) return '';
+    
+    try {
+      // Handle DD/MM/YYYY format
+      if (dateString.includes('/')) {
+        const [day, month, year] = dateString.split('/');
+        const date = new Date(`${year}-${month}-${day}`);
+        if (isNaN(date.getTime())) return dateString;
+        
+        return date.toLocaleDateString('en-GB', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+      }
+      
+      // Handle YYYY-MM-DD format
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      
+      return date.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString;
+    }
+  }, []);
+
+  // Format order date and time
+  const formatOrderDateTime = useCallback(() => {
+    const now = new Date();
+    return now.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  }, []);
+
+  // Copy order ID to clipboard
+  const copyOrderId = useCallback(() => {
+    navigator.clipboard.writeText(orderDetails.orderId)
+      .then(() => {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      })
+      .catch(err => console.error('Failed to copy:', err));
+  }, [orderDetails.orderId]);
+
+  // Close modal and navigate
+  const closeModal = useCallback((path = '/') => {
+    setShowModal(false);
+    setTimeout(() => navigate(path), 300);
+  }, [navigate]);
+
+  // Create confetti effect
+  useEffect(() => {
+    const createConfetti = () => {
+      const colors = ['#667eea', '#764ba2', '#10b981'];
+      const container = document.querySelector('.confetti-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      for (let i = 0; i < 80; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = `${Math.random() * 100}%`;
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = `${Math.random() * 2}s`;
+        confetti.style.width = `${Math.random() * 8 + 4}px`;
+        confetti.style.height = confetti.style.width;
+        confetti.style.opacity = Math.random() * 0.6 + 0.4;
+        container.appendChild(confetti);
+      }
+    };
+
+    if (confetti && showModal) {
+      createConfetti();
+      const timer = setTimeout(() => setConfetti(false), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [confetti, showModal]);
 
   // Fetch order details
   useEffect(() => {
@@ -35,30 +160,33 @@ const ThankYouPage = () => {
         setLoading(true);
         setError(null);
 
-        const token = localStorage.getItem('jwtToken');
         let orderData = {};
         
         // Check location state first (from QuickBooking navigation)
-        if (location.state?.orderId) {
+        if (location.state) {
           orderData = {
-            orderId: location.state.orderId,
-            paymentStatus: location.state.paymentStatus || 'card_saved',
             ...location.state
           };
-        }
-
-        // Try to get order from localStorage
-        const savedOrder = localStorage.getItem('lastOrder');
-        if (savedOrder) {
-          try {
-            const parsedOrder = JSON.parse(savedOrder);
-            orderData = { ...orderData, ...parsedOrder };
-          } catch (e) {
-            console.error('Error parsing localStorage order:', e);
+          
+          // Store in localStorage for persistence
+          localStorage.setItem('lastQuickBookingOrder', JSON.stringify(orderData));
+        } else {
+          // Try to get order from localStorage
+          const savedOrder = localStorage.getItem('lastQuickBookingOrder');
+          if (savedOrder) {
+            try {
+              orderData = JSON.parse(savedOrder);
+            } catch (e) {
+              console.error('Error parsing localStorage order:', e);
+            }
           }
         }
 
-        // If we have a token, fetch user profile
+        // Get user profile if available
+        const token = localStorage.getItem('jwtToken');
+        let userName = 'Valued Customer';
+        let userEmail = '';
+        
         if (token) {
           try {
             const profileRes = await fetch(`${API_BASE}/profile`, {
@@ -70,88 +198,55 @@ const ThankYouPage = () => {
 
             if (profileRes.ok) {
               const profileData = await profileRes.json();
-              
-              // Merge with user data
-              setOrderDetails(prev => ({
-                ...prev,
-                ...orderData,
-                userName: profileData.name || 'Valued Customer',
-                userEmail: profileData.email || '',
-                orderId: orderData.orderId || `IB-${Date.now().toString().slice(-8)}`,
-                status: 'Confirmed',
-                pickupTime: orderData.pickupTime || orderData.collect_slot || 'Today, 4-6 PM',
-                estimatedDelivery: orderData.estimatedDelivery || orderData.delivery_slot || '24-48 hours',
-                orderDate: orderData.orderDate || new Date().toLocaleDateString('en-GB', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                }),
-                totalAmount: orderData.totalAmount || '£0.00 (Will be charged after invoice)',
-                paymentMethod: orderData.paymentMethod || 'Card saved for auto-payment',
-                paymentStatus: orderData.paymentStatus || 'card_saved',
-                serviceType: orderData.serviceType || 'Express Laundry'
-              }));
-            } else {
-              // Use localStorage data if profile fetch fails
-              setOrderDetails(prev => ({
-                ...prev,
-                ...orderData,
-                userName: user?.name || 'Valued Customer',
-                orderDate: new Date().toLocaleDateString('en-GB', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })
-              }));
+              userName = profileData.name || user?.name || 'Valued Customer';
+              userEmail = profileData.email || user?.email || '';
             }
           } catch (apiError) {
-            console.error('API Error:', apiError);
-            // Fallback to localStorage data
-            if (orderData.orderId) {
-              setOrderDetails(prev => ({
-                ...prev,
-                ...orderData,
-                userName: user?.name || 'Valued Customer',
-                orderDate: new Date().toLocaleDateString('en-GB', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })
-              }));
-            }
+            console.error('API Error fetching profile:', apiError);
           }
-        } else {
-          // No token, use localStorage data
-          setOrderDetails(prev => ({
-            ...prev,
-            ...orderData,
-            userName: 'Valued Customer',
-            orderDate: new Date().toLocaleDateString('en-GB', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })
-          }));
         }
+
+        // Process order details
+        const pickupTime = parseTimeRange(orderData.pickupTime || '');
+        const deliveryTime = parseTimeRange(orderData.deliveryTime || '');
+        const pickupDate = orderData.pickupDate ? formatDateReadable(orderData.pickupDate) : '';
+        const deliveryDate = orderData.deliveryDate ? formatDateReadable(orderData.deliveryDate) : '';
+        
+        // Determine payment method display
+        let paymentMethod = 'Card saved for auto-payment';
+        if (orderData.paymentMethod === 'saved_card') {
+          paymentMethod = 'Saved Card (Auto-payment)';
+        } else if (orderData.paymentMethod === 'new_card') {
+          paymentMethod = 'New Card (Auto-payment)';
+        }
+
+        setOrderDetails({
+          orderId: orderData.orderId || `IB-${Date.now().toString().slice(-8)}`,
+          status: orderData.status || 'Confirmed',
+          pickupDate: pickupDate,
+          pickupTime: pickupTime,
+          deliveryDate: deliveryDate,
+          deliveryTime: deliveryTime,
+          userName: userName,
+          userEmail: userEmail,
+          orderDate: formatOrderDateTime(),
+          totalAmount: '£20.00 minimum + £2.00 service fee',
+          paymentMethod: paymentMethod,
+          paymentStatus: orderData.paymentStatus || 'card_saved',
+          serviceType: 'Express Laundry Service',
+          bookingType: 'Quick Booking'
+        });
+
       } catch (error) {
         console.error('Error fetching order details:', error);
-        setError('Unable to load order details.');
+        setError('Unable to load order details. Please check your internet connection and try again.');
         
         // Fallback to basic data
         setOrderDetails(prev => ({
           ...prev,
           orderId: `IB-${Date.now().toString().slice(-8)}`,
           userName: user?.name || 'Valued Customer',
-          orderDate: new Date().toLocaleDateString('en-GB', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })
+          orderDate: formatOrderDateTime()
         }));
       } finally {
         setLoading(false);
@@ -159,46 +254,79 @@ const ThankYouPage = () => {
     };
 
     fetchOrderDetails();
+  }, [user, location.state, parseTimeRange, formatDateReadable, formatOrderDateTime]);
 
-    // Create confetti effect
-    const createConfetti = () => {
-      const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'];
-      const container = document.querySelector('.confetti-container');
-      if (!container) return;
-
-      for (let i = 0; i < 100; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = `${Math.random() * 100}%`;
-        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.animationDelay = `${Math.random() * 2}s`;
-        container.appendChild(confetti);
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        closeModal();
       }
     };
 
-    if (confetti) {
-      createConfetti();
-      const timer = setTimeout(() => setConfetti(false), 3000);
-      return () => clearTimeout(timer);
+    if (showModal) {
+      document.addEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     }
-  }, [user, location.state]);
 
-  const handleGoHome = () => {
-    navigate('/');
-  };
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'auto';
+      document.documentElement.style.overflow = 'auto';
+    };
+  }, [showModal, closeModal]);
 
-  const handleBookAnother = () => {
-    navigate('/services');
-  };
+  if (!showModal) {
+    return null;
+  }
 
   if (loading) {
     return (
-      <div className="thankyou-container">
-        <div className="thankyou-card">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <h2 style={{ color: '#1f2937' }}>Loading Your Order Details...</h2>
-            <p style={{ color: '#6b7280' }}>Please wait while we fetch your information</p>
+      <div className="thankyou-modal-overlay">
+        <div className="thankyou-modal loading">
+          <div className="modal-loading-content">
+            <div className="loading-animation">
+              <div className="loading-circle"></div>
+              <div className="loading-circle"></div>
+              <div className="loading-circle"></div>
+            </div>
+            <h2>Processing Your Order</h2>
+            <p>Please wait while we confirm your booking...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="thankyou-modal-overlay">
+        <div className="thankyou-modal error">
+          <div className="modal-error-content">
+            <div className="error-animation">
+              <div className="error-icon">
+                <i className="fas fa-exclamation-circle"></i>
+              </div>
+            </div>
+            <h2>Something Went Wrong</h2>
+            <p>{error}</p>
+            <div className="error-actions">
+              <button 
+                className="modal-action-btn primary"
+                onClick={() => window.location.reload()}
+              >
+                <i className="fas fa-redo"></i>
+                Try Again
+              </button>
+              <button 
+                className="modal-action-btn outline"
+                onClick={() => closeModal('/')}
+              >
+                <i className="fas fa-home"></i>
+                Go to Homepage
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -206,211 +334,184 @@ const ThankYouPage = () => {
   }
 
   return (
-    <div className="thankyou-container">
-      {/* Confetti Effect */}
+    <div className="thankyou-modal-overlay">
       {confetti && <div className="confetti-container"></div>}
+      
+      <div className={`thankyou-modal ${showModal ? 'show' : ''}`}>
+        {/* Close Button */}
+        <button 
+          className="modal-close-btn"
+          onClick={() => closeModal('/')}
+          aria-label="Close modal"
+        >
+          <i className="fas fa-times"></i>
+        </button>
 
-      <div className="thankyou-card">
-        {/* Success Header */}
-        <div className="success-header">
-          <div className="success-icon-wrapper">
-            <div className="checkmark">✓</div>
+        {/* Success Icon */}
+        <div className="success-icon-container">
+          <div className="success-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
           </div>
-          <h1 className="thankyou-title">Booking Confirmed!</h1>
-          <p className="thankyou-subtitle">
-            Thank you <span className="user-greeting">{orderDetails.userName}</span> for choosing Ironing Boy
-          </p>
-          <p className="thankyou-subtitle">
-            Your card has been saved securely. Payment will be charged automatically after we send the invoice.
-          </p>
         </div>
 
-        {/* Order Summary */}
-        <div className="order-summary">
-          <h3>
-            <i className="fas fa-receipt"></i>
-            Booking Summary
-          </h3>
-          <div className="summary-grid">
-            <div className="summary-card">
-              <div className="summary-label">
-                <i className="fas fa-hashtag"></i>
-                Booking ID
-              </div>
-              <div className="order-id-highlight">
-                <i className="fas fa-barcode"></i>
-                <code>{orderDetails.orderId}</code>
-              </div>
-            </div>
+        {/* Main Content */}
+        <div className="modal-content">
+          {/* Header */}
+          <div className="modal-header">
+            <h1 className="modal-title">Booking Confirmed!</h1>
+          </div>
 
-            <div className="summary-card">
-              <div className="summary-label">
-                <i className="fas fa-calendar-check"></i>
-                Booking Date
-              </div>
-              <p className="summary-value">{orderDetails.orderDate}</p>
+          {/* Booking Details */}
+          <div className="booking-details-section">
+            <div className="booking-id-container">
+              <div className="booking-id-label">BOOKING ID</div>
+              <div className="booking-id-value">{orderDetails.orderId}</div>
+              <button 
+                className={`copy-order-id ${copySuccess ? 'success' : ''}`}
+                onClick={copyOrderId}
+                title="Copy to clipboard"
+              >
+                <i className={`fas ${copySuccess ? 'fa-check' : 'fa-copy'}`}></i>
+              </button>
             </div>
-
-            <div className="summary-card">
-              <div className="summary-label">
-                <i className="fas fa-tag"></i>
-                Status
-              </div>
-              <span className="status-badge">
-                <i className="fas fa-check-circle"></i>
+            
+            <div className="status-container">
+              <div className={`status-badge ${orderDetails.status.toLowerCase()}`}>
                 {orderDetails.status}
-              </span>
-            </div>
-
-            <div className="summary-card">
-              <div className="summary-label">
-                <i className="fas fa-truck-loading"></i>
-                Pickup Time
               </div>
-              <p className="summary-value">{orderDetails.pickupTime}</p>
-            </div>
-
-            <div className="summary-card">
-              <div className="summary-label">
-                <i className="fas fa-shipping-fast"></i>
-                Estimated Delivery
-              </div>
-              <p className="summary-value">{orderDetails.estimatedDelivery}</p>
-            </div>
-
-            <div className="summary-card">
-              <div className="summary-label">
-                <i className="fas fa-credit-card"></i>
-                Payment Status
-              </div>
-              <div className="payment-status-info">
-                <span className="payment-status-badge">
-                  <i className="fas fa-save"></i>
-                  Card Saved
-                </span>
-                <p className="payment-status-note">
-                  Will be charged after invoice
-                </p>
+              <div className="booking-date-info">
+                <i className="far fa-calendar-alt"></i>
+                {orderDetails.orderDate}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Payment Information Card */}
-        <div className="payment-info-card">
-          <div className="payment-info-header">
-            <i className="fas fa-credit-card"></i>
-            <h4>Payment Information</h4>
-          </div>
-          <div className="payment-info-content">
-            <div className="payment-info-item">
-              <span className="payment-info-label">
-                <i className="fas fa-shield-alt"></i>
-                Payment Method:
-              </span>
-              <span className="payment-info-value">
-                {orderDetails.paymentMethod}
-              </span>
-            </div>
-            <div className="payment-info-item">
-              <span className="payment-info-label">
-                <i className="fas fa-pound-sign"></i>
-                Amount:
-              </span>
-              <span className="payment-info-value">
-                {orderDetails.totalAmount}
-              </span>
-            </div>
-            <div className="payment-info-item">
-              <span className="payment-info-label">
-                <i className="fas fa-info-circle"></i>
-                Note:
-              </span>
-              <span className="payment-info-value">
-                Your card will be charged automatically when we send the invoice.
-                Minimum: £20 + £2 service fee.
-              </span>
-            </div>
-          </div>
-        </div>
+          {/* Divider */}
+          <div className="divider"></div>
 
-        {/* Order Timeline */}
-        <div className="order-timeline">
-          <h3>
-            <i className="fas fa-map-signs"></i>
-            What Happens Next?
-          </h3>
-          <div className="timeline-steps">
-            <div className="timeline-step active">
-              <div className="timeline-icon">
-                <i className="fas fa-truck-loading"></i>
+          {/* Schedule Section */}
+          <div className="schedule-section">
+            <h2 className="section-title">Your Schedule</h2>
+            
+            <div className="schedule-cards">
+              {/* Pickup Card */}
+              <div className="schedule-card pickup">
+                <div className="schedule-card-content">
+                  <div className="schedule-icon">
+                    <i className="fas fa-truck-pickup"></i>
+                  </div>
+                  <div className="schedule-details">
+                    <h3>Pickup</h3>
+                    {orderDetails.pickupDate && orderDetails.pickupTime ? (
+                      <>
+                        <div className="schedule-time">{orderDetails.pickupTime}</div>
+                        <div className="schedule-date">{orderDetails.pickupDate}</div>
+                      </>
+                    ) : (
+                      <div className="schedule-pending">
+                        <i className="fas fa-clock"></i>
+                        <span>Time will be confirmed shortly</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="timeline-content">
-                <h4>Driver Pickup</h4>
-                <p>Our driver will arrive during your scheduled pickup window</p>
-              </div>
-            </div>
 
-            <div className="timeline-step">
-              <div className="timeline-icon">
-                <i className="fas fa-spray-can"></i>
-              </div>
-              <div className="timeline-content">
-                <h4>Laundry Processing</h4>
-                <p>Your clothes will be professionally cleaned, pressed, and cared for</p>
-              </div>
-            </div>
-
-            <div className="timeline-step">
-              <div className="timeline-icon">
-                <i className="fas fa-truck"></i>
-              </div>
-              <div className="timeline-content">
-                <h4>Delivery & Invoice</h4>
-                <p>Fresh clothes delivered + invoice sent (auto-charge from saved card)</p>
+              {/* Delivery Card */}
+              <div className="schedule-card delivery">
+                <div className="schedule-card-content">
+                  <div className="schedule-icon">
+                    <i className="fas fa-truck"></i>
+                  </div>
+                  <div className="schedule-details">
+                    <h3>Delivery</h3>
+                    {orderDetails.deliveryDate && orderDetails.deliveryTime ? (
+                      <>
+                        <div className="schedule-time">{orderDetails.deliveryTime}</div>
+                        <div className="schedule-date">{orderDetails.deliveryDate}</div>
+                      </>
+                    ) : (
+                      <div className="schedule-pending">
+                        <i className="fas fa-clock"></i>
+                        <span>Time will be confirmed shortly</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="action-buttons-grid">
-          <button 
-            className="action-btn btn-primary"
-            onClick={handleBookAnother}
-          >
-            <i className="fas fa-plus-circle"></i>
-            Book Another Service
-          </button>
-          
-          <Link 
-            to="/"
-            className="action-btn btn-outline"
-            onClick={handleGoHome}
-          >
-            <i className="fas fa-home"></i>
-            Go to Homepage
-          </Link>
-        </div>
+          {/* Action Buttons */}
+          <div className="action-buttons-section">
+            <button 
+              className="action-btn primary-btn"
+              onClick={() => closeModal('/quick-booking')}
+            >
+              <i className="fas fa-plus"></i>
+              BOOK ANOTHER
+            </button>
+            
+            <button 
+              className="action-btn secondary-btn"
+              onClick={() => closeModal('/orders')}
+            >
+              <i className="fas fa-history"></i>
+              VIEW ORDERS
+            </button>
+            
+            <button 
+              className="action-btn outline-btn"
+              onClick={() => closeModal('/')}
+            >
+              <i className="fas fa-home"></i>
+              GO HOME
+            </button>
+          </div>
 
-        {/* Support Section */}
-        <div className="support-section">
-          <h4>
-            <i className="fas fa-question-circle"></i>
-            Need Help?
-          </h4>
-          <div className="support-contacts">
-            <a href="mailto:support@ironingboy.com" className="support-link">
-              <i className="fas fa-envelope"></i>
-              support@ironingboy.com
-            </a>
-            <a href="tel:+442031231010" className="support-link">
-              <i className="fas fa-phone"></i>
-              +44 20 3123 1010
-            </a>
-            <p style={{ fontSize: '14px', color: '#92400e', marginTop: '8px' }}>
-              Our support team is available 7 AM - 7 PM
-            </p>
+          {/* Divider */}
+          <div className="divider light"></div>
+
+          {/* Help Section */}
+          <div className="help-section">
+            <h3 className="help-title">
+              <i className="fas fa-question-circle"></i>
+              Need Help?
+            </h3>
+            
+            <div className="contact-options">
+              <a href="mailto:support@ironingboy.com" className="contact-option">
+                <div className="contact-icon">
+                  <i className="fas fa-envelope"></i>
+                </div>
+                <div className="contact-info">
+                  <div className="contact-label">EMAIL SUPPORT</div>
+                  <div className="contact-value">support@ironingboy.com</div>
+                </div>
+              </a>
+              
+              <a href="tel:+442031231010" className="contact-option">
+                <div className="contact-icon">
+                  <i className="fas fa-phone"></i>
+                </div>
+                <div className="contact-info">
+                  <div className="contact-label">CALL US</div>
+                  <div className="contact-value">+44 20 3123 1010</div>
+                </div>
+              </a>
+              
+              <a href="https://wa.me/442031231010" className="contact-option whatsapp" target="_blank" rel="noopener noreferrer">
+                <div className="contact-icon">
+                  <i className="fab fa-whatsapp"></i>
+                </div>
+                <div className="contact-info">
+                  <div className="contact-label">WHATSAPP</div>
+                  <div className="contact-value">Chat Now</div>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </div>

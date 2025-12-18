@@ -1,8 +1,10 @@
 // src/components/Contact.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser';
 import './Contact.css';
 
 const Contact = () => {
+  const form = useRef();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,6 +15,14 @@ const Contact = () => {
   
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success' or 'error'
+
+  // EmailJS configuration
+  const EMAILJS_CONFIG = {
+    SERVICE_ID: 'ironingboy', // Get from EmailJS dashboard
+    TEMPLATE_ID: 'ibsupport', // Get from EmailJS dashboard
+    PUBLIC_KEY: 'NUeGJRN_N2UJ1taWW' // Get from EmailJS dashboard
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -21,7 +31,7 @@ const Contact = () => {
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Please enter a valid email';
     }
     if (!formData.subject.trim()) newErrors.subject = 'Subject is required';
     if (!formData.message.trim()) newErrors.message = 'Message is required';
@@ -44,6 +54,11 @@ const Contact = () => {
         [name]: ''
       });
     }
+    
+    // Clear status message when user starts typing
+    if (submitStatus) {
+      setSubmitStatus(null);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -52,12 +67,23 @@ const Contact = () => {
     if (!validateForm()) return;
     
     setIsSubmitting(true);
+    setSubmitStatus(null);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Send email using EmailJS
+      const result = await emailjs.sendForm(
+        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.TEMPLATE_ID,
+        form.current,
+        EMAILJS_CONFIG.PUBLIC_KEY
+      );
       
-      alert('Thank you for your message! We will get back to you shortly.');
+      console.log('Email sent successfully:', result.text);
+      
+      // Success
+      setSubmitStatus('success');
+      
+      // Reset form
       setFormData({
         name: '',
         email: '',
@@ -65,8 +91,15 @@ const Contact = () => {
         subject: '',
         message: ''
       });
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus(null);
+      }, 5000);
+      
     } catch (error) {
-      alert('There was an error sending your message. Please try again.');
+      console.error('Email sending failed:', error);
+      setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
     }
@@ -97,7 +130,7 @@ const Contact = () => {
                   <div className="contact-text">
                     <h4>Call Us</h4>
                     <p>+44 02031231010</p>
-                    <span className="contact-note">Mon-Sat: 8am-8pm</span>
+                    <span className="contact-note">Mon-Sat: 7am-7pm</span>
                   </div>
                 </div>
                 
@@ -112,6 +145,16 @@ const Contact = () => {
                   </div>
                 </div>
                 
+                <div className="contact-item">
+                  <div className="contact-icon">
+                    <i className="fas fa-map-marker-alt"></i>
+                  </div>
+                  <div className="contact-text">
+                    <h4>Visit Us</h4>
+                    <p>2 Turnpike Lane, Uxbridge, Hillingdon, UB10 0AH, UK</p>
+                    <span className="contact-note">Come say hello</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -123,7 +166,32 @@ const Contact = () => {
               <p>Fill out the form below and we'll get back to you</p>
             </div>
             
-            <form className="contact-form" onSubmit={handleSubmit}>
+            {/* Status Messages */}
+            {submitStatus === 'success' && (
+              <div className="success-message">
+                <i className="fas fa-check-circle"></i>
+                <div>
+                  <h4>Message Sent Successfully!</h4>
+                  <p>Thank you for contacting us. We'll get back to you shortly.</p>
+                </div>
+              </div>
+            )}
+            
+            {submitStatus === 'error' && (
+              <div className="error-message">
+                <i className="fas fa-exclamation-circle"></i>
+                <div>
+                  <h4>Something went wrong</h4>
+                  <p>Please try again or contact us directly via email/phone.</p>
+                </div>
+              </div>
+            )}
+            
+            <form 
+              ref={form}
+              className="contact-form" 
+              onSubmit={handleSubmit}
+            >
               <div className="form-group">
                 <input
                   type="text"
@@ -190,7 +258,7 @@ const Contact = () => {
                 {isSubmitting ? (
                   <>
                     <i className="fas fa-spinner fa-spin"></i>
-                    Sending Message...
+                    Sending...
                   </>
                 ) : (
                   <>
@@ -207,6 +275,4 @@ const Contact = () => {
   );
 };
 
-
 export default Contact;
-
