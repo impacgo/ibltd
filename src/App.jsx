@@ -3,9 +3,9 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import './App.css';
-import { AuthProvider } from './context/AuthContext'; // FIXED: Changed from "../context/AuthContext" to "./context/AuthContext"
+import { AuthProvider } from './context/AuthContext';
 import LoadingSpinner from './components/LoadingSpinner';
-import ScrollToTop from './components/ScrollToTop'; // We'll create this
+import ScrollToTop from './components/ScrollToTop';
 
 // Define API_BASE constant for backward compatibility component
 const API_BASE = "https://api.ironingboy.com";
@@ -36,56 +36,7 @@ const TermsPage = lazy(() => import("./components/TermsLink"));
 const ThankYouPage = lazy(() => import('./components/ThankYouPage'));
 const NotFound = lazy(() => import('./components/NotFound'));
 
-// Component for backward compatibility - redirects old ID-based URLs to new slug-based URLs
-const NavigateToSlug = () => {
-  const { categoryId } = useParams();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCategorySlug = async () => {
-      try {
-        console.log(`Redirecting old category ID: ${categoryId} to slug-based URL`);
-        
-        const response = await fetch(`${API_BASE}/categories`);
-        if (response.ok) {
-          const data = await response.json();
-          const categories = Array.isArray(data) ? data : data.data || [];
-          
-          const category = categories.find(cat => cat.id.toString() === categoryId.toString());
-          
-          if (category && category.name) {
-            const slug = category.name.toLowerCase().replace(/\s+/g, '-');
-            navigate(`/category/${slug}`, { replace: true });
-          } else {
-            navigate('/services');
-          }
-        } else {
-          navigate('/services');
-        }
-      } catch (error) {
-        console.error("Error fetching category:", error);
-        navigate('/services');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (categoryId) {
-      fetchCategorySlug();
-    } else {
-      navigate('/services');
-    }
-  }, [categoryId, navigate]);
-
-  if (loading) {
-    return <LoadingSpinner message="Redirecting..." />;
-  }
-
-  return null;
-};
-
-// In App.jsx, update the MainLayout component:
+// Main Layout Component
 const MainLayout = ({ children, hideHeaderFooter = false }) => {
   const location = useLocation();
   
@@ -140,31 +91,39 @@ const PageWrapper = ({ component: Component }) => (
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        {/* Add ScrollToTop component */}
+      <Router basename="/">
         <ScrollToTop />
         
         <Routes>
           {/* Home page */}
-          <Route path="/" element={
-            <PageWrapper component={HomePage} />
-          } />
+          <Route path="/" element={<PageWrapper component={HomePage} />} />
           
-          {/* Services pages */}
-          <Route path="/services" element={
-            <PageWrapper component={ServicesPage} />
-          } />
-          <Route path="/services/:id" element={
+          {/* Static pages */}
+          <Route path="/services" element={<PageWrapper component={ServicesPage} />} />
+          <Route path="/pricing" element={<PageWrapper component={PricingPage} />} />
+          <Route path="/how-it-works" element={<PageWrapper component={HowItWorksPage} />} />
+          <Route path="/testimonials" element={<PageWrapper component={TestimonialsPage} />} />
+          <Route path="/faq" element={<PageWrapper component={FAQPage} />} />
+          <Route path="/contact" element={<PageWrapper component={ContactPage} />} />
+          <Route path="/areas" element={<PageWrapper component={AreasPage} />} />
+          <Route path="/quick-booking" element={<PageWrapper component={QuickBookingPage} />} />
+          
+          {/* Dynamic routes - MUST handle both direct navigation and client-side routing */}
+          
+          {/* Area details - e.g., /areas/paddington */}
+          <Route path="/areas/:areaSlug" element={
             <MainLayout>
               <Suspense fallback={<LoadingSpinner />}>
-                <CategoryDetails />
+                <AreaDetails />
               </Suspense>
             </MainLayout>
           } />
-          <Route path="/services/:serviceSlug" element={
+          
+          {/* Area service page - e.g., /areas/paddington/ironing */}
+          <Route path="/areas/:areaSlug/:serviceSlug" element={
             <MainLayout>
               <Suspense fallback={<LoadingSpinner />}>
-                <ServicePage />
+                <AreaServicePage />
               </Suspense>
             </MainLayout>
           } />
@@ -178,29 +137,16 @@ function App() {
             </MainLayout>
           } />
           
-          {/* Backward compatibility for old ID-based URLs */}
-          <Route path="/category/:categoryId" element={
+          {/* Service pages */}
+          <Route path="/service/:serviceId" element={
             <MainLayout>
-              <NavigateToSlug />
+              <Suspense fallback={<LoadingSpinner />}>
+                <ServicePage />
+              </Suspense>
             </MainLayout>
           } />
           
-          {/* Other pages with MainLayout */}
-          <Route path="/pricing" element={
-            <PageWrapper component={PricingPage} />
-          } />
-          <Route path="/how-it-works" element={
-            <PageWrapper component={HowItWorksPage} />
-          } />
-          <Route path="/testimonials" element={
-            <PageWrapper component={TestimonialsPage} />
-          } />
-          <Route path="/faq" element={
-            <PageWrapper component={FAQPage} />
-          } />
-          <Route path="/contact" element={
-            <PageWrapper component={ContactPage} />
-          } />
+          {/* User pages */}
           <Route path="/profile" element={
             <MainLayout>
               <Suspense fallback={<LoadingSpinner />}>
@@ -208,36 +154,6 @@ function App() {
               </Suspense>
             </MainLayout>
           } />
-          
-          {/* Quick Booking page - WITH MainLayout */}
-          <Route path="/quick-booking" element={
-            <MainLayout>
-              <Suspense fallback={<LoadingSpinner />}>
-                <QuickBooking />
-              </Suspense>
-            </MainLayout>
-          } />
-          
-          {/* Areas pages */}
-          <Route path="/areas" element={
-            <PageWrapper component={AreasPage} />
-          } />
-          <Route path="/areas/:slug" element={
-            <MainLayout>
-              <Suspense fallback={<LoadingSpinner />}>
-                <AreaDetails />
-              </Suspense>
-            </MainLayout>
-          } />
-          <Route path="/areas/:slug/:serviceSlug" element={
-            <MainLayout>
-              <Suspense fallback={<LoadingSpinner />}>
-                <AreaServicePage />
-              </Suspense>
-            </MainLayout>
-          } />
-          
-          {/* User pages */}
           <Route path="/checkout" element={
             <MainLayout>
               <Suspense fallback={<LoadingSpinner />}>
@@ -285,14 +201,14 @@ function App() {
             </Suspense>
           } />
           
-          {/* 404/Catch-all route */}
-<Route path="*" element={
-  <MainLayout hideHeaderFooter={true}> {/* Hide header/footer for 404 */}
-    <Suspense fallback={<LoadingSpinner />}>
-      <NotFound />
-    </Suspense>
-  </MainLayout>
-} />
+          {/* 404/Catch-all route - MUST BE LAST */}
+          <Route path="*" element={
+            <MainLayout>
+              <Suspense fallback={<LoadingSpinner />}>
+                <NotFound />
+              </Suspense>
+            </MainLayout>
+          } />
         </Routes>
       </Router>
     </AuthProvider>
