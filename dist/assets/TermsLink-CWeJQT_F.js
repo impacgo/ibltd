@@ -1,1 +1,0 @@
-import{j as o}from"./index-Bv6fWX9m.js";import"./vendor-OvXVS5lI.js";const i=({children:e="Terms & Conditions",className:n=""})=>{const t=()=>{window.open("/terms.html","_blank","noopener,noreferrer,width=1200,height=800")};return o.jsx("button",{onClick:t,className:`terms-link ${n}`,title:"Opens in new window",children:e})};export{i as default};
