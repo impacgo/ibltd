@@ -596,144 +596,145 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
     return re.test(String(email).toLowerCase());
   };
 
-  const save = async () => {
-    // Enhanced validation
-    if (!form.name?.trim()) {
-      alert("Please enter your name");
-      return;
-    }
-    if (!form.phone?.trim()) {
-      alert("Please enter your phone number");
-      return;
-    }
-    if (!form.full_address?.trim()) {
-      alert("Please select or enter an address");
-      return;
-    }
-    if (!form.latitude || !form.longitude) {
-      alert("Please select a location on the map");
-      return;
+ const save = async () => {
+  // Enhanced validation
+  if (!form.name?.trim()) {
+    alert("Please enter your name");
+    return;
+  }
+  if (!form.phone?.trim()) {
+    alert("Please enter your phone number");
+    return;
+  }
+  if (!form.full_address?.trim()) {
+    alert("Please select or enter an address");
+    return;
+  }
+  if (!form.latitude || !form.longitude) {
+    alert("Please select a location on the map");
+    return;
+  }
+
+  // Remove the specific phone validation regex check:
+  // Basic phone validation - only check if it has some digits
+  const phoneDigits = form.phone.replace(/\D/g, '');
+  if (phoneDigits.length < 5) { // Minimum 5 digits for any international number
+    alert("Please enter a valid phone number with at least 5 digits");
+    return;
+  }
+
+  // Email validation (optional but if provided, must be valid)
+  if (form.email?.trim() && !validateEmail(form.email.trim())) {
+    alert("Please enter a valid email address or leave it empty");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("jwtToken");
+    if (!token) {
+      throw new Error("Not authenticated. Please login again.");
     }
 
-    // Basic phone validation
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    if (!phoneRegex.test(form.phone.replace(/[\s\-\(\)]/g, ''))) {
-      alert("Please enter a valid phone number");
-      return;
-    }
+    const addressData = {
+      name: form.name.trim(),
+      phone: form.phone.trim(), // Store exactly as entered, including country code
+      email: form.email?.trim() || "",
+      address_type: form.address_type,
+      full_address: form.full_address.trim(),
+      additional_details: form.additional_details?.trim() || "",
+      pincode: form.pincode?.trim() || "",
+      latitude: parseFloat(form.latitude),
+      longitude: parseFloat(form.longitude),
+      house_number: form.house_number?.trim() || "",
+      street_name: form.street_name?.trim() || "",
+      postcode: form.postcode?.trim() || "",
+      city: form.city?.trim() || "",
+      state: form.state?.trim() || "",
+      country: form.country?.trim() || "",
+    };
 
-    // Email validation (optional but if provided, must be valid)
-    if (form.email?.trim() && !validateEmail(form.email.trim())) {
-      alert("Please enter a valid email address or leave it empty");
-      return;
-    }
+    console.log("📤 Saving address:", addressData);
 
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("jwtToken");
-      if (!token) {
-        throw new Error("Not authenticated. Please login again.");
+    // First, check if user profile needs updating
+    const profileUpdates = [];
+    
+    // If name is different from profile OR user wants to update it, update profile
+    if (form.name.trim() !== userProfile.name && form.name.trim()) {
+      console.log("📝 Updating profile name...");
+      const nameUpdated = await updateUserProfile("name", form.name.trim());
+      if (nameUpdated) {
+        setUserProfile(prev => ({ ...prev, name: form.name.trim() }));
       }
-
-      const addressData = {
-        name: form.name.trim(),
-        phone: form.phone.trim(),
-        email: form.email?.trim() || "", // Include email in address data
-        address_type: form.address_type,
-        full_address: form.full_address.trim(),
-        additional_details: form.additional_details?.trim() || "",
-        pincode: form.pincode?.trim() || "",
-        latitude: parseFloat(form.latitude),
-        longitude: parseFloat(form.longitude),
-        house_number: form.house_number?.trim() || "",
-        street_name: form.street_name?.trim() || "",
-        postcode: form.postcode?.trim() || "",
-        city: form.city?.trim() || "",
-        state: form.state?.trim() || "",
-        country: form.country?.trim() || "",
-      };
-
-      console.log("📤 Saving address:", addressData);
-
-      // First, check if user profile needs updating
-      const profileUpdates = [];
-      
-      // If name is different from profile and profile name is empty, update it
-      if (form.name.trim() !== userProfile.name && !userProfile.name && form.name.trim()) {
-        console.log("📝 Updating profile name...");
-        const nameUpdated = await updateUserProfile("name", form.name.trim());
-        if (nameUpdated) {
-          setUserProfile(prev => ({ ...prev, name: form.name.trim() }));
-        }
-      }
-      
-      // If phone is different from profile and profile phone is empty, update it
-      if (form.phone.trim() !== userProfile.phone && !userProfile.phone && form.phone.trim()) {
-        console.log("📝 Updating profile phone...");
-        const phoneUpdated = await updateUserProfile("phone", form.phone.trim());
-        if (phoneUpdated) {
-          setUserProfile(prev => ({ ...prev, phone: form.phone.trim() }));
-        }
-      }
-      
-      // If email is different from profile and profile email is empty, update it
-      if (form.email.trim() !== userProfile.email && !userProfile.email && form.email.trim()) {
-        console.log("📝 Updating profile email...");
-        const emailUpdated = await updateUserProfile("email", form.email.trim());
-        if (emailUpdated) {
-          setUserProfile(prev => ({ ...prev, email: form.email.trim() }));
-        }
-      }
-
-      // Save the address
-      const response = await fetch(`${apiBase}/addresses`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(addressData),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || data.error || `Failed to save address (Status: ${response.status})`);
-      }
-      
-      console.log("✅ Address saved successfully:", data);
-      
-      // Reset form
-      setForm({
-        name: userProfile.name || "",
-        address_type: "home",
-        phone: userProfile.phone || "",
-        email: userProfile.email || "", // Reset email too
-        full_address: "",
-        house_number: "",
-        street_name: "",
-        postcode: "",
-        pincode: "",
-        city: "",
-        state: "",
-        country: "",
-        additional_details: "",
-        latitude: "",
-        longitude: "",
-      });
-      setSearchInput("");
-      setPlacePredictions([]);
-      setSelectedLocation(currentLocation);
-      
-      onSaved(data.address || data);
-      onClose();
-    } catch (error) {
-      console.error("❌ Save error:", error);
-      alert(`Error: ${error.message}`);
-    } finally {
-      setLoading(false);
     }
-  };
+    
+    // If phone is different from profile OR user wants to update it, update profile
+    if (form.phone.trim() !== userProfile.phone && form.phone.trim()) {
+      console.log("📝 Updating profile phone...");
+      const phoneUpdated = await updateUserProfile("phone", form.phone.trim());
+      if (phoneUpdated) {
+        setUserProfile(prev => ({ ...prev, phone: form.phone.trim() }));
+      }
+    }
+    
+    // If email is different from profile OR user wants to update it, update profile
+    if (form.email.trim() !== userProfile.email && form.email.trim()) {
+      console.log("📝 Updating profile email...");
+      const emailUpdated = await updateUserProfile("email", form.email.trim());
+      if (emailUpdated) {
+        setUserProfile(prev => ({ ...prev, email: form.email.trim() }));
+      }
+    }
+
+    // Save the address
+    const response = await fetch(`${apiBase}/addresses`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(addressData),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || data.error || `Failed to save address (Status: ${response.status})`);
+    }
+    
+    console.log("✅ Address saved successfully:", data);
+    
+    // Reset form
+    setForm({
+      name: userProfile.name || "",
+      address_type: "home",
+      phone: userProfile.phone || "",
+      email: userProfile.email || "",
+      full_address: "",
+      house_number: "",
+      street_name: "",
+      postcode: "",
+      pincode: "",
+      city: "",
+      state: "",
+      country: "",
+      additional_details: "",
+      latitude: "",
+      longitude: "",
+    });
+    setSearchInput("");
+    setPlacePredictions([]);
+    setSelectedLocation(currentLocation);
+    
+    onSaved(data.address || data);
+    onClose();
+  } catch (error) {
+    console.error("❌ Save error:", error);
+    alert(`Error: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (!open) return null;
 
@@ -752,26 +753,32 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
   };
 
   // Helper function to display profile loading state
-  const renderProfileInfo = () => {
-    if (profileLoading) {
-      return (
-        <div className="am-profile-loading">
-          <div className="am-spinner-tiny"></div>
-          <span>Loading your profile...</span>
-        </div>
-      );
-    }
-    
+  // Update the renderProfileInfo function:
+const renderProfileInfo = () => {
+  if (profileLoading) {
     return (
-      <div className="am-profile-info">
-        <span className="am-profile-note">
-          {userProfile.name || userProfile.phone ? 
-            "Profile data loaded. You can edit if needed." : 
-            "Please enter your personal details."}
-        </span>
+      <div className="am-profile-loading">
+        <div className="am-spinner-tiny"></div>
+        <span>Loading your profile...</span>
       </div>
     );
-  };
+  }
+  
+  return (
+    <div className="am-profile-info">
+      <span className="am-profile-note">
+        {userProfile.name || userProfile.phone ? 
+          "Profile data loaded. You can edit if needed." : 
+          "Please enter your personal details."}
+      </span>
+      {userProfile.phone && (
+        <span className="am-profile-phone-hint">
+          Phone: {userProfile.phone} (International format accepted)
+        </span>
+      )}
+    </div>
+  );
+};
 
   return (
     <div className="am-backdrop">

@@ -484,3 +484,634 @@
     color: #bbb;
   }
 }
+
+/* src/components/Services.css */
+
+/* ADD THIS AT THE TOP to center the entire section */
+.services-section {
+  padding: 80px 0 70px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f4f8 100%);
+  font-family: 'Segoe UI', sans-serif;
+  position: relative;
+  display: flex; /* Add this */
+  flex-direction: column; /* Add this */
+  align-items: center; /* Add this - centers horizontally */
+  justify-content: center; /* Add this - centers vertically */
+  min-height: 25vh; /* Add this - makes it full viewport height */
+  box-sizing: border-box; /* Add this - ensures padding is included in width */
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%; /* Add this */
+  display: flex; /* Add this */
+  flex-direction: column; /* Add this */
+  align-items: center; /* Add this - centers content inside container */
+  box-sizing: border-box; /* Add this */
+}
+
+/* Header Section */
+.services-header {
+  text-align: center;
+  margin-bottom: 50px;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
+}
+
+/* Rest of your existing CSS remains exactly the same */
+
+.services-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+  box-sizing: border-box; /* Add this */
+}
+
+.services-heading {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1c1e21;
+  margin-bottom: 16px;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #1c1e21 0%, #36454F 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  box-sizing: border-box; /* Add this */
+  word-wrap: break-word; /* Add this for long words */
+}
+
+.services-subheading {
+  font-size: 1.15rem;
+  color: #555;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.7;
+  box-sizing: border-box; /* Add this */
+  word-wrap: break-word; /* Add this for long words */
+}
+
+/* Loading State */
+.services-loading {
+  text-align: center;
+  padding: 60px 0;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+  box-sizing: border-box; /* Add this */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.services-error {
+  text-align: center;
+  padding: 40px;
+  background: #ffeaea;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
+}
+
+.services-error i {
+  font-size: 2.5rem;
+  color: #ff4757;
+  margin-bottom: 16px;
+}
+
+.services-error p {
+  color: #555;
+  margin-bottom: 20px;
+  word-wrap: break-word; /* Add this for long words */
+}
+
+.retry-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Add this */
+  max-width: 100%; /* Add this */
+}
+
+.retry-btn:hover {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+}
+
+/* Empty State */
+.services-empty {
+  text-align: center;
+  padding: 60px 0;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
+}
+
+.services-empty i {
+  font-size: 3rem;
+  color: #667eea;
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
+
+.services-empty h3 {
+  color: #333;
+  margin-bottom: 10px;
+  word-wrap: break-word; /* Add this for long words */
+}
+
+.services-empty p {
+  color: #666;
+  word-wrap: break-word; /* Add this for long words */
+}
+
+/* GRID */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 28px;
+  margin-bottom: 60px;
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
+}
+
+/* CARD */
+.service-card {
+  position: relative;
+  height: 320px;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  will-change: transform;
+  box-sizing: border-box; /* Add this */
+}
+
+.service-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Image Wrapper */
+.service-image-wrapper {
+  position: relative;
+  height: 60%;
+  overflow: hidden;
+  box-sizing: border-box; /* Add this */
+}
+
+.service-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.6s ease;
+  box-sizing: border-box; /* Add this */
+}
+
+.service-card:hover .service-image {
+  transform: scale(1.1);
+}
+
+.service-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  box-sizing: border-box; /* Add this */
+}
+
+.service-card:hover .service-overlay {
+  opacity: 1;
+}
+
+/* Content */
+.service-content {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 22px;
+  background: white;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Add this */
+}
+
+.service-icon {
+  position: absolute;
+  top: -25px;
+  left: 22px;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-sizing: border-box; /* Add this */
+}
+
+.service-content h3 {
+  margin: 10px 0 8px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1c1e21;
+  word-wrap: break-word; /* Add this for long words */
+}
+
+.service-content p {
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-wrap: break-word; /* Add this for long words */
+}
+
+/* CTA Button inside each card */
+.service-cta-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ff9600 0%, #ffbb54 100%);
+  color: #1a1a1a;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(255, 153, 0, 0.3);
+  font-size: 0.9rem;
+  box-sizing: border-box; /* Add this */
+  max-width: 100%; /* Add this */
+}
+
+.service-cta-btn:hover {
+  background: linear-gradient(135deg, #ff8b00 0%, #ffb241 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 153, 0, 0.4);
+}
+
+/* Book Now Section */
+.book-now-section {
+  margin-top: 40px;
+  width: 100%; /* Add this */
+  display: flex; /* Add this */
+  justify-content: center; /* Add this - centers the card */
+  box-sizing: border-box; /* Add this */
+}
+
+.book-now-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  max-width: 1200px; /* Add this */
+  width: 100%; /* Add this */
+  box-sizing: border-box; /* Add this */
+}
+
+.book-now-icon {
+  flex-shrink: 0;
+}
+
+.book-now-icon i {
+  font-size: 2.5rem;
+  color: white;
+}
+
+.book-now-content {
+  flex: 1;
+  min-width: 300px;
+  box-sizing: border-box; /* Add this */
+}
+
+.book-now-content h3 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  word-wrap: break-word; /* Add this for long words */
+}
+
+.book-now-content p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  line-height: 1.6;
+  word-wrap: break-word; /* Add this for long words */
+}
+
+.book-now-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  background: white;
+  color: #667eea;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  box-sizing: border-box; /* Add this */
+  max-width: 100%; /* Add this */
+}
+
+.book-now-btn:hover {
+  background: #f8f9fa;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+}
+
+.book-now-btn:active {
+  transform: translateY(-1px);
+}
+
+/* RESPONSIVE - Updated for better mobile fit */
+@media (max-width: 1024px) {
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .services-section {
+    padding: 60px 15px 50px; /* Changed from 0 20px to 15px */
+    min-height: calc(100vh - 20px); /* Adjust for mobile */
+  }
+  
+  .container {
+    padding: 0 15px; /* Reduced padding for mobile */
+    width: 100%;
+  }
+  
+  .services-heading {
+    font-size: 2rem;
+    padding: 0 10px; /* Added padding */
+  }
+  
+  .services-subheading {
+    font-size: 1rem;
+    padding: 0 10px; /* Added padding */
+  }
+  
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    width: 100%;
+  }
+  
+  .service-card {
+    height: 280px;
+    border-radius: 16px;
+    max-width: 100%; /* Ensure cards don't overflow */
+  }
+  
+  .service-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  .service-content p {
+    font-size: 0.9rem;
+  }
+  
+  .book-now-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 32px 20px; /* Reduced padding */
+    margin: 0 10px; /* Added margin */
+    width: calc(100% - 20px); /* Ensure it fits */
+  }
+  
+  .book-now-content {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .book-now-btn {
+    width: 100%;
+    justify-content: center;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .services-section {
+    padding: 40px 10px 30px; /* Reduced padding further */
+    min-height: calc(100vh - 30px);
+    width: 100vw; /* Ensure it takes full viewport width */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+  
+  .container {
+    padding: 0 10px; /* Minimal padding */
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .services-header {
+    margin-bottom: 30px;
+    padding: 0 5px;
+  }
+  
+  .services-heading {
+    font-size: 1.75rem;
+    padding: 0 5px;
+    line-height: 1.3;
+  }
+  
+  .services-subheading {
+    font-size: 0.95rem;
+    padding: 0 5px;
+    line-height: 1.5;
+  }
+  
+  .services-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    width: 100%;
+    padding: 0 5px;
+  }
+  
+  .service-card {
+    height: 260px;
+    border-radius: 14px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  .service-content {
+    padding: 18px 15px; /* Adjusted padding */
+  }
+  
+  .service-icon {
+    width: 45px;
+    height: 45px;
+    top: -22px;
+    left: 15px; /* Adjusted position */
+  }
+  
+  .service-content h3 {
+    font-size: 1.1rem;
+    padding-right: 10px;
+  }
+  
+  .service-content p {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 2;
+    padding-right: 10px;
+  }
+  
+  .book-now-section {
+    margin-top: 30px;
+    padding: 0 5px;
+  }
+  
+  .book-now-card {
+    padding: 24px 15px; /* Reduced padding */
+    margin: 0;
+    width: 100%;
+    border-radius: 14px;
+  }
+  
+  .book-now-content h3 {
+    font-size: 1.3rem;
+    padding: 0 5px;
+  }
+  
+  .book-now-content p {
+    font-size: 0.95rem;
+    padding: 0 5px;
+  }
+  
+  .book-now-btn {
+    padding: 14px 20px;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+  
+  /* Fix for very small screens */
+  @media (max-width: 360px) {
+    .services-heading {
+      font-size: 1.5rem;
+    }
+    
+    .services-subheading {
+      font-size: 0.9rem;
+    }
+    
+    .service-card {
+      height: 240px;
+    }
+    
+    .book-now-card {
+      padding: 20px 12px;
+    }
+    
+    .book-now-content h3 {
+      font-size: 1.2rem;
+    }
+    
+    .book-now-content p {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+  .service-card:hover {
+    transform: none;
+  }
+  
+  .service-card:active {
+    transform: scale(0.98);
+  }
+  
+  .book-now-btn:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Prevent horizontal scrolling on mobile */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .services-section {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  }
+  
+  .services-heading {
+    background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .services-subheading {
+    color: #bbb;
+  }
+  
+  .service-card {
+    background: #2d2d2d;
+  }
+  
+  .service-content {
+    background: #2d2d2d;
+  }
+  
+  .service-content h3 {
+    color: #ffffff;
+  }
+  
+  .service-content p {
+    color: #bbb;
+  }
+}

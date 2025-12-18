@@ -1,170 +1,475 @@
-/* ---------------- GLOBAL ---------------- */
-.service-page {
-  background: #081529;
-  color: #e9f0ff;
-  font-family: "Inter", sans-serif;
+/* src/components/ServiceDetail.css */
+.service-detail {
+  padding: 60px 0 100px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  min-height: 100vh;
+}
+
+.service-detail .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  margin-bottom: 30px;
+  font-size: 14px;
+  color: #666;
+}
+
+.breadcrumb a {
+  color: #4CAF50;
+  text-decoration: none;
+  margin: 0 5px;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb span {
+  color: #333;
+  font-weight: 500;
+  margin-left: 5px;
+}
+
+/* Service Header */
+.service-header {
+  text-align: center;
+  margin-bottom: 60px;
+  padding: 0 20px;
+}
+
+.service-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+}
+
+.service-header h1 {
+  font-size: 42px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.service-description {
+  font-size: 18px;
+  color: #666;
+  max-width: 700px;
+  margin: 0 auto;
   line-height: 1.6;
 }
 
-/* ---------------- HERO ---------------- */
-.service-hero {
-  height: 330px;
-  background-size: cover;
-  background-position: center;
+/* Service Card */
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  margin-bottom: 60px;
+}
+
+.service-card {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eaeaea;
+  transition: all 0.3s ease;
   position: relative;
+  overflow: hidden;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+  border-color: #4CAF50;
+}
+
+.popular-badge {
+  position: absolute;
+  top: 20px;
+  right: -30px;
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: #333;
+  padding: 6px 35px;
+  font-size: 12px;
+  font-weight: 600;
+  transform: rotate(45deg);
+  transform-origin: center;
+  box-shadow: 0 2px 10px rgba(255, 165, 0, 0.3);
+}
+
+.popular-badge i {
+  margin-right: 5px;
+}
+
+.service-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.service-info {
   display: flex;
   align-items: center;
+  gap: 25px;
+  flex: 1;
+  min-width: 300px;
 }
 
-.service-hero .overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(8, 12, 28, 0.4), rgba(8, 12, 28, 0.9));
-}
-
-.hero-inner {
-  position: relative;
-  padding: 34px 6%;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.breadcrumbs {
-  color: #ffdba8;
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-.hero-inner h1 {
-  font-size: 2.4rem;
-  font-weight: 800;
-  background: linear-gradient(90deg, #ffbf63, #ff9b27);
-  -webkit-background-clip: text;
-  color: transparent;
-  margin-bottom: 8px;
-}
-
-.lead {
-  max-width: 680px;
-  color: #e7edff;
-  font-size: 1.05rem;
-}
-
-/* ---------------- MAIN CONTENT ---------------- */
-.container {
-  max-width: 1100px;
-  margin: 30px auto;
-  padding: 0 6%;
-}
-
-/* ---------------- SECTION HEADINGS ---------------- */
-.service-body h2,
-.service-body h3 {
+.service-number {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
   font-weight: 700;
-  color: #ffc873;
+  flex-shrink: 0;
+}
+
+.service-text h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #222;
   margin-bottom: 8px;
 }
 
-.muted {
-  color: #bcccff;
-  margin-bottom: 16px;
-  font-size: 15px;
+.service-desc {
+  color: #666;
+  margin-bottom: 12px;
+  line-height: 1.5;
 }
 
-/* ---------------- FEATURES ---------------- */
-.service-features {
+.service-meta {
   display: flex;
+  gap: 20px;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-bottom: 30px;
 }
 
-.feature {
-  background: rgba(255, 255, 255, 0.06);
-  padding: 14px 15px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 200, 130, 0.18);
-  font-size: 15px;
-  color: #fff;
-  min-width: 230px;
-  transition: 0.25s;
-  backdrop-filter: blur(6px);
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #4CAF50;
+  font-weight: 500;
 }
 
-.feature:hover {
-  background: rgba(255, 200, 130, 0.12);
-  transform: translateY(-4px);
+.meta-item i {
+  font-size: 12px;
 }
 
-/* ---------------- AREA CHIPS ---------------- */
-.area-chip {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 200, 130, 0.25);
-  color: #ffd48b;
-  padding: 10px 14px;
+.service-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 15px;
+  min-width: 200px;
+}
+
+.service-price {
+  text-align: right;
+}
+
+.price-label {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.price-amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: #222;
+  line-height: 1;
+}
+
+.book-now-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 14px 30px;
   border-radius: 10px;
-  text-decoration: none;
-  font-size: 15px;
-  backdrop-filter: blur(6px);
-  transition: 0.2s ease;
-}
-
-.area-chip:hover {
-  background: rgba(255, 200, 130, 0.2);
-  color: #fff;
-  transform: translateY(-3px);
-}
-
-.areas-list-inline {
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin: 18px 0 32px;
+  align-items: center;
+  gap: 10px;
+  min-width: 160px;
+  justify-content: center;
 }
 
-/* ---------------- FAQ ---------------- */
-.faq {
+.book-now-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+}
+
+.book-now-btn:active {
+  transform: translateY(0);
+}
+
+.book-now-btn i {
+  font-size: 14px;
+}
+
+/* No Services */
+.no-services {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.no-services i {
+  font-size: 48px;
+  color: #4CAF50;
+  margin-bottom: 20px;
+}
+
+.no-services h3 {
+  font-size: 24px;
+  color: #222;
+  margin-bottom: 10px;
+}
+
+.no-services p {
+  color: #666;
+  margin-bottom: 25px;
+}
+
+/* Service Features */
+.service-features {
+  margin: 80px 0;
+  text-align: center;
+}
+
+.service-features h2 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 50px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
   margin-top: 40px;
 }
 
-.faq details {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 200, 130, 0.18);
-  padding: 14px;
+.feature-card {
+  background: white;
+  padding: 30px;
   border-radius: 12px;
-  margin-top: 10px;
-  transition: 0.25s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #eaeaea;
 }
 
-.faq details summary {
-  color: #ffcd84;
-  cursor: pointer;
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: #4CAF50;
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: white;
+  font-size: 24px;
+}
+
+.feature-card h4 {
+  font-size: 20px;
   font-weight: 600;
+  color: #222;
+  margin-bottom: 10px;
 }
 
-.faq details[open] {
-  background: rgba(255, 200, 130, 0.15);
+.feature-card p {
+  color: #666;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
-.faq p {
-  margin-top: 10px;
-  color: #d7e4ff;
+/* CTA Section */
+.service-cta {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 60px 40px;
+  border-radius: 20px;
+  text-align: center;
+  margin-top: 60px;
 }
 
-/* ---------------- RESPONSIVE ---------------- */
+.service-cta h2 {
+  font-size: 36px;
+  margin-bottom: 15px;
+}
+
+.service-cta p {
+  font-size: 18px;
+  opacity: 0.9;
+  margin-bottom: 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 16px 35px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: white;
+  color: #4CAF50;
+}
+
+.btn-primary:hover {
+  background: #f8f8f8;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+  transform: translateY(-2px);
+}
+
+/* Loading & Error States */
+.loading-spinner, .error-message {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.loading-spinner i {
+  font-size: 48px;
+  color: #4CAF50;
+  margin-bottom: 20px;
+}
+
+.loading-spinner p {
+  font-size: 18px;
+  color: #666;
+}
+
+.error-message i {
+  font-size: 48px;
+  color: #ff6b6b;
+  margin-bottom: 20px;
+}
+
+.error-message h3 {
+  font-size: 24px;
+  color: #222;
+  margin-bottom: 20px;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .service-hero {
-    height: 250px;
+  .service-header h1 {
+    font-size: 32px;
   }
-
-  .hero-inner h1 {
-    font-size: 2rem;
+  
+  .service-description {
+    font-size: 16px;
   }
-
-  .feature,
-  .area-chip {
-    width: 100%;
+  
+  .service-card-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .service-info {
+    flex-direction: column;
     text-align: center;
+    gap: 15px;
+  }
+  
+  .service-actions {
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .service-price {
+    text-align: center;
+  }
+  
+  .price-amount {
+    font-size: 28px;
+  }
+  
+  .book-now-btn {
+    width: 100%;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .service-cta {
+    padding: 40px 20px;
+  }
+  
+  .service-cta h2 {
+    font-size: 28px;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-primary, .btn-secondary {
+    width: 100%;
   }
 }

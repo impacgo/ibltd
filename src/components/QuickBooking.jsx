@@ -1,3 +1,4 @@
+// src/components/QuickBooking.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AddAddressModal from "../components/AddAddressModal";
@@ -10,65 +11,67 @@ import "./QuickBooking.css";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
-  PaymentElement,
   useStripe,
   useElements,
+  PaymentElement,
 } from "@stripe/react-stripe-js";
 
 const API_BASE = "https://api.ironingboy.com";
 
 // Initialize Stripe with your publishable key
 const stripePromise = loadStripe(
-  "pk_live_51SUiy73fSKIcHb6THsEQatj2g1tJOjUhzaym490HNFobNn6gOtdzpelQnV2knmKkXPiqxKqJjwEQ6dtSNRKuO4yx00HFqYnkEI"
+  "pk_live_51SUiy73fSKIcHb6THsEQatj2g1tJOjUhzaym490HNFobNn6gOtdzpelQnV2knmKkXPiqxKqJjwEQ6dtSNRKuO4yx00HFqYnkEI",
 );
 
 /* -------------------------------------------------------------------------- */
-/*                          Stripe Payment Form (UI)                          */
+/*                       Stripe SetupIntent Form (UI)                         */
 /* -------------------------------------------------------------------------- */
 
-const StripePaymentForm = ({
-  orderData,
-  onPaymentSuccess,
-  onPaymentError,
+const StripeSetupForm = ({
+  onSetupSuccess,
+  onSetupError,
   onCancel,
-  paymentProcessing,
+  setupProcessing,
 }) => {
-  const stripe = useStripe();
-  const elements = useElements();
+  const [consent, setConsent] = useState(false);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const stripe = useStripe();
+  const elements = useElements();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!consent) {
+      setError("You must consent to save your card for future payments");
+      return;
+    }
+    
     if (!stripe || !elements) return;
-
-    setError(null);
+    
     setSubmitting(true);
+    setError(null);
 
     try {
-      const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
+      const result = await stripe.confirmSetup({
         elements,
-        redirect: "if_required", // stay on page unless 3DS requires redirect
+        redirect: "if_required",
       });
 
-      if (stripeError) {
-        setError(stripeError.message);
-        onPaymentError(stripeError.message);
-        setSubmitting(false);
-        return;
+      if (result.error) {
+        throw result.error;
       }
 
-      if (paymentIntent?.status === "succeeded") {
-        onPaymentSuccess(paymentIntent);
-      } else {
-        const msg = `Payment was not successful: ${paymentIntent?.status}`;
-        setError(msg);
-        onPaymentError(msg);
+      const setupIntent = result.setupIntent;
+
+      if (!setupIntent || !setupIntent.payment_method) {
+        throw new Error("Payment method not saved");
       }
+
+      await onSetupSuccess(setupIntent);
     } catch (err) {
-      const msg = err.message || "Payment failed. Please try again.";
-      setError(msg);
-      onPaymentError(msg);
+      setError(err.message || "Card save failed");
+      onSetupError(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -77,79 +80,88 @@ const StripePaymentForm = ({
   return (
     <div className="stripe-payment-modal">
       <div className="payment-header">
-        <h3>Complete Your Payment</h3>
-        <p>Secure payment processed by Stripe</p>
-      </div>
-
-      <div className="payment-summary">
-        <div className="summary-item">
-          <span>Service</span>
-          <span>Express Laundry Booking</span>
-        </div>
-        <div className="summary-item">
-          <span>Minimum Order</span>
-          <span>£{(orderData.total_amount / 100).toFixed(2)}</span>
-        </div>
-        <div className="summary-total">
-          <span>Total Amount</span>
-          <span>£{(orderData.total_amount / 100).toFixed(2)}</span>
-        </div>
+        <h3>Save Your Card for Future Payments</h3>
+        <p style={{color:"black"}}>
+          <i className="fas fa-credit-card" style={{ marginRight: "8px" , color:"black"}}></i>
+          Your card will be securely saved by Stripe for automatic invoice payments.
+          No charges will be made until your laundry manager sends the invoice.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="payment-form">
-        <div className="form-group">
-          <label htmlFor="payment-element">Payment Details</label>
-          <div className="card-element-wrapper">
-            <PaymentElement id="payment-element" />
+        <div className="payment-element-wrapper">
+          <PaymentElement 
+            options={{
+              layout: {
+                type: 'tabs',
+                defaultCollapsed: false,
+              },
+              wallets: {
+                applePay: 'never',
+                googlePay: 'never',
+              }
+            }}
+          />
+          <div className="card-save-note">
+            <i className="fas fa-info-circle"></i>
+            <span>Stripe will automatically save your card details securely for future payments.</span>
           </div>
         </div>
-
+        
+        <div className="consent-checkbox-container">
+          <label>
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              required
+            />
+            <span className="consent-text" style={{color:"black"}}>
+              <strong>Yes, save my card</strong>
+              <br />
+              I authorize IroningBoy to save this card and use it for automatic payment 
+              of laundry service invoices. I understand charges will only be made after 
+              I receive and review the invoice.
+            </span>
+          </label>
+        </div>
+        
         {error && (
           <div className="payment-error">
             <i className="fas fa-exclamation-circle"></i>
             <span>{error}</span>
           </div>
         )}
-
+        
         <div className="payment-actions">
           <button
             type="button"
-            className="payment-cancel-btn"
             onClick={onCancel}
-            disabled={paymentProcessing || submitting}
+            disabled={submitting || setupProcessing}
+            className="payment-cancel-btn"
           >
-            <i className="fas fa-times"></i> Cancel
+            Cancel
           </button>
+          
           <button
             type="submit"
-            className="payment-submit-btn"
-            disabled={!stripe || paymentProcessing || submitting}
+            disabled={!stripe || submitting || setupProcessing || !consent}
+            className="payment-confirm-btn"
           >
-            {(paymentProcessing || submitting) ? (
+            {submitting ? (
               <>
-                <div className="payment-spinner"></div>
-                Processing...
+                <div className="payment-loading-spinner"></div>
+                Saving Card...
               </>
             ) : (
               <>
-                <i className="fas fa-lock"></i>
-                Pay £{(orderData.total_amount / 100).toFixed(2)}
+                <i className="fas fa-save"></i>
+                Save Card & Confirm Booking
               </>
             )}
           </button>
         </div>
       </form>
-
-      <div className="payment-security">
-        <div className="security-badges">
-          <i className="fas fa-shield-alt"></i>
-          <span>Secure SSL Encryption</span>
-        </div>
-        <div className="security-badges">
-          <i className="fab fa-cc-stripe"></i>
-          <span>Powered by Stripe</span>
-        </div>
-      </div>
     </div>
   );
 };
@@ -165,15 +177,59 @@ export default function QuickBooking() {
   const [showLogin, setShowLogin] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
+  const [showPaymentSetup, setShowPaymentSetup] = useState(false);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [setupProcessing, setSetupProcessing] = useState(false);
 
   const [loadingSlots, setLoadingSlots] = useState({
     collect: false,
     deliver: false,
   });
+
+  const [selectedCollectSlotStart, setSelectedCollectSlotStart] = useState(null);
+  const [selectedCollectSlotEnd, setSelectedCollectSlotEnd] = useState(null);
+  const [selectedDeliverSlotStart, setSelectedDeliverSlotStart] = useState(null);
+  const [selectedDeliverSlotEnd, setSelectedDeliverSlotEnd] = useState(null);
+
+  const isSameDay = (a, b) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+
+  // Check if pickup is today
+  const pickupIsToday = () => {
+    if (!collectDate) return false;
+    return isSameDay(new Date(), new Date(collectDate));
+  };
+
+  // Check if pickup is before 10 AM
+  const pickupBefore10 = () => {
+    if (!selectedCollectSlotStart) return false;
+    return selectedCollectSlotStart.getHours() < 10;
+  };
+
+  const [savedCards, setSavedCards] = useState([]);
+  const [loadingCards, setLoadingCards] = useState(true);
+  const [useNewCard, setUseNewCard] = useState(false);
+
+  // Apply 8-hour rule (same as mobile app)
+  const apply8HourRule = (slots) => {
+    if (!selectedCollectSlotStart || !collectDate) return slots;
+
+    const pickupDate = new Date(collectDate);
+    const pickupDateTime = new Date(
+      pickupDate.getFullYear(),
+      pickupDate.getMonth(),
+      pickupDate.getDate(),
+      selectedCollectSlotStart.getHours(),
+      selectedCollectSlotStart.getMinutes()
+    );
+
+    const minDelivery = new Date(pickupDateTime.getTime() + 8 * 60 * 60 * 1000);
+
+    return slots.filter(s => new Date(s.start) >= minDelivery);
+  };
 
   const [addresses, setAddresses] = useState([]);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState(null);
@@ -187,28 +243,14 @@ export default function QuickBooking() {
   const [selectedCollectSlot, setSelectedCollectSlot] = useState(null);
   const [selectedDeliverSlot, setSelectedDeliverSlot] = useState(null);
 
-  const [orderData, setOrderData] = useState(null);
-
-  const [debugInfo, setDebugInfo] = useState({
-    lastApiCall: null,
-    lastError: null,
-    timezoneOffset: null,
-  });
-
   const [notes, setNotes] = useState("");
 
-  const [discountData, setDiscountData] = useState(null);
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [discountAmount, setDiscountAmount] = useState(0);
-  const [serviceCharge, setServiceCharge] = useState(0);
-  const [finalTotal, setFinalTotal] = useState(20.0); // default £20
-  const [topUpAmount, setTopUpAmount] = useState(0);
-  const [minimumOrderAmount, setMinimumOrderAmount] = useState(20.0);
-  const [discountApplied, setDiscountApplied] = useState(false);
-  const [calculatingDiscount, setCalculatingDiscount] = useState(false);
+  // Stripe setup intent
+  const [setupClientSecret, setSetupClientSecret] = useState(null);
+  const [customerId, setCustomerId] = useState(null);
 
-  // Stripe client secret from backend
-  const [paymentClientSecret, setPaymentClientSecret] = useState(null);
+  const SERVICE_CHARGE = 2.0;
+  const MINIMUM_ORDER_AMOUNT = 20.0;
 
   /* ----------------------- Init / cleanup on mount ----------------------- */
 
@@ -218,33 +260,50 @@ export default function QuickBooking() {
     setCollectSlots([]);
     setDeliverSlots([]);
     setSelectedCollectSlot(null);
+    setSelectedCollectSlotStart(null);
+    setSelectedCollectSlotEnd(null);
     setSelectedDeliverSlot(null);
+    setSelectedDeliverSlotStart(null);
+    setSelectedDeliverSlotEnd(null);
     setNotes("");
     setUseSameAddress(true);
-    setOrderData(null);
-    setPaymentClientSecret(null);
-    localStorage.removeItem("quickBookingOrder");
+    setSetupClientSecret(null);
+    setCustomerId(null);
   }, []);
 
-  useEffect(() => {
-    const tzOffset = -new Date().getTimezoneOffset();
-    setDebugInfo((prev) => ({ ...prev, timezoneOffset: tzOffset }));
+  // Add the missing function for canceling payment modal
+  const handlePaymentModalCancel = () => {
+    setShowPaymentSetup(false);
+    setSetupClientSecret(null);
+    setUseNewCard(false);
+  };
 
+  // Simplify the useEffect for body class handling
+  useEffect(() => {
+    if (showPaymentSetup) {
+      document.body.classList.add('payment-modal-open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.classList.remove('payment-modal-open');
+      document.body.style.overflow = '';
+    }
+    
+    // Cleanup on component unmount
+    return () => {
+      document.body.classList.remove('payment-modal-open');
+      document.body.style.overflow = '';
+    };
+  }, [showPaymentSetup]);
+
+  useEffect(() => {
     clearBookingData();
 
     if (user) {
       fetchAddresses();
+      ensureStripeCustomer();
+      fetchSavedCards();
     }
-
-    const handleBeforeUnload = () => {
-      clearBookingData();
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [user, clearBookingData]);
+  }, [user]);
 
   /* ----------------------------- API helpers ----------------------------- */
 
@@ -266,10 +325,7 @@ export default function QuickBooking() {
         },
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to fetch addresses: ${res.status} - ${errorText}`);
-      }
+      if (!res.ok) throw new Error("Failed to fetch addresses");
 
       const data = await res.json();
 
@@ -286,88 +342,147 @@ export default function QuickBooking() {
         setSelectedPickupId(null);
       }
     } catch (e) {
-      setDebugInfo((prev) => ({ ...prev, lastError: e.message }));
       showToast("Unable to load addresses");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const setDefaultAddress = useCallback(async (addressId) => {
-    const token = localStorage.getItem("jwtToken");
-    if (!token) return;
-
+  const fetchSavedCards = async () => {
     try {
-      const res = await fetch(`${API_BASE}/addresses/${addressId}/select`, {
-        method: "PUT",
+      const token = localStorage.getItem("jwtToken");
+      if (!token) {
+        setLoadingCards(false);
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/stripe/saved-cards`, {
         headers: {
           Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error(`Failed to fetch saved cards`);
+
+      const data = await res.json();
+      setSavedCards(data.cards || []);
+    } catch (err) {
+      setSavedCards([]);
+    } finally {
+      setLoadingCards(false);
+    }
+  };
+
+  const ensureStripeCustomer = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const token = localStorage.getItem("jwtToken");
+      const res = await fetch(`${API_BASE}/stripe/create-customer`, {
+        method: "POST",
+        headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCustomerId(data.customerId);
+      }
+    } catch (error) {
+      console.log("Stripe customer creation error");
+    }
+  }, [user]);
+
+  const createSetupIntent = useCallback(async () => {
+    if (!user) {
+      setShowLogin(true);
+      return null;
+    }
+
+    try {
+      const token = localStorage.getItem("jwtToken");
+      const res = await fetch(`${API_BASE}/stripe/init-setup-intent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to set default address: ${res.status} - ${errorText}`);
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to create setup intent");
       }
 
-      setAddresses((prev) =>
-        prev.map((addr) => ({
-          ...addr,
-          is_selected: String(addr.address_id) === String(addressId),
-        }))
-      );
+      const data = await res.json();
+      return data;
     } catch (error) {
-      showToast("Unable to update default address");
+      console.error("Create setup intent error:", error);
+      return null;
     }
-  }, []);
+  }, [user]);
 
-  /* --------------------------- Utility functions -------------------------- */
+  /* --------------------------- Time Slot Functions -------------------------- */
 
-  const normalizeTimeFormat = (timeString) => {
+  // Format time in 24-hour format (13:00, 14:00, etc.)
+  const formatTime24Hour = (timeString) => {
     if (!timeString) return "";
-    if (timeString.includes(",") && timeString.includes("-")) return timeString;
-
-    if (timeString.includes("T") && timeString.includes(".000")) {
-      try {
-        const cleanTimeString = timeString.replace(/(\.\d{3})\d+/, "$1");
-        const date = new Date(cleanTimeString);
-        if (isNaN(date.getTime())) return timeString;
-
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-
-        const hours = date.getHours();
-        const minutes = String(date.getMinutes()).padStart(2, "0");
-        const ampm = hours >= 12 ? "PM" : "AM";
-        const displayHours = hours % 12 || 12;
-
-        return `${day}/${month}/${year}, ${displayHours}:${minutes} ${ampm}`;
-      } catch {
-        return timeString;
-      }
-    }
-
+    
     try {
       const date = new Date(timeString);
-      if (!isNaN(date.getTime())) {
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-
-        const hours = date.getHours();
-        const minutes = String(date.getMinutes()).padStart(2, "0");
-        const ampm = hours >= 12 ? "PM" : "AM";
-        const displayHours = hours % 12 || 12;
-
-        return `${day}/${month}/${year}, ${displayHours}:${minutes} ${ampm}`;
-      }
-    } catch {
+      if (isNaN(date.getTime())) return timeString;
+      
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${hours}:${minutes}`;
+    } catch (error) {
+      console.error("Error formatting time:", error);
       return timeString;
     }
+  };
 
-    return timeString;
+  // Format time range in 24-hour format (13:00-14:00)
+  const formatTimeRange24Hour = (startTime, endTime) => {
+    const start = formatTime24Hour(startTime);
+    const end = formatTime24Hour(endTime);
+    
+    if (start && end) {
+      return `${start}-${end}`;
+    }
+    return start || end || "";
+  };
+
+  // Format date in DD/MM/YYYY format
+  const formatDateDDMMYYYY = (dateString) => {
+    if (!dateString) return "";
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return dateString;
+    }
+  };
+
+  // Combine date and time for display
+  const formatDateTimeDisplay = (dateString, timeString) => {
+    const date = formatDateDDMMYYYY(dateString);
+    const time = formatTime24Hour(timeString);
+    
+    if (date && time) {
+      return `${date} at ${time}`;
+    }
+    return date || time || "";
   };
 
   const fetchTimeSlots = useCallback(
@@ -376,61 +491,45 @@ export default function QuickBooking() {
 
       const tzOffset = -new Date().getTimezoneOffset();
 
-      try {
-        const params = new URLSearchParams({
-          date: dateIso,
-          tzOffset: tzOffset.toString(),
-          isDelivery: isDelivery.toString(),
-          format: "12",
-        });
+      const params = new URLSearchParams({
+        date: dateIso,
+        format: "24", // Changed from "12" to "24" for 24-hour format
+        tzOffset: tzOffset.toString(),
+      });
 
-        if (isDelivery && selectedCollectSlot && collectDate) {
-          const pickupTime = new Date(selectedCollectSlot.start);
-          const pickupSlotStart = `${pickupTime
-            .getUTCHours()
-            .toString()
-            .padStart(2, "0")}:${pickupTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, "0")}`;
+      if (isDelivery) {
+        params.set("isDelivery", "true");
+
+        if (collectDate && selectedCollectSlotStart) {
+          const h = selectedCollectSlotStart.getHours().toString().padStart(2, "0");
+          const m = selectedCollectSlotStart.getMinutes().toString().padStart(2, "0");
 
           params.set("pickupDate", collectDate);
-          params.set("pickupSlotStart", pickupSlotStart);
+          params.set("pickupSlotStart", `${h}:${m}`);
         }
-
-        const url = `${API_BASE}/time-slots?${params.toString()}`;
-        const res = await fetch(url);
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`Failed to fetch slots: ${res.status} - ${errorText}`);
-        }
-
-        const data = await res.json();
-        const normalizedSlots = (data.slots || []).map((slot) => ({
-          ...slot,
-          label: slot.label ? normalizeTimeFormat(slot.label) : slot.label,
-        }));
-
-        setDebugInfo((prev) => ({
-          ...prev,
-          lastApiCall: {
-            url,
-            date: dateIso,
-            isDelivery,
-            timestamp: new Date().toISOString(),
-            slotsCount: normalizedSlots.length || 0,
-          },
-        }));
-
-        return normalizedSlots;
-      } catch (error) {
-        setDebugInfo((prev) => ({ ...prev, lastError: error.message }));
-        showToast("Unable to load available time slots");
-        return [];
       }
+
+      const res = await fetch(`${API_BASE}/time-slots?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch slots");
+
+      const data = await res.json();
+      let slots = data.slots || [];
+
+      // ✅ Apply 8-hour rule for delivery slots (same as mobile app)
+      if (isDelivery) {
+        slots = apply8HourRule(slots);
+      }
+
+      // Format slot labels to 24-hour format
+      slots = slots.map(slot => ({
+        ...slot,
+        // Create a 24-hour format label if not provided
+        displayLabel: slot.label ? slot.label : `${formatTime24Hour(slot.start)}-${formatTime24Hour(slot.end)}`
+      }));
+
+      return slots;
     },
-    [user, selectedCollectSlot, collectDate]
+    [user, collectDate, selectedCollectSlotStart]
   );
 
   const fetchCollectSlots = useCallback(async () => {
@@ -442,177 +541,201 @@ export default function QuickBooking() {
       setCollectSlots(slots);
 
       if (selectedCollectSlot) {
-        const normalizedSelectedStart = normalizeTimeFormat(selectedCollectSlot.start);
         const stillValid = slots.find(
-          (s) => normalizeTimeFormat(s.start) === normalizedSelectedStart && s.enabled
+          (s) => s.start === selectedCollectSlot.start && s.enabled
         );
-        if (!stillValid) setSelectedCollectSlot(null);
+        if (!stillValid) {
+          setSelectedCollectSlot(null);
+          setSelectedCollectSlotStart(null);
+          setSelectedCollectSlotEnd(null);
+        }
       }
     } catch {
       setCollectSlots([]);
       setSelectedCollectSlot(null);
+      setSelectedCollectSlotStart(null);
+      setSelectedCollectSlotEnd(null);
     } finally {
       setLoadingSlots((prev) => ({ ...prev, collect: false }));
     }
   }, [collectDate, fetchTimeSlots, user, selectedCollectSlot]);
 
   const fetchDeliverySlots = useCallback(async () => {
-    if (!deliverDate || !user) return;
+    if (!deliverDate || !user || !collectDate || !selectedCollectSlotStart) return;
+
     setLoadingSlots((prev) => ({ ...prev, deliver: true }));
 
     try {
       const slots = await fetchTimeSlots(deliverDate, true);
-      setDeliverSlots(slots);
 
-      if (selectedDeliverSlot) {
-        const normalizedSelectedStart = normalizeTimeFormat(selectedDeliverSlot.start);
-        const stillValid = slots.find(
-          (s) => normalizeTimeFormat(s.start) === normalizedSelectedStart && s.enabled
-        );
-        if (!stillValid) setSelectedDeliverSlot(null);
+      // ✅ IMPORTANT: Check if pickup is today and after 10 AM
+      if (pickupIsToday() && !pickupBefore10() && isSameDay(new Date(deliverDate), new Date(collectDate))) {
+        // If pickup is today after 10 AM and user selected same day for delivery,
+        // show toast and adjust delivery to tomorrow
+        showToast("Same-day delivery is disabled after 10:00. Moving to tomorrow.");
+        
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        
+        setDeliverDate(tomorrowStr);
+        setSelectedDeliverSlot(null);
+        setSelectedDeliverSlotStart(null);
+        setSelectedDeliverSlotEnd(null);
+        
+        // Fetch slots for tomorrow instead
+        const tomorrowSlots = await fetchTimeSlots(tomorrowStr, true);
+        setDeliverSlots(tomorrowSlots);
+      } else {
+        setDeliverSlots(slots);
+
+        if (selectedDeliverSlot) {
+          const stillValid = slots.find(
+            (s) => s.start === selectedDeliverSlot.start && s.enabled
+          );
+          if (!stillValid) {
+            setSelectedDeliverSlot(null);
+            setSelectedDeliverSlotStart(null);
+            setSelectedDeliverSlotEnd(null);
+          }
+        }
       }
-    } catch {
+    } catch (err) {
+      console.error("Delivery slot error:", err);
       setDeliverSlots([]);
       setSelectedDeliverSlot(null);
+      setSelectedDeliverSlotStart(null);
+      setSelectedDeliverSlotEnd(null);
     } finally {
       setLoadingSlots((prev) => ({ ...prev, deliver: false }));
     }
-  }, [deliverDate, fetchTimeSlots, user, selectedDeliverSlot]);
+  }, [
+    deliverDate,
+    collectDate,
+    selectedCollectSlotStart,
+    fetchTimeSlots,
+    user,
+    selectedDeliverSlot,
+  ]);
 
-  const handleSelectAddress = useCallback(
-    async (id, isDelivery = true) => {
-      if (!user) {
-        setShowLogin(true);
-        return;
-      }
+  /* --------------------------- Order Functions -------------------------- */
 
-      const addr = addresses.find((a) => String(a.address_id) === String(id));
-      if (!addr) return;
+  // helper: combine date (YYYY-MM-DD) + slot time (e.g. "08:00", "08:00:00" or an ISO datetime)
+  const combineDateAndTime = (dateIso, timeString) => {
+    if (!dateIso || !timeString) return null;
 
-      if (isDelivery) {
-        setSelectedDeliveryId(id);
-        await setDefaultAddress(id);
-        if (useSameAddress) setSelectedPickupId(id);
-      } else {
-        setSelectedPickupId(id);
-      }
-    },
-    [addresses, useSameAddress, setDefaultAddress, user]
-  );
-
-  const handleLoggedIn = () => {
-    setShowLogin(false);
-    fetchAddresses();
-  };
-
-  const handleAddressSaved = (newAddress) => {
-    setAddresses((prev) => [...prev, newAddress]);
-    const id = String(newAddress.address_id);
-    setSelectedDeliveryId(id);
-    setSelectedPickupId(id);
-    setShowAddForm(false);
-    showToast("Address added successfully!");
-  };
-
-  const calculateDiscountAndServiceCharge = useCallback(async () => {
-    if (!user) return;
-
-    const subtotal = 20.0;
-    setCalculatingDiscount(true);
-
-    try {
-      const token = localStorage.getItem("jwtToken");
-      if (!token) return;
-
-      const url = `${API_BASE}/calculate-discount?amount=${subtotal}`;
-      const response = await fetch(url, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.status === 200) {
-        const serviceChargeVal = parseFloat(data.serviceCharge || 0);
-        const minimumOrderAmountVal = parseFloat(data.minimumOrderAmount || 20.0);
-        const topUpAmountVal = parseFloat(data.topupAmount || 0);
-        const finalTotalVal = parseFloat(data.finalTotal || subtotal);
-
-        setServiceCharge(serviceChargeVal);
-        setMinimumOrderAmount(minimumOrderAmountVal);
-        setTopUpAmount(topUpAmountVal);
-        setFinalTotal(finalTotalVal);
-
-        if (data.success === true) {
-          setDiscountData(data);
-          setDiscountPercent(parseFloat(data.discountPercent || 0));
-          setDiscountAmount(parseFloat(data.discountAmount || 0));
-          setDiscountApplied(true);
-        } else {
-          setDiscountApplied(false);
-        }
-      }
-    } catch {
-      // ignore: fallback is no discount
-    } finally {
-      setCalculatingDiscount(false);
+    // If slot already contains a date/time (ISO-like with 'T') just normalize it
+    if (String(timeString).includes("T")) {
+      const dt = new Date(timeString);
+      return isNaN(dt.getTime()) ? null : dt.toISOString();
     }
-  }, [user]);
 
-  const prepareOrderData = useCallback(() => {
-    if (!selectedCollectSlot || !selectedDeliverSlot) return null;
+    // Normalize timeString to HH:MM:SS
+    let t = String(timeString).trim();
+    // sometimes slot start may be "08:00" or "8:00" or "08:00:00"
+    // make sure seconds exist
+    const parts = t.split(":");
+    if (parts.length === 2) t = `${parts[0].padStart(2,"0")}:${parts[1].padStart(2,"0")}:00`;
+    // if third part exists, keep it but ensure padding
+    if (parts.length >= 3) {
+      t = `${String(parts[0]).padStart(2,"0")}:${String(parts[1]).padStart(2,"0")}:${String(parts[2]).padStart(2,"0")}`;
+    }
 
-    const normalizedCollectSlot = normalizeTimeFormat(selectedCollectSlot.start);
-    const normalizedDeliverySlot = normalizeTimeFormat(selectedDeliverSlot.start);
+    // Combine as local time (assumes dateIso is YYYY-MM-DD)
+    // e.g. "2025-12-10T08:00:00"
+    const combined = `${dateIso}T${t}`;
 
-    const order = {
+    const dt = new Date(combined);
+    // If invalid, return null
+    return isNaN(dt.getTime()) ? null : dt.toISOString();
+  };
+
+  const prepareOrderData = useCallback((paymentMethodId = null) => {
+    if (
+      !selectedCollectSlot ||
+      !selectedDeliverSlot ||
+      !collectDate ||
+      !deliverDate
+    ) return null;
+
+    const pickupSlotText = `${formatDateDDMMYYYY(collectDate)}, ${formatTimeRange24Hour(
+      selectedCollectSlot.start,
+      selectedCollectSlot.end
+    )}`;
+
+    const deliverySlotText = `${formatDateDDMMYYYY(deliverDate)}, ${formatTimeRange24Hour(
+      selectedDeliverSlot.start,
+      selectedDeliverSlot.end
+    )}`;
+
+    return {
       address_id: selectedDeliveryId,
       pickup_address_id: useSameAddress ? selectedDeliveryId : selectedPickupId,
       use_same_address: useSameAddress,
-      collect_slot: normalizedCollectSlot,
-      delivery_slot: normalizedDeliverySlot,
+
+      // ✅ THIS IS THE FIX
+      collect_slot: pickupSlotText,
+      delivery_slot: deliverySlotText,
+
       notes: notes.trim() || null,
       images: [],
       change_manager_requested: false,
-      subtotal: 20.0,
-      discount_percent: discountApplied ? discountPercent : 0,
-      discount_amount: discountApplied ? discountAmount : 0,
-      service_charge: serviceCharge,
-      topup_amount: topUpAmount,
-      total_amount: Math.round(finalTotal * 100), // pence for Stripe
+
+      minimum_order_amount: MINIMUM_ORDER_AMOUNT,
+      service_charge: SERVICE_CHARGE,
+
+      payment_status: "card_saved",
+      payment_type: "invoice_based",
+
+      stripe_customer_id: customerId,
+      payment_method_id: paymentMethodId,
+
+      estimated_total: 0,
       currency: "gbp",
     };
-
-    return order;
   }, [
     selectedCollectSlot,
     selectedDeliverSlot,
+    collectDate,
+    deliverDate,
     selectedDeliveryId,
     selectedPickupId,
     useSameAddress,
     notes,
-    discountApplied,
-    discountPercent,
-    discountAmount,
-    serviceCharge,
-    topUpAmount,
-    finalTotal,
+    customerId,
   ]);
 
-  const handlePaymentSuccess = async (paymentIntent) => {
-    setPaymentProcessing(true);
+  const handleSetupSuccess = async (setupIntent) => {
+    setSetupProcessing(true);
 
     try {
-      const order = prepareOrderData();
-      if (!order) throw new Error("Order data is missing");
-
-      order.payment_intent_id = paymentIntent.id;
-      order.payment_status = paymentIntent.status;
-
       const token = localStorage.getItem("jwtToken");
-      if (!token) throw new Error("No authentication token found");
+      if (!token) throw new Error("Authentication required");
+
+      const paymentMethodId =
+        setupIntent.payment_method ||
+        setupIntent.latest_attempt?.payment_method;
+
+      if (!paymentMethodId) {
+        throw new Error("Payment method not returned by Stripe");
+      }
+
+      // Set as default card
+      await fetch(`${API_BASE}/stripe/set-default-payment`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerId,
+          paymentMethodId,
+        }),
+      });
+
+      // Create order
+      const order = prepareOrderData(paymentMethodId);
+      if (!order) throw new Error("Order data missing");
 
       const res = await fetch(`${API_BASE}/express_order`, {
         method: "POST",
@@ -624,26 +747,34 @@ export default function QuickBooking() {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Order creation failed");
-      }
+      if (!res.ok) throw new Error(data.error || "Order creation failed");
 
-      clearBookingData();
-      setShowPayment(false);
-      setShowSuccess(true);
+      // Close payment modal
+      setShowPaymentSetup(false);
+      
+      // Navigate to thank you page
+      navigate("/thankyou", {
+        state: {
+          orderId: data.order_id,
+          paymentStatus: "card_saved",
+          paymentMethod: "new_card",
+          pickupDate: formatDateDDMMYYYY(collectDate),
+          pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
+          deliveryDate: formatDateDDMMYYYY(deliverDate),
+          deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
+        },
+      });
 
-      setTimeout(() => {
-        navigate("/orders", { state: { orderId: data.order_id, isExpress: true } });
-      }, 1500);
-    } catch (error) {
-      showToast(error.message || "Failed to create order");
+    } catch (err) {
+      console.error(err);
+      showToast(err.message);
     } finally {
-      setPaymentProcessing(false);
+      setSetupProcessing(false);
     }
   };
 
-  const handlePaymentError = (errorMessage) => {
-    showToast(errorMessage || "Payment failed. Please try again.");
+  const handleSetupError = (errorMessage) => {
+    showToast(errorMessage || "Failed to save card. Please try again.");
   };
 
   /* ------------------------- Confirm booking flow ------------------------- */
@@ -651,6 +782,12 @@ export default function QuickBooking() {
   const handleConfirmBooking = async () => {
     if (!user) {
       setShowLogin(true);
+      return;
+    }
+
+    // BASIC VALIDATIONS
+    if (!selectedCollectSlot || !selectedDeliverSlot) {
+      showToast("Please select pickup and delivery slots");
       return;
     }
 
@@ -664,93 +801,141 @@ export default function QuickBooking() {
       return;
     }
 
-    if (!selectedCollectSlot) {
-      showToast("Please select a collection time");
-      return;
-    }
-
-    if (!selectedDeliverSlot) {
-      showToast("Please select a delivery time");
-      return;
-    }
-
-    await calculateDiscountAndServiceCharge();
-
-    const preparedOrder = prepareOrderData();
-    if (!preparedOrder) {
-      showToast("Failed to prepare order data");
-      return;
-    }
-
-    setPaymentProcessing(true);
+    setSetupProcessing(true);
 
     try {
       const token = localStorage.getItem("jwtToken");
-      const res = await fetch(`${API_BASE}/stripe/create-payment-intent`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-        body: JSON.stringify({
-          amount: preparedOrder.total_amount, // already in pence
-          currency: "gbp",
-          metadata: {
-            order_type: "express_order",
-            order_data: JSON.stringify(preparedOrder),
+      if (!token) throw new Error("Authentication required");
+
+      // CHECK DEFAULT SAVED CARD
+      const defaultCard = savedCards.find(card => card.is_default);
+
+      // CASE 1: USE SAVED DEFAULT CARD (NO STRIPE MODAL)
+      if (defaultCard && !useNewCard) {
+        const order = prepareOrderData(defaultCard.payment_method_id);
+        if (!order) throw new Error("Order data missing");
+
+        const res = await fetch(`${API_BASE}/express_order`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify(order),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Order creation failed");
+        }
 
-      if (!res.ok || !data.clientSecret) {
-        throw new Error(data.error || "Failed to start payment. Please try again.");
+        // SUCCESS — NO STRIPE UI
+        navigate("/thankyou", {
+          state: {
+            orderId: data.order_id,
+            paymentStatus: "card_saved",
+            paymentMethod: "saved_card",
+            pickupDate: formatDateDDMMYYYY(collectDate),
+            pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
+            deliveryDate: formatDateDDMMYYYY(deliverDate),
+            deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
+          },
+        });
+
+        return;
       }
 
-      setOrderData(preparedOrder);
-      setPaymentClientSecret(data.clientSecret);
-      setShowPayment(true);
+      // CASE 2: ADD NEW CARD (OPEN STRIPE MODAL)
+      const setupData = await createSetupIntent();
+
+      if (!setupData || !setupData.setupIntentClientSecret) {
+        showToast("Failed to initialize card setup. Please try again.");
+        return;
+      }
+
+      setSetupClientSecret(setupData.setupIntentClientSecret);
+      setCustomerId(setupData.customerId || customerId);
+      setShowPaymentSetup(true);
+
     } catch (error) {
-      showToast(error.message || "Unable to start payment");
+      console.error("Confirm booking error:", error);
+      showToast(error.message || "Booking failed. Please try again.");
     } finally {
-      setPaymentProcessing(false);
+      setSetupProcessing(false);
     }
   };
 
-  /* ----------------------------- UI helpers ------------------------------ */
+  // NEW FUNCTION: Handle "Use Another Card" directly
+  const handleUseAnotherCard = async () => {
+    if (!user) {
+      setShowLogin(true);
+      return;
+    }
 
-  const formatTimeDisplay = (timeString) => {
+    // BASIC VALIDATIONS
+    if (!selectedCollectSlot || !selectedDeliverSlot) {
+      showToast("Please select pickup and delivery slots");
+      return;
+    }
+
+    if (!selectedDeliveryId) {
+      showToast("Please select a delivery address");
+      return;
+    }
+
+    if (!useSameAddress && !selectedPickupId) {
+      showToast("Please select a pickup address");
+      return;
+    }
+
+    setUseNewCard(true);
+    setSetupProcessing(true);
+
     try {
-      const normalizedTime = normalizeTimeFormat(timeString);
-      const timeMatch = normalizedTime.match(/(\d{1,2}:\d{2}\s*[AP]M)/i);
-      if (timeMatch) return timeMatch[1];
+      const token = localStorage.getItem("jwtToken");
+      if (!token) throw new Error("Authentication required");
 
-      const time = new Date(timeString);
-      return time.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
-    } catch {
-      return timeString;
+      // Create setup intent for new card
+      const setupData = await createSetupIntent();
+
+      if (!setupData || !setupData.setupIntentClientSecret) {
+        showToast("Failed to initialize card setup. Please try again.");
+        return;
+      }
+
+      setSetupClientSecret(setupData.setupIntentClientSecret);
+      setCustomerId(setupData.customerId || customerId);
+      setShowPaymentSetup(true);
+
+    } catch (error) {
+      console.error("Use another card error:", error);
+      showToast(error.message || "Failed to setup new card. Please try again.");
+    } finally {
+      setSetupProcessing(false);
     }
   };
 
-  const formatDateDisplay = (dateString) => {
-    if (!dateString) return "";
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-    } catch {
-      return dateString;
-    }
+  // NEW FUNCTION: Handle "Back to Saved Card"
+  const handleBackToSavedCard = () => {
+    setUseNewCard(false);
+    setShowPaymentSetup(false);
   };
+
+  // Helper function to get card brand class
+  const getCardBrandClass = (brand) => {
+    if (!brand) return '';
+    const brandLower = brand.toLowerCase();
+    if (brandLower.includes('visa')) return 'card-brand-visa';
+    if (brandLower.includes('mastercard')) return 'card-brand-mastercard';
+    if (brandLower.includes('amex') || brandLower.includes('american express')) return 'card-brand-amex';
+    if (brandLower.includes('discover')) return 'card-brand-discover';
+    if (brandLower.includes('jcb')) return 'card-brand-jcb';
+    if (brandLower.includes('diners')) return 'card-brand-diners';
+    if (brandLower.includes('unionpay')) return 'card-brand-unionpay';
+    return '';
+  };
+
+  /* ----------------------------- UI Handlers ------------------------------ */
 
   const handleAddAddressClick = () => {
     if (!user) {
@@ -769,20 +954,12 @@ export default function QuickBooking() {
     const newDate = e.target.value;
     setCollectDate(newDate);
     setSelectedCollectSlot(null);
-
-    if (deliverDate && newDate > deliverDate) {
-      const tomorrow = new Date(newDate);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowFormatted = tomorrow.toISOString().split("T")[0];
-      setDeliverDate(tomorrowFormatted);
-      setSelectedDeliverSlot(null);
-    }
-
-    if (newDate) {
-      setTimeout(() => {
-        fetchCollectSlots();
-      }, 100);
-    }
+    setSelectedCollectSlotStart(null);
+    setSelectedCollectSlotEnd(null);
+    setSelectedDeliverSlot(null);
+    setSelectedDeliverSlotStart(null);
+    setSelectedDeliverSlotEnd(null);
+    setDeliverSlots([]);
   };
 
   const handleDeliverDateChange = (e) => {
@@ -798,48 +975,58 @@ export default function QuickBooking() {
       return;
     }
 
+    // ✅ Check if pickup is today and after 10 AM, and user tries to select same day
+    if (pickupIsToday() && !pickupBefore10() && newDate === collectDate) {
+      showToast("Same-day delivery is disabled after 10:00. Please select tomorrow or later.");
+      return;
+    }
+
     setDeliverDate(newDate);
     setSelectedDeliverSlot(null);
-
-    if (newDate) {
-      setTimeout(() => {
-        fetchDeliverySlots();
-      }, 100);
-    }
+    setSelectedDeliverSlotStart(null);
+    setSelectedDeliverSlotEnd(null);
+    setDeliverSlots([]);
   };
 
   const handleCollectSlotSelect = (slot) => {
-    if (!user) {
-      setShowLogin(true);
-      return;
-    }
+    if (!slot.enabled) return;
 
-    if (!slot.enabled) {
-      showToast("This time slot is not available");
-      return;
-    }
-
+    const start = new Date(slot.start);
+    const end = new Date(slot.end);
+    
     setSelectedCollectSlot(slot);
+    setSelectedCollectSlotStart(start);
+    setSelectedCollectSlotEnd(end);
 
-    if (collectDate === deliverDate) {
-      setTimeout(() => {
-        fetchDeliverySlots();
-      }, 100);
+    // Reset delivery when pickup changes
+    setSelectedDeliverSlot(null);
+    setSelectedDeliverSlotStart(null);
+    setSelectedDeliverSlotEnd(null);
+    setDeliverSlots([]);
+
+    // ✅ Adjust delivery date if pickup is today and after 10:00 (same as mobile app)
+    if (pickupIsToday() && start.getHours() >= 10) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      
+      // Only adjust if delivery date is same as pickup date
+      if (deliverDate && isSameDay(new Date(deliverDate), new Date(collectDate))) {
+        setDeliverDate(tomorrowStr);
+        showToast("Same-day delivery is disabled after 10:00. Delivery date moved to tomorrow.");
+      }
     }
   };
 
   const handleDeliverSlotSelect = (slot) => {
-    if (!user) {
-      setShowLogin(true);
-      return;
-    }
-
-    if (!slot.enabled) {
-      showToast("This time slot is not available");
-      return;
-    }
-
+    if (!slot.enabled) return;
+    
+    const start = new Date(slot.start);
+    const end = new Date(slot.end);
+    
     setSelectedDeliverSlot(slot);
+    setSelectedDeliverSlotStart(start);
+    setSelectedDeliverSlotEnd(end);
   };
 
   const handleToggleSameAddress = (e) => {
@@ -856,6 +1043,8 @@ export default function QuickBooking() {
     }
   };
 
+  /* ----------------------------- Effects ------------------------------ */
+
   useEffect(() => {
     if (user && collectDate) {
       fetchCollectSlots();
@@ -863,135 +1052,50 @@ export default function QuickBooking() {
   }, [user, collectDate, fetchCollectSlots]);
 
   useEffect(() => {
-    if (user && deliverDate) {
+    if (user && deliverDate && selectedCollectSlotStart) {
       fetchDeliverySlots();
     }
-  }, [user, deliverDate, fetchDeliverySlots]);
+  }, [user, deliverDate, selectedCollectSlotStart, fetchDeliverySlots]);
+
+  // Reset delivery when pickup date changes
+  useEffect(() => {
+    setSelectedDeliverSlot(null);
+    setSelectedDeliverSlotStart(null);
+    setSelectedDeliverSlotEnd(null);
+    setDeliverSlots([]);
+  }, [collectDate]);
 
   const today = new Date().toISOString().split("T")[0];
-  const minDeliveryDate = collectDate || today;
-
-  const getAddressIcon = (type) => {
-    switch ((type || "").toLowerCase()) {
-      case "home":
-        return "fas fa-home";
-      case "office":
-      case "work":
-        return "fas fa-building";
-      case "hotel":
-        return "fas fa-hotel";
-      default:
-        return "fas fa-map-marker-alt";
+  
+  // Calculate min delivery date based on mobile app logic
+  const minDeliveryDate = (() => {
+    if (!collectDate) return today;
+    
+    // If pickup is today and after 10:00, delivery must be tomorrow
+    if (pickupIsToday() && selectedCollectSlotStart && selectedCollectSlotStart.getHours() >= 10) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString().split('T')[0];
     }
-  };
+    
+    return collectDate;
+  })();
 
-  const formatAddressDisplay = (address) => {
-    const parts = [];
-
-    if (address.name) {
-      parts.push(
-        <div key="name" className="qb-address-line">
-          <strong>{address.name}</strong>
-        </div>
-      );
-    }
-
-    if (address.phone) {
-      parts.push(
-        <div key="phone" className="qb-address-line">
-          {address.phone}
-        </div>
-      );
-    }
-
-    if (address.house_number || address.street_name) {
-      const streetLine = [address.house_number, address.street_name]
-        .filter(Boolean)
-        .join(" ");
-      if (streetLine) {
-        parts.push(
-          <div key="street" className="qb-address-line">
-            {streetLine}
-          </div>
-        );
-      }
-    }
-
-    if (address.city || address.area) {
-      const cityLine = [address.city, address.area].filter(Boolean).join(", ");
-      if (cityLine) {
-        parts.push(
-          <div key="city" className="qb-address-line">
-            {cityLine}
-          </div>
-        );
-      }
-    }
-
-    if (address.state || address.country) {
-      const stateLine = [address.state, address.country].filter(Boolean).join(", ");
-      if (stateLine) {
-        parts.push(
-          <div key="state" className="qb-address-line">
-            {stateLine}
-          </div>
-        );
-      }
-    }
-
-    if (address.postcode) {
-      parts.push(
-        <div key="postcode" className="qb-address-line">
-          Postcode: {address.postcode}
-        </div>
-      );
-    }
-
-    if (address.full_address && parts.length <= 2) {
-      parts.push(
-        <div key="full" className="qb-address-line qb-address-full">
-          <small>{address.full_address}</small>
-        </div>
-      );
-    }
-
-    return parts;
-  };
-
-  const DebugPanel = () => {
-    if (process.env.NODE_ENV === "production") return null;
-
-    return (
-      <div className="qb-debug-panel">
-        <h4>Debug Info</h4>
-        <p>
-          <strong>Timezone Offset:</strong> {debugInfo.timezoneOffset} minutes
-        </p>
-        <p>
-          <strong>Last API Call:</strong> {debugInfo.lastApiCall?.timestamp}
-        </p>
-        <p>
-          <strong>Last Error:</strong> {debugInfo.lastError || "None"}
-        </p>
-        <p>
-          <strong>Discount Applied:</strong> {discountApplied ? "Yes" : "No"}
-        </p>
-        <p>
-          <strong>Service Charge:</strong> £{serviceCharge.toFixed(2)}
-        </p>
-        <p>
-          <strong>Top-Up Amount:</strong> £{topUpAmount.toFixed(2)}
-        </p>
-        <p>
-          <strong>Final Total:</strong> £{finalTotal.toFixed(2)}</p>
-      </div>
-    );
+  const isConfirmButtonDisabled = () => {
+    if (!user) return true;
+    if (loading || setupProcessing) return true;
+    if (addresses.length === 0) return true;
+    if (!selectedDeliveryId) return true;
+    if (!useSameAddress && !selectedPickupId) return true;
+    if (!selectedCollectSlot || !selectedDeliverSlot) return true;
+    return false;
   };
 
   /* ---------------------------------- JSX --------------------------------- */
 
   return (
     <div className="qb-page">
+      {/* Main content */}
       <main className="qb-container">
         <div className="qb-title-section">
           <h1 className="qb-title">Quick Booking</h1>
@@ -999,9 +1103,14 @@ export default function QuickBooking() {
             Skip the item selection and book your laundry service in just a few clicks.
             We'll handle everything from pickup to delivery.
           </p>
+          <div className="qb-payment-info">
+            <i className="fas fa-info-circle"></i>
+            <span>
+              <strong>Card required for booking.</strong> No upfront charge. 
+              Card saved as default for auto-payment after invoice (£{MINIMUM_ORDER_AMOUNT} min + £{SERVICE_CHARGE} service fee).
+            </span>
+          </div>
         </div>
-
-        {process.env.NODE_ENV !== "production" && <DebugPanel />}
 
         {!user && (
           <div className="qb-login-prompt">
@@ -1028,6 +1137,7 @@ export default function QuickBooking() {
           </div>
         ) : (
           <>
+            {/* DELIVERY ADDRESS SECTION */}
             {user && (
               <div className="qb-card">
                 <div className="qb-card-header">
@@ -1056,23 +1166,44 @@ export default function QuickBooking() {
                               ? "selected"
                               : ""
                           }`}
-                          onClick={() => handleSelectAddress(addr.address_id)}
+                          onClick={() => {
+                            setSelectedDeliveryId(String(addr.address_id));
+                            if (useSameAddress) setSelectedPickupId(String(addr.address_id));
+                          }}
                         >
                           <div className="qb-address-header">
                             <h3 className="qb-address-name">
-                              <i
-                                className={`${getAddressIcon(
-                                  addr.address_type
-                                )} qb-address-type-icon`}
-                              ></i>
+                              <i className="fas fa-map-marker-alt qb-address-type-icon"></i>
                               {addr.name || addr.address_type || "Address"}
                             </h3>
-                            {addr.is_selected && (
-                              <span className="qb-default-badge">Default</span>
-                            )}
+                            <div className="qb-address-actions">
+                              {addr.is_selected && (
+                                <span className="qb-default-badge">Default</span>
+                              )}
+                            </div>
                           </div>
                           <div className="qb-address-details">
-                            {formatAddressDisplay(addr)}
+                            <div className="qb-address-line">
+                              <strong>{addr.name}</strong>
+                            </div>
+                            {addr.phone && (
+                              <div className="qb-address-line">{addr.phone}</div>
+                            )}
+                            {(addr.house_number || addr.street_name) && (
+                              <div className="qb-address-line">
+                                {addr.house_number} {addr.street_name}
+                              </div>
+                            )}
+                            {(addr.city || addr.area) && (
+                              <div className="qb-address-line">
+                                {addr.city}, {addr.area}
+                              </div>
+                            )}
+                            {addr.postcode && (
+                              <div className="qb-address-line">
+                                Postcode: {addr.postcode}
+                              </div>
+                            )}
                           </div>
                           {selectedDeliveryId === String(addr.address_id) && (
                             <div className="qb-address-check">
@@ -1101,58 +1232,12 @@ export default function QuickBooking() {
                         Use same address for pickup
                       </label>
                     </div>
-
-                    {!useSameAddress && (
-                      <div style={{ marginTop: "24px" }}>
-                        <h3
-                          className="qb-card-title"
-                          style={{ fontSize: "18px", marginBottom: "16px" }}
-                        >
-                          <i
-                            className="fas fa-truck-pickup"
-                            style={{ marginRight: "8px" }}
-                          ></i>
-                          Pickup Address
-                        </h3>
-                        <div className="qb-address-grid">
-                          {addresses.map((addr) => (
-                            <div
-                              key={`pickup-${addr.address_id}`}
-                              className={`qb-address-card ${
-                                selectedPickupId === String(addr.address_id)
-                                  ? "selected"
-                                  : ""
-                              }`}
-                              onClick={() => handleSelectAddress(addr.address_id, false)}
-                            >
-                              <div className="qb-address-header">
-                                <h3 className="qb-address-name">
-                                  <i
-                                    className={`${getAddressIcon(
-                                      addr.address_type
-                                    )} qb-address-type-icon`}
-                                  ></i>
-                                  {addr.name || addr.address_type || "Pickup"}
-                                </h3>
-                              </div>
-                              <div className="qb-address-details">
-                                {formatAddressDisplay(addr)}
-                              </div>
-                              {selectedPickupId === String(addr.address_id) && (
-                                <div className="qb-address-check">
-                                  <i className="fas fa-check-circle"></i>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </>
                 )}
               </div>
             )}
 
+            {/* SCHEDULE PICKUP & DELIVERY SECTION */}
             {user && (
               <div className="qb-card">
                 <div className="qb-card-header">
@@ -1181,7 +1266,7 @@ export default function QuickBooking() {
                       />
                       {collectDate && (
                         <p className="qb-date-display">
-                          {formatDateDisplay(collectDate)}
+                          {formatDateDDMMYYYY(collectDate)}
                         </p>
                       )}
                     </div>
@@ -1189,7 +1274,7 @@ export default function QuickBooking() {
                     {collectDate && (
                       <div className="qb-slot-wrapper">
                         <label className="qb-slot-label">
-                          Available Pickup Times
+                          Available Pickup Times (24-hour format)
                         </label>
 
                         {loadingSlots.collect ? (
@@ -1222,12 +1307,12 @@ export default function QuickBooking() {
                                     disabled={!slot.enabled}
                                     title={
                                       slot.enabled
-                                        ? slot.label
+                                        ? slot.displayLabel || formatTimeRange24Hour(slot.start, slot.end)
                                         : "Not available"
                                     }
                                   >
                                     <span className="qb-slot-time">
-                                      {slot.label || formatTimeDisplay(slot.start)}
+                                      {slot.displayLabel || formatTimeRange24Hour(slot.start, slot.end)}
                                     </span>
                                     {!slot.enabled && (
                                       <span className="qb-slot-disabled-overlay"></span>
@@ -1244,8 +1329,8 @@ export default function QuickBooking() {
                                   <span>Selected Pickup Time</span>
                                 </div>
                                 <div className="qb-selected-slot-details">
-                                  {selectedCollectSlot.label ||
-                                    formatTimeDisplay(selectedCollectSlot.start)}
+                                  {formatDateTimeDisplay(collectDate, selectedCollectSlot.start)}
+                                  {selectedCollectSlot.end && ` to ${formatTime24Hour(selectedCollectSlot.end)}`}
                                 </div>
                               </div>
                             )}
@@ -1274,7 +1359,7 @@ export default function QuickBooking() {
                       />
                       {deliverDate && (
                         <p className="qb-date-display">
-                          {formatDateDisplay(deliverDate)}
+                          {formatDateDDMMYYYY(deliverDate)}
                         </p>
                       )}
                       {!collectDate && (
@@ -1287,7 +1372,7 @@ export default function QuickBooking() {
                     {deliverDate && (
                       <div className="qb-slot-wrapper">
                         <label className="qb-slot-label">
-                          Available Delivery Times
+                          Available Delivery Times (24-hour format)
                         </label>
 
                         {loadingSlots.deliver ? (
@@ -1300,8 +1385,8 @@ export default function QuickBooking() {
                             <i className="fas fa-calendar-times"></i>
                             <p>No slots available for this date</p>
                             <p className="qb-no-slots-hint">
-                              {collectDate === deliverDate
-                                ? "Delivery must be at least 4 hours after pickup"
+                              {collectDate === deliverDate && pickupIsToday() && !pickupBefore10()
+                                ? "Same-day delivery is disabled after 10:00"
                                 : "Please select another date"}
                             </p>
                           </div>
@@ -1322,12 +1407,12 @@ export default function QuickBooking() {
                                     disabled={!slot.enabled}
                                     title={
                                       slot.enabled
-                                        ? slot.label
+                                        ? slot.displayLabel || formatTimeRange24Hour(slot.start, slot.end)
                                         : "Not available"
                                     }
                                   >
                                     <span className="qb-slot-time">
-                                      {slot.label || formatTimeDisplay(slot.start)}
+                                      {slot.displayLabel || formatTimeRange24Hour(slot.start, slot.end)}
                                     </span>
                                     {!slot.enabled && (
                                       <span className="qb-slot-disabled-overlay"></span>
@@ -1344,8 +1429,8 @@ export default function QuickBooking() {
                                   <span>Selected Delivery Time</span>
                                 </div>
                                 <div className="qb-selected-slot-details">
-                                  {selectedDeliverSlot.label ||
-                                    formatTimeDisplay(selectedDeliverSlot.start)}
+                                  {formatDateTimeDisplay(deliverDate, selectedDeliverSlot.start)}
+                                  {selectedDeliverSlot.end && ` to ${formatTime24Hour(selectedDeliverSlot.end)}`}
                                 </div>
                               </div>
                             )}
@@ -1358,6 +1443,7 @@ export default function QuickBooking() {
               </div>
             )}
 
+            {/* SPECIAL INSTRUCTIONS SECTION */}
             {user && (
               <div className="qb-card">
                 <div className="qb-card-header">
@@ -1383,6 +1469,142 @@ export default function QuickBooking() {
               </div>
             )}
 
+            {/* PAYMENT INFORMATION SECTION */}
+            {user && (
+              <div className="qb-card">
+                <div className="payment-method-header">
+                  <div className="payment-method-title">
+                    <i className="fas fa-credit-card"></i>
+                    <h2 className="qb-card-title">Payment Method</h2>
+                  </div>
+                  {savedCards.length > 0 && !showPaymentSetup && !useNewCard && (
+                    <div className="payment-security-badge">
+                      <i className="fas fa-shield-alt"></i>
+                      <span>Secure Payment</span>
+                    </div>
+                  )}
+                </div>
+
+                {loadingCards ? (
+                  <div className="saved-cards-loading">
+                    <div className="saved-cards-loading-spinner"></div>
+                    <p>Loading saved cards...</p>
+                  </div>
+                ) : savedCards.length > 0 && !useNewCard && !showPaymentSetup ? (
+                  <>
+                    <div className="saved-card-info">
+                      <div className="saved-card-display">
+                        <div className="saved-card-icon">
+                          <i className={`fas fa-credit-card ${getCardBrandClass(savedCards.find(c => c.is_default)?.brand)}`}></i>
+                        </div>
+                        <div className="saved-card-details">
+                          <div className="saved-card-brand">
+                            {savedCards.find(c => c.is_default)?.brand?.toUpperCase() || 'CARD'}
+                          </div>
+                          <div className="saved-card-number">
+                            •••• {savedCards.find(c => c.is_default)?.last4}
+                          </div>
+                          <div className="saved-card-default-badge">
+                            <i className="fas fa-check-circle"></i>
+                            Default Card
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="payment-info-note">
+                        <i className="fas fa-info-circle"></i>
+                        <span>
+                          Your saved card will be charged only after your laundry manager sends the invoice.
+                          No upfront charges.
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="payment-actions-container">
+                      <button 
+                        className="qb-submit-btn" 
+                        onClick={handleConfirmBooking}
+                        disabled={isConfirmButtonDisabled() || setupProcessing}
+                      >
+                        {setupProcessing ? (
+                          <>
+                            <div className="payment-loading-spinner"></div>
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-check-circle"></i>
+                            Use Saved Card & Confirm Booking
+                          </>
+                        )}
+                      </button>
+
+                      <div className="or-divider">
+                        <span>OR</span>
+                      </div>
+
+                      <button 
+                        className="qb-link-btn use-another-card-btn" 
+                        onClick={handleUseAnotherCard}
+                        disabled={setupProcessing}
+                      >
+                        <i className="fas fa-credit-card"></i>
+                        Pay with a different card
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {savedCards.length > 0 && (
+                      <div className="back-to-saved-card">
+                        <button 
+                          className="back-to-saved-btn"
+                          onClick={handleBackToSavedCard}
+                        >
+                          <i className="fas fa-arrow-left"></i>
+                          Back to saved card
+                        </button>
+                      </div>
+                    )}
+                    
+                    {!showPaymentSetup && (
+                      <div className="add-new-card-prompt">
+                        <div className="add-card-icon">
+                          <i className="fas fa-credit-card"></i>
+                        </div>
+                        <div className="add-card-content">
+                          <h3 className="add-card-title">
+                            {savedCards.length > 0 ? "Add Another Payment Method" : "Add Payment Method"}
+                          </h3>
+                          <p className="add-card-description">
+                            Your card will be securely saved for future payments. 
+                            No charges until your laundry manager sends the invoice.
+                          </p>
+                        </div>
+                        <button 
+                          className="qb-submit-btn add-card-btn" 
+                          onClick={handleUseAnotherCard}
+                          disabled={isConfirmButtonDisabled() || setupProcessing}
+                        >
+                          {setupProcessing ? (
+                            <>
+                              <div className="payment-loading-spinner"></div>
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <i className="fas fa-plus-circle"></i>
+                              Add Card & Confirm Booking
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
             <div className="qb-actions">
               <button
                 type="button"
@@ -1391,73 +1613,59 @@ export default function QuickBooking() {
               >
                 <i className="fas fa-times"></i> Cancel
               </button>
-
-              <button
-                type="button"
-                className="qb-submit-btn"
-                onClick={handleConfirmBooking}
-                disabled={
-                  !user ||
-                  loading ||
-                  !selectedCollectSlot ||
-                  !selectedDeliverSlot ||
-                  paymentProcessing ||
-                  calculatingDiscount
-                }
-              >
-                <i className="fas fa-check-circle"></i>
-                {paymentProcessing
-                  ? "Processing..."
-                  : calculatingDiscount
-                  ? "Calculating..."
-                  : loading
-                  ? "Processing..."
-                  : `Confirm Booking (£${finalTotal.toFixed(2)})`}
-              </button>
             </div>
           </>
         )}
       </main>
 
-      {/* Payment Modal */}
-      {showPayment && orderData && paymentClientSecret && (
+      {/* Payment Setup Modal - This renders on top of everything */}
+      {showPaymentSetup && (
         <div className="payment-modal-backdrop">
           <div className="payment-modal">
-            <Elements
-              stripe={stripePromise}
-              options={{ clientSecret: paymentClientSecret }}
-            >
-              <StripePaymentForm
-                orderData={orderData}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-                onCancel={() => setShowPayment(false)}
-                paymentProcessing={paymentProcessing}
-              />
-            </Elements>
+            {!setupClientSecret ? (
+              <div className="payment-loading-state">
+                <div className="payment-loading-spinner"></div>
+                <p>Initializing secure payment…</p>
+              </div>
+            ) : (
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  clientSecret: setupClientSecret,
+                  appearance: { theme: "stripe" },
+                }}
+              >
+                <StripeSetupForm
+                  onSetupSuccess={handleSetupSuccess}
+                  onSetupError={handleSetupError}
+                  onCancel={handlePaymentModalCancel}
+                  setupProcessing={setupProcessing}
+                />
+              </Elements>
+            )}
           </div>
         </div>
       )}
 
+      {/* Other modals */}
       {showAddForm && user && (
         <AddAddressModal
           open={true}
           onClose={() => setShowAddForm(false)}
-          onSaved={handleAddressSaved}
+          onSaved={fetchAddresses}
           apiBase={API_BASE}
         />
       )}
 
       {showLogin && (
-        <LoginPopup close={() => setShowLogin(false)} onSuccess={handleLoggedIn} />
-      )}
-
-      {showSuccess && (
-        <SuccessModal
-          open={true}
-          title="Booking Confirmed!"
-          subtitle="Your quick laundry booking has been successfully placed. We'll contact you soon."
-          onClose={() => setShowSuccess(false)}
+        <LoginPopup 
+          close={() => setShowLogin(false)} 
+          onSuccess={() => {
+            setShowLogin(false);
+            fetchAddresses();
+            ensureStripeCustomer();
+            fetchSavedCards();
+          }} 
         />
       )}
 

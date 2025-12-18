@@ -29,7 +29,7 @@ export default function ServiceAreas() {
       <section className="areas-hero">
         <div className="hero-overlay" />
         <div className="hero-content">
-          <h1>West London Service Areas</h1>
+          <h1>London Service Areas</h1>
           <p>Explore professional laundry & cleaning services in your neighbourhood</p>
         </div>
       </section>
