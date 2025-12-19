@@ -636,10 +636,6 @@ const splitCategoriesIntoColumns = () => {
                   <i className="fas fa-envelope"></i>
                   <span>support@ironingboy.com</span>
                 </li>
-                <li>
-                  <i className="fas fa-map-marker-alt"></i>
-                  <span>2 Turnpike Lane, Uxbridge, Hillingdon, UB10 0AH, UK</span>
-                </li>
               </ul>
             </div>
 
@@ -706,5 +702,6 @@ const splitCategoriesIntoColumns = () => {
     </footer>
   );
 };
+
 
 export default Footer;
