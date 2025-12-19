@@ -149,11 +149,6 @@ const Contact = () => {
                   <div className="contact-icon">
                     <i className="fas fa-map-marker-alt"></i>
                   </div>
-                  <div className="contact-text">
-                    <h4>Visit Us</h4>
-                    <p>2 Turnpike Lane, Uxbridge, Hillingdon, UB10 0AH, UK</p>
-                    <span className="contact-note">Come say hello</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -274,5 +269,6 @@ const Contact = () => {
     </section>
   );
 };
+
 
 export default Contact;
