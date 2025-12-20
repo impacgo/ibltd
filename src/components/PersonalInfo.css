@@ -5,29 +5,98 @@
 
 /* Base Styles */
 .personal-info-container {
-  min-height: 100vh;
+  min-height: calc(100vh - 80px); /* Adjust for header height */
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
   padding: 20px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 100px; /* Space for main header */
+}
+
+/* Page Header (Simple, non-conflicting) */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+  text-align: center;
+  flex: 1;
+}
+
+.back-btn {
+  padding: 10px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.back-btn:hover {
+  background: #5a67d8;
+  transform: translateX(-2px);
+}
+
+.refresh-btn {
+  padding: 10px 20px;
+  background: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: #38a169;
+  transform: translateY(-2px);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Loading & Error States */
 .loading-screen,
 .error-screen {
-  min-height: 100vh;
+  min-height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-  padding: 20px;
-}
-
-.loading-content {
-  text-align: center;
   background: white;
-  padding: 40px;
   border-radius: 16px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.loading-content,
+.error-content {
+  text-align: center;
+  padding: 40px;
 }
 
 .loader {
@@ -40,7 +109,8 @@
   margin: 0 auto 20px;
 }
 
-.loading-content p {
+.loading-content p,
+.error-content p {
   color: #4a5568;
   font-size: 16px;
   font-weight: 500;
@@ -49,16 +119,6 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-.error-content {
-  text-align: center;
-  background: white;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  max-width: 400px;
-  width: 100%;
 }
 
 .error-content i {
@@ -100,88 +160,6 @@
 .primary-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-
-/* Header */
-.profile-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 30px;
-  position: relative;
-  padding: 0 10px;
-}
-
-.back-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  color: #4a5568;
-  font-size: 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-  position: absolute;
-  left: 10px;
-  z-index: 10;
-}
-
-.back-btn:hover {
-  background: #f7fafc;
-  border-color: #667eea;
-  color: #667eea;
-  transform: translateX(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-}
-
-.page-title {
-  margin: 0 auto;
-  font-size: 28px;
-  font-weight: 800;
-  color: #1a202c;
-  text-align: center;
-  background: linear-gradient(135deg, #1a202c 0%, #4a5568 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  padding: 0 50px;
-  width: 100%;
-}
-
-.header-actions {
-  position: absolute;
-  right: 10px;
-}
-
-.refresh-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  color: #4a5568;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.refresh-btn:hover:not(:disabled) {
-  background: #f7fafc;
-  border-color: #48bb78;
-  color: #48bb78;
-  transform: rotate(180deg);
-}
-
-.refresh-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Error Banner */
@@ -244,9 +222,8 @@
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
-  position: relative;
 }
 
 /* Avatar Section */
@@ -699,37 +676,30 @@
 @media (max-width: 768px) {
   .personal-info-container {
     padding: 16px;
+    padding-top: 90px; /* Adjust for mobile header */
   }
   
-  .profile-header {
-    margin-bottom: 25px;
-    padding: 0;
-  }
-  
-  .back-btn {
-    width: 44px;
-    height: 44px;
-    position: relative;
-    left: 0;
-    margin-right: 15px;
+  .page-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
   }
   
   .page-title {
-    font-size: 24px;
-    padding: 0;
-    text-align: left;
-    margin: 0;
-    flex: 1;
+    font-size: 20px;
+    order: 1;
   }
   
-  .header-actions {
-    position: relative;
-    right: 0;
+  .back-btn {
+    order: 2;
+    width: 100%;
+    justify-content: center;
   }
   
   .refresh-btn {
-    width: 44px;
-    height: 44px;
+    order: 3;
+    width: 100%;
+    justify-content: center;
   }
   
   .avatar-section {
@@ -800,10 +770,11 @@
 @media (max-width: 480px) {
   .personal-info-container {
     padding: 12px;
+    padding-top: 85px;
   }
   
   .page-title {
-    font-size: 20px;
+    font-size: 18px;
   }
   
   .avatar-section {
@@ -885,11 +856,34 @@
     background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
   }
   
+  .page-header,
   .profile-card,
   .error-content,
   .loading-content {
     background: #2d3748;
     color: #e2e8f0;
+  }
+  
+  .page-title {
+    color: #e2e8f0;
+  }
+  
+  .back-btn {
+    background: #4a5568;
+    color: #e2e8f0;
+  }
+  
+  .back-btn:hover {
+    background: #5a67d8;
+  }
+  
+  .refresh-btn {
+    background: #2f855a;
+    color: #e2e8f0;
+  }
+  
+  .refresh-btn:hover {
+    background: #276749;
   }
   
   .field-group {
