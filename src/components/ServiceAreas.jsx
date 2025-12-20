@@ -1,4 +1,4 @@
-// src/pages/ServiceAreas.jsx
+// src/components/ServiceAreas.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ServiceAreas.css";
@@ -24,7 +24,6 @@ export default function ServiceAreas() {
 
   return (
     <div className="areas-page">
-
       {/* HERO SECTION */}
       <section className="areas-hero">
         <div className="hero-overlay" />
