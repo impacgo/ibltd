@@ -208,16 +208,16 @@ const Hero = () => {
   );
 
   const discountItems = useMemo(
-    () => [
-      "Students get 25% OFF on any booking!",
-      "Minimum top up - £20",
-      "If booking amount is £50 - £100 then 15% discount",
-      "If booking amount is £100 - £300 then 20% discount",
-      "If booking amount is more than £300 then 22% discount",
-      "Applicable on each customer's first 3 orders"
-    ],
-    []
-  );
+  () => [
+    "Students get 25% OFF on any booking",
+    "Minimum top-up: £20",
+    "15% OFF on bookings between £50 and £100",
+    "20% OFF on bookings above £100 up to £300",
+    "22% OFF on bookings above £300",
+    "Applicable to each customer's first 3 orders",
+  ],
+  []
+);
 
   return (
     <section className={`hero ${isVisible ? "visible" : ""}`}>
@@ -469,5 +469,6 @@ const Hero = () => {
     </section>
   );
 };
+
 
 export default Hero;
