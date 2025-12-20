@@ -108,10 +108,10 @@ function App() {
           <Route path="/areas" element={<PageWrapper component={AreasPage} />} />
           <Route path="/quick-booking" element={<PageWrapper component={QuickBookingPage} />} />
           
-          {/* Dynamic routes - MUST handle both direct navigation and client-side routing */}
+          {/* Dynamic routes */}
           
           {/* Area details - e.g., /areas/paddington */}
-          <Route path="/areas/:areaSlug" element={
+          <Route path="/areas/:slug" element={
             <MainLayout>
               <Suspense fallback={<LoadingSpinner />}>
                 <AreaDetails />
@@ -120,7 +120,7 @@ function App() {
           } />
           
           {/* Area service page - e.g., /areas/paddington/ironing */}
-          <Route path="/areas/:areaSlug/:serviceSlug" element={
+          <Route path="/areas/:slug/:serviceSlug" element={
             <MainLayout>
               <Suspense fallback={<LoadingSpinner />}>
                 <AreaServicePage />
