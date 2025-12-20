@@ -1998,3 +1998,274 @@ body { padding-top: var(--header-height-desktop); }
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   }
 }
+
+/* ===========================
+   DESKTOP DARK MODE STYLING
+=========================== */
+
+@media (prefers-color-scheme: dark) {
+  /* For desktop only */
+  @media (min-width: 769px) {
+    /* Header background */
+    .header {
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .header.scrolled {
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Logo text - white */
+    .logo-name {
+      color: #ffffff;
+      background: linear-gradient(to right, #ffffff, #e2e8f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .logo-tagline {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Navigation links - white */
+    .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .nav-link:hover {
+      color: #ffffff;
+    }
+    
+    .nav-link.active {
+      color: #ffffff;
+      font-weight: 600;
+    }
+    
+    .nav-link::after {
+      background: linear-gradient(90deg, #ff7a00, #ffb05c);
+    }
+    
+    /* Enhanced Services Dropdown - Dark Theme */
+    .dropdown-menu {
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    }
+    
+    .dropdown-container::before {
+      border-bottom-color: rgba(15, 23, 42, 0.98);
+      filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.2));
+    }
+    
+    .dropdown-item {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .dropdown-item:hover {
+      background: linear-gradient(90deg, 
+        rgba(255, 122, 0, 0.15), 
+        rgba(255, 122, 0, 0.08)
+      );
+      color: #ffb05c;
+    }
+    
+    .dropdown-icon {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .dropdown-item:hover .dropdown-icon {
+      color: #ffb05c;
+    }
+    
+    .dropdown-item::after {
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent
+      );
+    }
+    
+    .dropdown-placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    /* App Store buttons - keep original colors */
+    .store-btn-desktop.apple-btn {
+      background: #000;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .store-btn-desktop.android-btn {
+      background: #3ddc84;
+      color: #000;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .store-btn-desktop:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Profile Icon - adjust for dark mode */
+    .profile-icon-btn {
+      border: 2px solid rgba(255, 255, 255, 0.8);
+    }
+    
+    .profile-icon-btn svg {
+      stroke: rgba(255, 255, 255, 0.9);
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .profile-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    }
+    
+    .profile-avatar-logged {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #ffffff;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .profile-avatar-logged:hover {
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Profile Dropdown - dark theme */
+    .profile-dropdown {
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .profile-dropdown::before {
+      border-bottom: 8px solid rgba(15, 23, 42, 0.98);
+      filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.3));
+    }
+    
+    .profile-avatar-small {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #ffffff;
+    }
+    
+    .profile-welcome {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .profile-email {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .profile-option {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .profile-option:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+    
+    .profile-option i {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .profile-option:hover i {
+      color: #ffffff;
+    }
+    
+    .profile-divider {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    }
+    
+    .profile-option.logout-option {
+      color: #f87171;
+    }
+    
+    .profile-option.logout-option:hover {
+      background: rgba(248, 113, 113, 0.1);
+      color: #f87171;
+    }
+    
+    .profile-option.logout-option i {
+      color: #f87171;
+    }
+    
+    /* Ensure all dropdown text is visible in dark mode */
+    .dropdown-text {
+      color: inherit;
+    }
+    
+    /* Fix for any remaining dark text in light mode elements */
+    .dropdown-item span,
+    .dropdown-item .dropdown-text,
+    .dropdown-item .dropdown-icon {
+      color: inherit !important;
+    }
+  }
+  
+  /* For mobile - keep existing dark mode styles */
+  @media (max-width: 768px) {
+    /* Mobile already has dark mode styles, but ensure text is white */
+    .mobile-menu-item,
+    .dropdown-link,
+    .mobile-store-btn,
+    .mobile-auth-btn,
+    .mobile-profile-btn {
+      color: #ffffff;
+    }
+    
+    .mobile-menu-item.active {
+      color: #ff7a00;
+    }
+  }
+}
+
+/* Fallback for systems without dark mode preference detection */
+@media (max-width: 768px) {
+  .nav.mobile.active {
+    /* Mobile menu is already dark */
+    background: linear-gradient(180deg, rgba(8,10,12,0.86), rgba(8,10,12,0.94));
+  }
+}
+
+/* ===========================
+   ADDITIONAL FIXES FOR TEXT VISIBILITY
+=========================== */
+
+/* Ensure all text in desktop dark mode is properly visible */
+@media (prefers-color-scheme: dark) and (min-width: 769px) {
+  .dropdown-toggle,
+  .dropdown-item,
+  .dropdown-text,
+  .dropdown-icon,
+  .dropdown-placeholder {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  .dropdown-item:hover .dropdown-text,
+  .dropdown-item:hover .dropdown-icon {
+    color: #ffb05c !important;
+  }
+}
+
+/* Fix for Safari dark mode compatibility */
+@supports (-webkit-touch-callout: none) {
+  @media (prefers-color-scheme: dark) and (min-width: 769px) {
+    .dropdown-menu {
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+    
+    .header {
+      -webkit-backdrop-filter: blur(10px);
+    }
+  }
+}
