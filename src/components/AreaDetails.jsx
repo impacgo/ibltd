@@ -23,7 +23,7 @@ const AREAS = [
   { name: "Hammersmith", slug: "hammersmith", postcodes: ["W6"] },
   { name: "Kensington", slug: "kensington", postcodes: ["W8", "SW7"] },
   { name: "Notting Hill", slug: "notting-hill", postcodes: ["W11"] },
-  { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2"] },
+  { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2","OX3","OX4"] },
   { name: "Paddington", slug: "paddington", postcodes: ["W2"] },
   { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"] },
 ];
