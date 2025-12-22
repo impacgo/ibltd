@@ -13,7 +13,7 @@ const AREAS = [
   { name: "Fulham", slug: "fulham", postcodes: ["SW6"] },
   { name: "Hammersmith", slug: "hammersmith", postcodes: ["W6"] },
   { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"] },
-  { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2"] },
+  { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2","OX3","OX4"] },
 ];
 
 // Define the 10 specific services
