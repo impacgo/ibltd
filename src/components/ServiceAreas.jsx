@@ -12,7 +12,7 @@ const AREAS = [
   { name: "Fulham", slug: "fulham", postcodes: ["SW6"], position: { top: "55%", left: "47%" } },
   { name: "Hammersmith", slug: "hammersmith", postcodes: ["W6"], position: { top: "52%", left: "42%" } },
   { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"], position: { top: "48%", left: "40%" } },
-  { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2"], position: { top: "35%", left: "30%" } }, // Added Oxford
+  { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2","OX3","OX4"], position: { top: "35%", left: "30%" } }, // Added Oxford
 ];
 
 export default function ServiceAreas() {
