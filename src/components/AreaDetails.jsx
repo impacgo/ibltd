@@ -17,13 +17,14 @@ import repairImg from "../images/repair.webp";
 
 // Local AREAS data
 const AREAS = [
-  { name: "Paddington", slug: "paddington", postcodes: ["W2"] },
-  { name: "Notting Hill", slug: "notting-hill", postcodes: ["W11"] },
-  { name: "Kensington", slug: "kensington", postcodes: ["W8", "SW7"] },
-  { name: "Earls Court", slug: "earls-court", postcodes: ["SW5"] },
   { name: "Chelsea", slug: "chelsea", postcodes: ["SW3", "SW10"] },
+  { name: "Earls Court", slug: "earls-court", postcodes: ["SW5"] },
   { name: "Fulham", slug: "fulham", postcodes: ["SW6"] },
   { name: "Hammersmith", slug: "hammersmith", postcodes: ["W6"] },
+  { name: "Kensington", slug: "kensington", postcodes: ["W8", "SW7"] },
+  { name: "Notting Hill", slug: "notting-hill", postcodes: ["W11"] },
+  { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2"] },
+  { name: "Paddington", slug: "paddington", postcodes: ["W2"] },
   { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"] },
 ];
 
