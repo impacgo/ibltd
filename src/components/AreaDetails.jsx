@@ -28,106 +28,84 @@ const AREAS = [
   { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"] },
 ];
 
-// Define the 10 specific services with their details
-const SPECIFIC_SERVICES = [
+// Define the 6 main services from Services.jsx
+const MAIN_SERVICES = [
   { 
-    id: 1, 
-    slug: "accessories", 
-    title: "Accessories Cleaning", 
-    description: "Professional cleaning for scarves, ties, gloves, and other accessories"
+    id: 1,
+    slug: "laundry",
+    title: "Laundry", 
+    icon: "fa-tshirt",
+    description: "Professional washing, drying & folding service",
+    color: "#3B82F6",
+    gradient: "linear-gradient(135deg, #3B82F6, #1D4ED8)",
+    features: ["Eco-friendly detergents", "Same-day service", "Free pickup"],
+    fullDescription: "Complete laundry service including washing, drying, and professional folding with eco-friendly detergents."
   },
   { 
-    id: 2, 
-    slug: "bedding", 
-    title: "Bedding Cleaning", 
-    description: "Deep cleaning for duvets, pillows, sheets, and mattress covers"
+    id: 2,
+    slug: "dry-cleaning", 
+    title: "Dry Cleaning", 
+    icon: "fa-snowflake",
+    description: "Gentle care for delicate & special fabrics",
+    color: "#8B5CF6",
+    gradient: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
+    features: ["Delicate fabrics", "Stain removal", "Premium care"],
+    fullDescription: "Expert dry cleaning for delicate fabrics, suits, dresses, and special occasion wear."
   },
   { 
-    id: 3, 
-    slug: "fullbody", 
-    title: "Full Body Garments", 
-    description: "Complete cleaning for dresses, gowns, and full-length garments"
+    id: 3,
+    slug: "ironing-pressing", 
+    title: "Ironing/Pressing", 
+    icon: "fa-fire",
+    description: "Crisp, wrinkle-free finish for all garments",
+    color: "#EC4899",
+    gradient: "linear-gradient(135deg, #EC4899, #DB2777)",
+    features: ["Professional press", "Steam finishing", "Fold or hang"],
+    fullDescription: "Professional ironing and pressing service for crisp, wrinkle-free results."
   },
   { 
-    id: 4, 
-    slug: "household", 
-    title: "Household Items", 
-    description: "Cleaning for curtains, cushion covers, tablecloths, and other household items"
-  },
-  { 
-    id: 5, 
-    slug: "lower", 
-    title: "Lower Garments", 
-    description: "Professional cleaning for trousers, skirts, shorts, and other lower garments"
-  },
-  { 
-    id: 6, 
-    slug: "servicewash", 
+    id: 4,
+    slug: "service-wash", 
     title: "Service Wash", 
-    description: "Complete laundry service including washing, drying, and folding"
+    icon: "fa-soap",
+    description: "Complete laundry with premium detergents",
+    color: "#10B981",
+    gradient: "linear-gradient(135deg, #10B981, #059669)",
+    features: ["Premium detergents", "Full service", "Quality check"],
+    fullDescription: "Full-service laundry including pickup, washing, drying, folding, and delivery."
   },
   { 
-    id: 7, 
-    slug: "shirts", 
-    title: "Shirts & Tops", 
-    description: "Expert cleaning and ironing for shirts, blouses, and tops"
-  },
-  { 
-    id: 8, 
-    slug: "upper", 
-    title: "Upper Garments", 
-    description: "Cleaning for jackets, jumpers, sweaters, and upper body garments"
-  },
-  { 
-    id: 9, 
-    slug: "shoes", 
-    title: "Shoes Cleaning", 
-    description: "Professional cleaning and conditioning for all types of shoes"
-  },
-  { 
-    id: 10, 
-    slug: "repair-alt", 
+    id: 5,
+    slug: "repair-alteration", 
     title: "Repair & Alteration", 
-    description: "Professional clothing repair, alterations, and tailoring services"
+    icon: "fa-scissors",
+    description: "Expert tailoring & perfect fit adjustments",
+    color: "#F59E0B",
+    gradient: "linear-gradient(135deg, #F59E0B, #D97706)",
+    features: ["Expert tailors", "Quick turnaround", "Perfect fit"],
+    fullDescription: "Professional clothing repair, alterations, and tailoring services."
+  },
+  { 
+    id: 6,
+    slug: "shoe-cleaning", 
+    title: "Shoe Cleaning", 
+    icon: "fa-shoe-prints",
+    description: "Deep cleaning & conditioning for footwear",
+    color: "#6366F1",
+    gradient: "linear-gradient(135deg, #6366F1, #4F46E5)",
+    features: ["Deep clean", "Conditioning", "Waterproofing"],
+    fullDescription: "Professional cleaning, conditioning, and waterproofing for all types of shoes."
   },
 ];
 
 // Image mapping for services
 const serviceImages = {
-  "accessories": accessoriesImg,
-  "bedding": beddingImg,
-  "fullbody": fullBodyImg,
-  "household": householdImg,
-  "lower": lowerImg,
-  "servicewash": serviceWashImg,
-  "shirts": shirtsImg,
-  "upper": upperImg,
-  "shoes": shoesImg,
-  "repair-alt": repairImg,
-  // Backward compatibility
-  "repair-alteration": repairImg,
-  "repair-altration": repairImg,
-  "ironing": shirtsImg,
   "laundry": serviceWashImg,
   "dry-cleaning": fullBodyImg,
-  "leather-cleaning": upperImg,
-  "shoes-bags": shoesImg,
-};
-
-// Function to fetch services from backend (for compatibility)
-const fetchServicesFromBackend = async () => {
-  try {
-    const API_BASE = "https://api.ironingboy.com";
-    const response = await fetch(`${API_BASE}/services`);
-    if (response.ok) {
-      const data = await response.json();
-      return data.data || SPECIFIC_SERVICES;
-    }
-    return SPECIFIC_SERVICES;
-  } catch (error) {
-    console.error("Error fetching services:", error);
-    return SPECIFIC_SERVICES;
-  }
+  "ironing-pressing": shirtsImg,
+  "service-wash": serviceWashImg,
+  "repair-alteration": repairImg,
+  "shoe-cleaning": shoesImg,
 };
 
 export default function AreaDetails() {
@@ -137,85 +115,26 @@ export default function AreaDetails() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [allServices, setAllServices] = useState([]);
 
   const area = AREAS.find((a) => a.slug === slug);
   if (!area) return <div className="page-empty">Area Not Found</div>;
 
-  // Fetch services from backend on component mount
+  // Load services - SIMPLIFIED to always show all 6 services
   useEffect(() => {
     const loadServices = async () => {
       try {
         setLoading(true);
         
-        // First, try to get categories from backend (like in header)
-        const API_BASE = "https://api.ironingboy.com";
-        const categoriesResponse = await fetch(`${API_BASE}/categories`);
-        
-        if (categoriesResponse.ok) {
-          const categoriesData = await categoriesResponse.json();
-          const categories = categoriesData.data || [];
-          
-          if (categories.length > 0) {
-            // Map categories to our service format
-            const mappedServices = categories.map(category => {
-              // Try to find matching service by name or create new
-              const existingService = SPECIFIC_SERVICES.find(service => 
-                service.title.toLowerCase().includes(category.name.toLowerCase()) ||
-                category.name.toLowerCase().includes(service.title.toLowerCase())
-              );
-              
-              if (existingService) {
-                return {
-                  ...existingService,
-                  id: category.id,
-                  name: category.name,
-                  title: category.name
-                };
-              }
-              
-              // If no match, create from category
-              return {
-                id: category.id,
-                slug: category.name.toLowerCase().replace(/\s+/g, '-'),
-                title: category.name,
-                description: category.description || "Professional cleaning service",
-                name: category.name
-              };
-            });
-            
-            setAllServices(mappedServices);
-            
-            // Filter to only show the 10 specific services
-            const filteredServices = SPECIFIC_SERVICES.map(specificService => {
-              // Try to find matching service from backend
-              const matchedService = mappedServices.find(service => 
-                service.slug === specificService.slug ||
-                service.title.toLowerCase().includes(specificService.title.toLowerCase())
-              );
-              
-              return matchedService || specificService;
-            });
-            
-            setServices(filteredServices);
-          } else {
-            // Use specific services if no categories from backend
-            setAllServices(SPECIFIC_SERVICES);
-            setServices(SPECIFIC_SERVICES);
-          }
-        } else {
-          // Use specific services if API call fails
-          setAllServices(SPECIFIC_SERVICES);
-          setServices(SPECIFIC_SERVICES);
-        }
-        
+        // Always use the 6 main services directly
+        // This ensures all 6 services are always displayed
+        setServices(MAIN_SERVICES);
         setError(null);
+        
       } catch (err) {
         console.error("Failed to load services:", err);
         setError("Unable to load services. Please try again.");
-        // Use specific services on error
-        setAllServices(SPECIFIC_SERVICES);
-        setServices(SPECIFIC_SERVICES);
+        // Fallback to the 6 main services
+        setServices(MAIN_SERVICES);
       } finally {
         setLoading(false);
       }
@@ -228,34 +147,19 @@ export default function AreaDetails() {
     navigate("/quick-booking");
   };
 
-  const handleBookServiceWash = () => {
-    navigate("/quick-booking");
+  // Navigate to QuickBooking with service preselected
+  const handleBookService = (serviceSlug, serviceTitle) => {
+    navigate("/quick-booking", { 
+      state: { 
+        service: serviceTitle,
+        area: area.name
+      } 
+    });
   };
 
   // Function to get image for service
   const getImageForService = (service) => {
-    // First try direct slug match
-    if (serviceImages[service.slug]) {
-      return serviceImages[service.slug];
-    }
-    
-    // Try to find by partial slug match
-    for (const [key, image] of Object.entries(serviceImages)) {
-      if (service.slug.includes(key) || key.includes(service.slug)) {
-        return image;
-      }
-    }
-    
-    // Default based on title
-    if (service.title.toLowerCase().includes('shirt')) return shirtsImg;
-    if (service.title.toLowerCase().includes('shoe')) return shoesImg;
-    if (service.title.toLowerCase().includes('bed')) return beddingImg;
-    if (service.title.toLowerCase().includes('wash')) return serviceWashImg;
-    if (service.title.toLowerCase().includes('repair')) return repairImg;
-    if (service.title.toLowerCase().includes('alter')) return repairImg;
-    
-    // Default image
-    return accessoriesImg;
+    return serviceImages[service.slug] || serviceWashImg;
   };
 
   if (loading) {
@@ -327,20 +231,38 @@ export default function AreaDetails() {
                 const serviceImage = getImageForService(service);
                 
                 return (
-                  <Link
-                    key={service.id || service.slug}
-                    to={`/areas/${slug}/${service.slug}`}
+                  <div
+                    key={service.id}
                     className="service-card"
+                    onClick={() => handleBookService(service.slug, service.title)}
                   >
                     <div
                       className="service-card-img"
                       style={{ backgroundImage: `url(${serviceImage})` }}
                     />
                     <div className="service-card-info">
+                      
                       <h3>{service.title}</h3>
                       <p>{service.description}</p>
+                      <div className="service-features-list">
+                        {service.features && service.features.slice(0, 2).map((feature, idx) => (
+                          <span key={idx} className="service-feature">
+                            <i className="fas fa-check-circle"></i> {feature}
+                          </span>
+                        ))}
+                      </div>
+                      <button 
+                        className="service-book-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBookService(service.slug, service.title);
+                        }}
+                      >
+                        <span>Book Now</span>
+                        <i className="fas fa-arrow-right"></i>
+                      </button>
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
@@ -359,9 +281,9 @@ export default function AreaDetails() {
 
               <button
                 className="btn-outline"
-                onClick={handleBookServiceWash}
+                onClick={handleSchedulePickup}
               >
-                Book Service Wash
+                Book Service Now
               </button>
             </div>
 
@@ -380,19 +302,20 @@ export default function AreaDetails() {
           </aside>
         </section>
 
-        {/* SEO SECTION */}
-        <section className="seo-section">
-          <h3>Local Service Pages for {area.name}</h3>
-          <p>Explore detailed service pages for {area.name}:</p>
-
-          <ul className="seo-list">
-            <li><Link to={`/areas/${slug}`}>/areas/{slug}</Link></li>
-            {services.map((service) => (
-              <li key={service.slug}>
-                <Link to={`/areas/${slug}/${service.slug}`}>/areas/{slug}/{service.slug}</Link>
-              </li>
-            ))}
-          </ul>
+        {/* CTA SECTION */}
+        <section className="area-cta-section">
+          <div className="cta-content">
+            <h3>Need Help Choosing a Service?</h3>
+            <p>Our team is here to help you select the right service for your garments.</p>
+            <div className="cta-buttons">
+              <button className="btn-primary" onClick={handleSchedulePickup}>
+                Schedule Free Pickup
+              </button>
+              <button className="btn-secondary" onClick={() => navigate("/faq")}>
+                View FAQs
+              </button>
+            </div>
+          </div>
         </section>
       </main>
     </div>

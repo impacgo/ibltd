@@ -3,77 +3,10 @@ import "./totalpricing.css";
 
 const API_BASE = "https://api.ironingboy.com";
 
-// Function to convert text to camel case (Title Case)
-const toCamelCase = (text) => {
-  if (!text || typeof text !== 'string') return '';
-  
-  return text
-    .toLowerCase() // First convert to lowercase
-    .split(' ') // Split by spaces
-    .map(word => {
-      // Handle special cases like hyphens, slashes, colons
-      if (word.includes('-')) {
-        return word
-          .split('-')
-          .map(subWord => subWord.charAt(0).toUpperCase() + subWord.slice(1))
-          .join('-');
-      }
-      if (word.includes('/')) {
-        return word
-          .split('/')
-          .map(subWord => subWord.charAt(0).toUpperCase() + subWord.slice(1))
-          .join('/');
-      }
-      if (word.includes(':')) {
-        return word
-          .split(':')
-          .map((subWord, idx) => {
-            if (idx === 0) {
-              return subWord.charAt(0).toUpperCase() + subWord.slice(1);
-            }
-            return subWord;
-          })
-          .join(':');
-      }
-      // Capitalize first letter of each word
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    })
-    .join(' ')
-    .replace(/\s+/g, ' ') // Remove extra spaces
-    .trim();
-};
-
-// Alternative simpler function for proper title case
-const toProperCase = (text) => {
-  if (!text || typeof text !== 'string') return '';
-  
-  // Convert to lowercase first
-  let result = text.toLowerCase();
-  
-  // Capitalize first letter of each word
-  result = result.replace(/\b\w/g, char => char.toUpperCase());
-  
-  // Handle special words that should remain lowercase (like 'and', 'or', 'the', etc.)
-  const smallWords = ['and', 'or', 'but', 'the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'by'];
-  
-  // Split into words, apply small word rules
-  const words = result.split(' ');
-  const processedWords = words.map((word, index) => {
-    // Keep small words lowercase except first word
-    if (index > 0 && smallWords.includes(word.toLowerCase())) {
-      return word.toLowerCase();
-    }
-    return word;
-  });
-  
-  return processedWords.join(' ');
-};
-
-// Function specifically for laundry service names
+// Format service name function (keeping your existing)
 const formatServiceName = (name) => {
   if (!name || typeof name !== 'string') return '';
   
-  // Common laundry terms that should remain as-is
   const laundryTerms = {
     'dry clean': 'Dry Clean',
     'wash & press': 'Wash & Press',
@@ -96,32 +29,24 @@ const formatServiceName = (name) => {
     'starch': 'Starch',
   };
   
-  // Convert to lowercase for processing
   let formatted = name.toLowerCase();
   
-  // Replace common laundry terms with proper casing
   Object.entries(laundryTerms).forEach(([lower, proper]) => {
     const regex = new RegExp(`\\b${lower}\\b`, 'gi');
     formatted = formatted.replace(regex, proper);
   });
   
-  // Capitalize first letter of each word (for any remaining words)
   formatted = formatted
     .split(' ')
     .map(word => {
-      // If word already has proper casing (from laundryTerms), leave it
       if (Object.values(laundryTerms).includes(word)) {
         return word;
       }
-      // Capitalize first letter of each remaining word
       return word.charAt(0).toUpperCase() + word.slice(1);
     })
     .join(' ');
   
-  // Clean up multiple spaces
-  formatted = formatted.replace(/\s+/g, ' ').trim();
-  
-  return formatted;
+  return formatted.replace(/\s+/g, ' ').trim();
 };
 
 const TotalPricing = () => {
@@ -129,6 +54,8 @@ const TotalPricing = () => {
   const [categoryMap, setCategoryMap] = useState({});
   const [openCategory, setOpenCategory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
 
   const toggleCategory = (category) => {
     setOpenCategory(openCategory === category ? null : category);
@@ -142,23 +69,18 @@ const TotalPricing = () => {
         // Fetch categories
         const catRes = await fetch(`${API_BASE}/categories`);
         const catJson = await catRes.json();
-
         const catList = catJson.data || [];
-
-        // convert array → map id → category name
         const tempCatMap = {};
         const categoryNames = [];
 
         catList.forEach((c) => {
           tempCatMap[c.id] = c.name;
-          // Format category names as well
           categoryNames.push(formatServiceName(c.name));
         });
 
         // Fetch products
         const prodRes = await fetch(`${API_BASE}/products1`);
         const prodJson = await prodRes.json();
-
         const prodList = Array.isArray(prodJson)
           ? prodJson
           : prodJson.data || [];
@@ -169,7 +91,7 @@ const TotalPricing = () => {
 
         prodList.forEach((p) => {
           const categoryName = tempCatMap[p.category_id];
-          if (!categoryName) return; // skip invalid categories
+          if (!categoryName) return;
 
           const priceValue = p.price ?? p.standard_price ?? 0;
           const formattedCategory = formatServiceName(categoryName);
@@ -178,10 +100,13 @@ const TotalPricing = () => {
           grouped[formattedCategory].push({
             name: formattedName,
             price: "£" + Number(priceValue).toFixed(2),
+            priceNumber: parseFloat(priceValue)
           });
         });
 
-        setCategories(categoryNames);
+        // Sort categories alphabetically
+        const sortedCategories = [...categoryNames].sort();
+        setCategories(sortedCategories);
         setCategoryMap(grouped);
 
       } catch (err) {
@@ -194,13 +119,44 @@ const TotalPricing = () => {
     loadData();
   }, []);
 
+  // Filter categories based on search term
+  const filteredCategories = categories.filter(category => {
+    const lowerSearch = searchTerm.toLowerCase();
+    const categoryMatches = category.toLowerCase().includes(lowerSearch);
+    
+    if (!categoryMatches && categoryMap[category]) {
+      const serviceMatches = categoryMap[category].some(service => 
+        service.name.toLowerCase().includes(lowerSearch)
+      );
+      return serviceMatches;
+    }
+    
+    return categoryMatches;
+  });
+
+  // Filter services based on active filter
+  const getFilteredServices = (services) => {
+    if (!services) return [];
+    
+    if (activeFilter === "low") {
+      return [...services].sort((a, b) => a.priceNumber - b.priceNumber);
+    }
+    
+    if (activeFilter === "high") {
+      return [...services].sort((a, b) => b.priceNumber - a.priceNumber);
+    }
+    
+    return services;
+  };
+
   if (loading) {
     return (
       <section className="tp-page">
         <div className="tp-container">
-          <h2 style={{ textAlign: "center", padding: "40px" }}>
-            Loading pricing…
-          </h2>
+          <div className="tp-loading">
+            <div className="tp-loading-spinner"></div>
+            <p>Loading pricing information...</p>
+          </div>
         </div>
       </section>
     );
@@ -211,72 +167,266 @@ const TotalPricing = () => {
       <div className="tp-container">
         
         {/* Header */}
-        <header className="tp-header">
-          <span className="tp-badge">Complete Price List</span>
-          <h1 className="tp-title">Explore Our Services & Pricing</h1>
+        <div className="tp-header">
+          <div className="tp-badge">
+            <i className="fas fa-tag"></i>
+            <span>Complete Price List</span>
+          </div>
+          
+          <h1 className="tp-title">
+            Full 
+            <span className="tp-highlight"> Service & Price</span> List
+          </h1>
+          
           <p className="tp-subtitle">
-            Tap any category to view the full list of services with accurate pricing.
+            Browse all our professional laundry services with transparent pricing. 
+            No hidden fees, just quality service.
           </p>
-        </header>
 
-        {/* Accordion */}
-        <div className="tp-accordion">
-          {categories.map((cat) => (
-            <div key={cat} className="tp-accordion-item">
-
-              {/* Category Header */}
-              <button
-                className={`tp-accordion-header ${openCategory === cat ? "open" : ""}`}
-                onClick={() => toggleCategory(cat)}
-              >
-                <span>{cat}</span>
-                <i
-                  className={`fas fa-chevron-down arrow ${
-                    openCategory === cat ? "rotate" : ""
-                  }`}
-                ></i>
-              </button>
-
-              {/* Category Contents */}
-              <div
-                className={`tp-accordion-content ${
-                  openCategory === cat ? "show" : ""
-                }`}
-              >
-                <div className="tp-table-wrapper">
-                  <table className="tp-table">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Service</th>
-                        <th>Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {categoryMap[cat] && categoryMap[cat].length > 0 ? (
-                        categoryMap[cat].map((item, index) => (
-                          <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{item.name}</td>
-                            <td>{item.price}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="3" style={{ textAlign: "center" }}>
-                            No services available.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+          {/* Stats Bar */}
+          {/* <div className="tp-stats">
+            <div className="tp-stat-item">
+              <div className="tp-stat-icon">
+                <i className="fas fa-layer-group"></i>
               </div>
-
+              <div className="tp-stat-content">
+                <div className="tp-stat-number">{categories.length}</div>
+                <div className="tp-stat-label">Categories</div>
+              </div>
             </div>
-          ))}
+            
+            <div className="tp-stat-divider"></div>
+            
+            <div className="tp-stat-item">
+              <div className="tp-stat-icon">
+                <i className="fas fa-list-check"></i>
+              </div>
+              <div className="tp-stat-content">
+                <div className="tp-stat-number">
+                  {Object.values(categoryMap).reduce((total, services) => total + services.length, 0)}
+                </div>
+                <div className="tp-stat-label">Total Services</div>
+              </div>
+            </div>
+            
+            <div className="tp-stat-divider"></div>
+            
+            <div className="tp-stat-item">
+              <div className="tp-stat-icon">
+                <i className="fas fa-pound-sign"></i>
+              </div>
+              <div className="tp-stat-content">
+                <div className="tp-stat-number">£0.95</div>
+                <div className="tp-stat-label">Starting From</div>
+              </div>
+            </div>
+          </div> */}
+
+          {/* Search and Filter Section */}
+          <div className="tp-search-filter">
+            <div className="tp-search-wrapper">
+              <div className="tp-search-container">
+                <i className="fas fa-search tp-search-icon"></i>
+                <input
+                  type="text"
+                  className="tp-search-input"
+                  placeholder="Search services or categories..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {searchTerm && (
+                  <button 
+                    className="tp-search-clear"
+                    onClick={() => setSearchTerm("")}
+                    aria-label="Clear search"
+                  >
+                    <i className="fas fa-times"></i>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="tp-filter-wrapper">
+              <div className="tp-filter-buttons">
+                <button 
+                  className={`tp-filter-btn ${activeFilter === "all" ? "active" : ""}`}
+                  onClick={() => setActiveFilter("all")}
+                >
+                  <i className="fas fa-list"></i>
+                  All Services
+                </button>
+                <button 
+                  className={`tp-filter-btn ${activeFilter === "low" ? "active" : ""}`}
+                  onClick={() => setActiveFilter("low")}
+                >
+                  <i className="fas fa-arrow-down-short-wide"></i>
+                  Price: Low to High
+                </button>
+                <button 
+                  className={`tp-filter-btn ${activeFilter === "high" ? "active" : ""}`}
+                  onClick={() => setActiveFilter("high")}
+                >
+                  <i className="fas fa-arrow-down-wide-short"></i>
+                  Price: High to Low
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* Search Results Info */}
+        {searchTerm && (
+          <div className="tp-search-info">
+            <div className="tp-search-results">
+              <i className="fas fa-search"></i>
+              <p>
+                Showing results for "<strong>{searchTerm}</strong>"
+                {filteredCategories.length > 0 && ` - ${filteredCategories.length} category match${filteredCategories.length === 1 ? '' : 'es'}`}
+              </p>
+            </div>
+            <button 
+              className="tp-clear-search"
+              onClick={() => setSearchTerm("")}
+            >
+              Clear Search
+            </button>
+          </div>
+        )}
+
+        {/* Pricing Cards Grid */}
+        <div className="tp-cards-grid">
+          {filteredCategories.length > 0 ? (
+            filteredCategories.map((cat, index) => {
+              const services = getFilteredServices(categoryMap[cat]);
+              const isOpen = openCategory === cat;
+              
+              return (
+                <div 
+                  key={cat} 
+                  className={`tp-card ${isOpen ? "open" : ""}`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  {/* Category Header */}
+                  <button
+                    className="tp-card-header"
+                    onClick={() => toggleCategory(cat)}
+                    aria-expanded={isOpen}
+                  >
+                    <div className="tp-category-icon">
+                      <i className="fas fa-tshirt"></i>
+                    </div>
+                    <div className="tp-category-info">
+                      <h3 className="tp-category-name">{cat}</h3>
+                      <div className="tp-category-meta">
+                        <span className="tp-service-count">
+                          <i className="fas fa-list-check"></i>
+                          {categoryMap[cat]?.length || 0} services
+                        </span>
+                        <span className="tp-price-range">
+                          £{categoryMap[cat] && categoryMap[cat].length > 0 
+                            ? Math.min(...categoryMap[cat].map(s => s.priceNumber)).toFixed(2) 
+                            : '0.00'} - £{categoryMap[cat] && categoryMap[cat].length > 0 
+                            ? Math.max(...categoryMap[cat].map(s => s.priceNumber)).toFixed(2) 
+                            : '0.00'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="tp-toggle-icon">
+                      <i className={`fas fa-chevron-down ${isOpen ? "rotated" : ""}`}></i>
+                    </div>
+                  </button>
+
+                  {/* Category Contents */}
+                  <div className={`tp-card-body ${isOpen ? "show" : ""}`}>
+                    <div className="tp-table-wrapper">
+                      <table className="tp-table">
+                        <thead>
+                          <tr>
+                            <th className="tp-table-service">Service</th>
+                            <th className="tp-table-price">Price</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {services.map((item, idx) => (
+                            <tr key={idx} className="tp-table-row">
+                              <td className="tp-service-cell">
+                                <div className="tp-service-name">{item.name}</div>
+                              </td>
+                              <td className="tp-price-cell">
+                                <span className="tp-price-value">{item.price}</span>
+                                <div className="tp-price-note">per item</div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    {/* Category Footer */}
+                    <div className="tp-card-footer">
+                      <div className="tp-total-summary">
+                        <div className="tp-summary-item">
+                          <i className="fas fa-list"></i>
+                          <span>{services.length} total services</span>
+                        </div>
+                      </div>
+                      <button 
+                        className="tp-book-now-btn"
+                        onClick={() => {
+                          console.log(`Book ${cat} services`);
+                        }}
+                      >
+                        <i className="fas fa-calendar-check"></i>
+                        Book {cat} Services
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="tp-no-results">
+              <div className="tp-no-results-icon">
+                <i className="fas fa-search"></i>
+              </div>
+              <h3>No matching services found</h3>
+              <p>Try a different search term or browse all categories</p>
+              <button 
+                className="tp-reset-btn"
+                onClick={() => setSearchTerm("")}
+              >
+                <i className="fas fa-rotate-left"></i>
+                Show All Categories
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Call to Action */}
+        <div className="tp-cta">
+          <div className="tp-cta-content">
+            <div className="tp-cta-badge">
+              <i className="fas fa-question-circle"></i>
+              <span>Need Help?</span>
+            </div>
+            <h3>Ready to get started?</h3>
+            <p>Book our professional laundry services with transparent pricing and exceptional quality.</p>
+            <div className="tp-cta-actions">
+              <button className="tp-cta-primary">
+                <i className="fas fa-calendar-alt"></i>
+                Book Collection Now
+              </button>
+              <button className="tp-cta-secondary">
+                <i className="fas fa-phone"></i>
+                Contact Support
+              </button>
+            </div>
+            <div className="tp-cta-note">
+              <i className="fas fa-info-circle"></i>
+              <span>All prices include professional cleaning, pressing, and eco-friendly detergents</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

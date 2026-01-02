@@ -13,10 +13,8 @@ const OrderDetailsModal = ({ order, onClose }) => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     try {
-      // Handle ISO string or already formatted string
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
-        // Try to parse as UK date format (DD/MM/YYYY)
         const parts = dateString.split('/');
         if (parts.length === 3) {
           const day = parseInt(parts[0], 10);
@@ -31,7 +29,7 @@ const OrderDetailsModal = ({ order, onClose }) => {
             });
           }
         }
-        return dateString; // Return original if can't parse
+        return dateString;
       }
       return date.toLocaleDateString("en-GB", {
         day: "numeric",
@@ -48,13 +46,11 @@ const OrderDetailsModal = ({ order, onClose }) => {
   const formatTime = (timeString) => {
     if (!timeString) return "N/A";
     try {
-      // Try to extract time from string like "08/12/2025, 10:00 AM - 11:00 AM"
       const timeMatch = timeString.match(/(\d{1,2}:\d{2}\s*[AP]M)/i);
       if (timeMatch) {
         return timeMatch[1];
       }
       
-      // Try parsing as date
       const date = new Date(timeString);
       if (!isNaN(date.getTime())) {
         return date.toLocaleTimeString("en-GB", {
@@ -79,7 +75,7 @@ const OrderDetailsModal = ({ order, onClose }) => {
     const time = formatTime(dateTimeString);
     
     if (date === dateTimeString && time === dateTimeString) {
-      return dateTimeString; // Return original if both failed
+      return dateTimeString;
     }
     
     return `${date} at ${time}`;
@@ -183,7 +179,7 @@ const OrderDetailsModal = ({ order, onClose }) => {
           {(order.full_address || order.postcode) && (
             <div className="modal-section">
               <h3 className="section-title">
-                <i className="fas fa-map-marker-alt" style={{color:"black"}}></i> Delivery Address
+                <i className="fas fa-map-marker-alt"></i> Delivery Address
               </h3>
               <div className="address-card">
                 <div className="address-details">
@@ -375,8 +371,6 @@ const OrderHistory = () => {
       }
 
       const data = await response.json();
-      console.log("📊 Orders fetched:", data.orders?.length || 0);
-      console.log("📋 Sample order:", data.orders?.[0]);
       setOrders(data.orders || []);
     } catch (err) {
       console.error("❌ Error fetching orders:", err);
@@ -390,10 +384,8 @@ const OrderHistory = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     try {
-      // Handle ISO string or already formatted string
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
-        // Try to parse as UK date format (DD/MM/YYYY)
         const parts = dateString.split('/');
         if (parts.length === 3) {
           const day = parseInt(parts[0], 10);
@@ -408,7 +400,7 @@ const OrderHistory = () => {
             });
           }
         }
-        return dateString; // Return original if can't parse
+        return dateString;
       }
       return date.toLocaleDateString("en-GB", {
         day: "numeric",
@@ -425,13 +417,11 @@ const OrderHistory = () => {
   const formatTime = (timeString) => {
     if (!timeString) return "";
     try {
-      // Try to extract time from string like "08/12/2025, 10:00 AM - 11:00 AM"
       const timeMatch = timeString.match(/(\d{1,2}:\d{2}\s*[AP]M)/i);
       if (timeMatch) {
         return timeMatch[1];
       }
       
-      // Try parsing as date
       const date = new Date(timeString);
       if (!isNaN(date.getTime())) {
         return date.toLocaleTimeString("en-GB", {
@@ -459,7 +449,7 @@ const OrderHistory = () => {
       return `${date} at ${time}`;
     }
     
-    return date; // Return just date if time parsing failed
+    return date;
   };
 
   // Get status badge class
@@ -547,7 +537,6 @@ const OrderHistory = () => {
         throw new Error("No authentication token found");
       }
 
-      console.log(`📡 Fetching order details for ID: ${orderId}`);
       const response = await fetch(`${API_BASE}/orders/${orderId}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -561,7 +550,6 @@ const OrderHistory = () => {
       }
 
       const data = await response.json();
-      console.log("📋 Order details fetched:", data);
       setOrderDetails(data);
     } catch (err) {
       console.error("❌ Error fetching order details:", err);
@@ -597,16 +585,9 @@ const OrderHistory = () => {
     <>
       <div className="order-history-page">
         <div className="order-history-container">
-          {/* Header */}
+          {/* Header - Keeping original styling */}
           <div className="order-history-header">
             <div className="header-content">
-              <button 
-                className="back-button"
-                onClick={() => navigate(-1)}
-                aria-label="Go back"
-              >
-                <i className="fas fa-arrow-left"></i>
-              </button>
               <h1 className="page-title">Order History</h1>
             </div>
             <p className="page-subtitle">
@@ -614,7 +595,7 @@ const OrderHistory = () => {
             </p>
           </div>
 
-          {/* Stats Summary */}
+          {/* Stats Summary - Mobile Optimized */}
           <div className="order-stats">
             <div className="stat-card">
               <div className="stat-value">{orders.length}</div>
@@ -647,25 +628,28 @@ const OrderHistory = () => {
             </div>
           </div>
 
-          {/* Filter Tabs */}
+          {/* Filter Tabs - Mobile Optimized */}
           <div className="filter-tabs">
             <button
               className={`filter-tab ${filter === "all" ? "active" : ""}`}
               onClick={() => setFilter("all")}
             >
-              All Orders
+              <i className="fas fa-list-alt"></i>
+              <span className="filter-text">All</span>
             </button>
             <button
               className={`filter-tab ${filter === "pending" ? "active" : ""}`}
               onClick={() => setFilter("pending")}
             >
-              Pending
+              <i className="fas fa-clock"></i>
+              <span className="filter-text">Pending</span>
             </button>
             <button
               className={`filter-tab ${filter === "completed" ? "active" : ""}`}
               onClick={() => setFilter("completed")}
             >
-              Completed
+              <i className="fas fa-check-circle"></i>
+              <span className="filter-text">Completed</span>
             </button>
           </div>
 
@@ -710,7 +694,7 @@ const OrderHistory = () => {
             </div>
           )}
 
-          {/* Orders List */}
+          {/* Orders List - Mobile Optimized */}
           {!loading && !error && filteredOrders.length > 0 && (
             <div className="orders-list">
               {filteredOrders.map(order => (
@@ -718,7 +702,7 @@ const OrderHistory = () => {
                   key={order.order_id} 
                   className={`order-card ${expandedOrder === order.order_id ? "expanded" : ""}`}
                 >
-                  {/* Order Header */}
+                  {/* Order Header - Mobile Optimized */}
                   <div 
                     className="order-header"
                     onClick={() => toggleOrderExpansion(order.order_id)}
@@ -736,7 +720,8 @@ const OrderHistory = () => {
                     
                     <div className="order-status-section">
                       <div className={`status-badge ${getStatusBadgeClass(order)}`}>
-                        {getStatusText(order)}
+                        <i className={`fas ${getStatusBadgeClass(order) === 'status-completed' ? 'fa-check-circle' : 'fa-clock'}`}></i>
+                        <span className="status-text">{getStatusText(order)}</span>
                       </div>
                       <div className="order-amount">
                         £{parseFloat(order.total || order.subtotal || 0).toFixed(2)}
@@ -754,7 +739,7 @@ const OrderHistory = () => {
                     </div>
                   </div>
 
-                  {/* Collapsed Preview */}
+                  {/* Collapsed Preview - Mobile Optimized */}
                   {expandedOrder !== order.order_id && (
                     <div className="order-preview">
                       <div className="preview-item">
@@ -765,10 +750,20 @@ const OrderHistory = () => {
                         <i className="fas fa-calendar-check"></i>
                         <span>Est. Delivery: {getEstimatedDelivery(order)}</span>
                       </div>
+                      <div className="preview-action">
+                        <button 
+                          className="quick-action-btn"
+                          onClick={(e) => handleViewFullDetails(order.order_id, e)}
+                          aria-label="View full details"
+                        >
+                          <i className="fas fa-eye"></i>
+                          <span>View Details</span>
+                        </button>
+                      </div>
                     </div>
                   )}
 
-                  {/* Expanded Details */}
+                  {/* Expanded Details - Mobile Optimized */}
                   {expandedOrder === order.order_id && (
                     <div className="order-details">
                       {/* Schedule Info */}
@@ -780,38 +775,52 @@ const OrderHistory = () => {
                           <div className="schedule-grid">
                             {order.collect_slot && (
                               <div className="schedule-item">
-                                <span className="schedule-label">Pickup:</span>
-                                <span className="schedule-value">
-                                  {formatDateTimeDisplay(order.collect_slot)}
-                                </span>
+                                <div className="schedule-icon-small">
+                                  <i className="fas fa-truck-loading"></i>
+                                </div>
+                                <div className="schedule-details-compact">
+                                  <span className="schedule-label">Pickup:</span>
+                                  <span className="schedule-value">
+                                    {formatDateTimeDisplay(order.collect_slot)}
+                                  </span>
+                                </div>
                               </div>
                             )}
                             {order.delivery_slot && (
                               <div className="schedule-item">
-                                <span className="schedule-label">Delivery:</span>
-                                <span className="schedule-value">
-                                  {formatDateTimeDisplay(order.delivery_slot)}
-                                </span>
+                                <div className="schedule-icon-small">
+                                  <i className="fas fa-truck"></i>
+                                </div>
+                                <div className="schedule-details-compact">
+                                  <span className="schedule-label">Delivery:</span>
+                                  <span className="schedule-value">
+                                    {formatDateTimeDisplay(order.delivery_slot)}
+                                  </span>
+                                </div>
                               </div>
                             )}
                           </div>
                         </div>
                       )}
 
-                      {/* Order Items */}
+                      {/* Order Items - Mobile Optimized */}
                       {order.items && order.items.length > 0 && (
                         <div className="details-section">
                           <h4 className="details-title">
                             <i className="fas fa-list"></i> Items ({order.items.length})
                           </h4>
-                          <div className="items-list">
+                          <div className="items-list-compact">
                             {order.items.map((item, index) => (
-                              <div key={index} className="item-row">
-                                <span className="item-name">{item.product_name}</span>
-                                <span className="item-quantity">x{item.quantity}</span>
-                                <span className="item-price">
-                                  £{((item.price_at_purchase || 0) * item.quantity).toFixed(2)}
-                                </span>
+                              <div key={index} className="item-row-compact">
+                                <div className="item-info-compact">
+                                  <span className="item-name-compact">{item.product_name}</span>
+                                  <div className="item-details-compact">
+                                    <span className="item-quantity-compact">x{item.quantity}</span>
+                                    <span className="item-price-compact">
+                                      £{((item.price_at_purchase || 0) * item.quantity).toFixed(2)}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -824,65 +833,89 @@ const OrderHistory = () => {
                           <h4 className="details-title">
                             <i className="fas fa-sticky-note"></i> Special Instructions
                           </h4>
-                          <div className="order-notes">
+                          <div className="order-notes-compact">
                             <p>{order.notes}</p>
                           </div>
                         </div>
                       )}
 
-                      {/* Action Buttons */}
-                      <div className="action-buttons">
+                      {/* Mobile Action Buttons */}
+                      <div className="mobile-action-buttons">
                         <button 
-                          className="action-btn view-details-btn"
+                          className="mobile-action-btn view-details-btn"
                           onClick={(e) => handleViewFullDetails(order.order_id, e)}
                           disabled={loadingDetails && selectedOrder === order.order_id}
                         >
                           {loadingDetails && selectedOrder === order.order_id ? (
                             <>
-                              <div className="btn-spinner"></div>
-                              Loading...
+                              <div className="btn-spinner-small"></div>
+                              <span>Loading...</span>
                             </>
                           ) : (
                             <>
-                              <i className="fas fa-eye"></i> View Full Details
+                              <i className="fas fa-eye"></i>
+                              <span>View Full Details</span>
                             </>
                           )}
                         </button>
                         <button 
-                          className="action-btn reorder-btn"
+                          className="mobile-action-btn reorder-btn"
                           onClick={() => navigate("/quick-booking")}
                         >
-                          <i className="fas fa-redo"></i> Reorder
+                          <i className="fas fa-redo"></i>
+                          <span>Reorder</span>
                         </button>
                       </div>
 
-                      {/* Payment Summary */}
-                      <div className="payment-summary">
+                      {/* Payment Summary - Mobile Optimized */}
+                      <div className="payment-summary-compact">
                         <h4 className="details-title">
                           <i className="fas fa-receipt"></i> Payment Summary
                         </h4>
-                        <div className="summary-grid">
-                          <div className="summary-row">
+                        <div className="summary-grid-compact">
+                          <div className="summary-row-compact">
                             <span>Subtotal:</span>
                             <span>£{parseFloat(order.subtotal || 0).toFixed(2)}</span>
                           </div>
                           {order.tip && order.tip > 0 && (
-                            <div className="summary-row">
+                            <div className="summary-row-compact">
                               <span>Tip:</span>
                               <span>£{parseFloat(order.tip).toFixed(2)}</span>
                             </div>
                           )}
-                          <div className="summary-row total-row">
+                          <div className="summary-row-compact total-row">
                             <span>Total:</span>
                             <span>£{parseFloat(order.total || order.subtotal || 0).toFixed(2)}</span>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Quick Actions Footer */}
+                      <div className="quick-actions-footer">
+                        <button 
+                          className="close-details-btn"
+                          onClick={() => toggleOrderExpansion(order.order_id)}
+                        >
+                          <i className="fas fa-times"></i>
+                          <span>Close Details</span>
+                        </button>
                       </div>
                     </div>
                   )}
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Back to Top Button for Mobile */}
+          {filteredOrders.length > 3 && (
+            <button 
+              className="back-to-top-btn"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              aria-label="Back to top"
+            >
+              <i className="fas fa-arrow-up"></i>
+            </button>
           )}
         </div>
       </div>

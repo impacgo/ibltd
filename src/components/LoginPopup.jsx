@@ -348,94 +348,61 @@ const LoginPopup = ({ close, onSuccess }) => {
     }
   };
 
-  // -------------------------------------------------------
-  // GOOGLE LOGIN (ENHANCED FOR PRODUCTION)
-  // -------------------------------------------------------
-  const handleGoogleLogin = async () => {
-    setErrorMsg("");
-    setSuccessMsg("");
-    setLoading(true);
+// -------------------------------------------------------
+// GOOGLE LOGIN (FINAL & LIVE SAFE)
+// -------------------------------------------------------
+const handleGoogleLogin = async () => {
+  setErrorMsg("");
+  setLoading(true);
 
-    try {
-      const auth = getAuth(app);
-      const provider = new GoogleAuthProvider();
-      
-      // Add these scopes for better compatibility
-      provider.addScope('profile');
-      provider.addScope('email');
-      
-      // Configure OAuth settings
-      provider.setCustomParameters({
-        prompt: 'select_account' // Force account selection
-      });
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
 
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
 
-      // Enhanced error handling for production
-      if (!user || !user.email) {
-        throw new Error("Google authentication failed - no user data received");
-      }
+    if (!user) throw new Error("No user returned");
 
-      // Send googleSignIn to backend with better error handling
-      const res = await fetch(`${API_BASE}/login`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          identifier: user.email,
-          name: user.displayName || user.email.split('@')[0],
-          googleSignIn: true,
-          photoURL: user.photoURL || null,
-          uid: user.uid // Send Firebase UID for better tracking
-        }),
-      });
+    // 🔐 MUST: Get Firebase ID Token
+    const idToken = await user.getIdToken(true);
 
-      if (!res.ok) {
-        const payload = await safeJson(res);
-        // Check if it's a user creation error (user doesn't exist)
-        if (payload.message && payload.message.includes("not exist") || res.status === 404) {
-          // Try to create user via signup endpoint for Google users
-          return await handleGoogleSignup(user);
-        }
-        setErrorMsg(payload.message || `Google login failed (${res.status})`);
-        setLoading(false);
-        return;
-      }
+    const res = await fetch(`${API_BASE}/google-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken }),
+    });
 
-      const data = await safeJson(res);
-      if (data.success === true) {
-        saveSession({ 
-          token: data.token, 
-          user_id: data.user_id, 
-          identifier: user.email 
-        });
-        onSuccess && onSuccess();
-        close && close();
-      } else {
-        setErrorMsg(data.message || "Google login failed");
-      }
-    } catch (err) {
-      console.error("Google auth error:", err);
-      
-      // More specific error messages for production
-      if (err.code === 'auth/popup-blocked') {
-        setErrorMsg("Popup blocked. Please allow popups for Google login.");
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        setErrorMsg("Login cancelled");
-      } else if (err.code === 'auth/network-request-failed') {
-        setErrorMsg("Network error. Please check your internet connection.");
-      } else if (err.code === 'auth/unauthorized-domain') {
-        setErrorMsg("Unauthorized domain. Please contact support.");
-      } else {
-        setErrorMsg("Google login failed. Please try again or use email/password.");
-      }
-    } finally {
-      setLoading(false);
+    const data = await safeJson(res);
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || "Google login failed");
     }
-  };
+
+    saveSession({
+      token: data.token,
+      user_id: data.user_id,
+      identifier: data.email,
+    });
+
+    onSuccess && onSuccess();
+    close && close();
+
+  } catch (err) {
+    console.error("Google Login Error:", err);
+
+    if (err.code === "auth/unauthorized-domain") {
+      setErrorMsg("Domain not authorized. Contact support.");
+    } else if (err.code === "auth/popup-blocked") {
+      setErrorMsg("Popup blocked. Allow popups and try again.");
+    } else {
+      setErrorMsg("Google login failed. Try again.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // -------------------------------------------------------
   // GOOGLE SIGNUP (Fallback when user doesn't exist)

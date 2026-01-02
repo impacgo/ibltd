@@ -1,72 +1,48 @@
 // src/components/Hero.jsx
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Typewriter } from "react-simple-typewriter";
 import "./Hero.css";
-import backgroundImage from "../images/herosec.webp";
 
 const API_BASE = "https://api.ironingboy.com";
 
 const Hero = () => {
   const [location, setLocation] = useState("");
-  const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupTitle, setPopupTitle] = useState("");
   const [popupMessage, setPopupMessage] = useState("");
   const [branches, setBranches] = useState([]);
-  const [popupType, setPopupType] = useState(""); // "success" or "error"
-  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
-  const locationCardRef = useRef(null);
+  const [popupType, setPopupType] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    requestAnimationFrame(() => setIsVisible(true));
+    document.body.style.overflowX = 'hidden';
+    return () => {
+      document.body.style.overflowX = 'visible';
+    };
   }, []);
 
-  // Calculate popup position based on screen size
-  const calculatePopupPosition = () => {
-    if (locationCardRef.current) {
-      const rect = locationCardRef.current.getBoundingClientRect();
-      const isMobile = window.innerWidth <= 768;
-      
-      if (isMobile) {
-        // For mobile: position popup over the location card
-        return {
-          top: rect.top + window.scrollY,
-          left: rect.left + window.scrollX,
-          width: rect.width,
-          transform: 'none'
-        };
-      } else {
-        // For desktop: center on screen
-        return {
-          top: '50%',
-          left: '50%',
-          width: 'auto',
-          transform: 'translate(-50%, -50%)'
-        };
-      }
-    }
-    // Default: center on screen
-    return {
-      top: '50%',
-      left: '50%',
-      width: 'auto',
-      transform: 'translate(-50%, -50%)'
-    };
-  };
-
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
+  const discountItems = useMemo(
+    () => [
+      "Students get 25% OFF on any booking!",
+      "Minimum top up - £20",
+      "If booking amount is £30 - £49 then 10% discount",
+      "If booking amount is £50 - £99 then 15% discount",
+      "If booking amount is £100 - £299 then 20% discount",
+      "If booking amount is more than £300 then 22% discount",
+      "Applicable on each customer's first 3 orders"
+    ],
+    []
+  );
 
   const handleQuickBook = () => {
     navigate("/quick-booking");
   };
 
-  // Enhanced service availability check with new API
+  const handleViewServices = () => {
+    navigate("/services");
+  };
+
   const checkServiceAvailability = async () => {
     if (!location.trim()) {
       showErrorPopup("Input Required", "Please enter your address or postal code.");
@@ -93,27 +69,20 @@ const Hero = () => {
       const data = await response.json();
 
       if (data.success) {
-        // Service is available
-        if (data.branches && data.branches.length > 0) {
-          // Store branch info for quick booking
-          localStorage.setItem("available_branches", JSON.stringify(data.branches));
-          localStorage.setItem("search_query", location.trim());
-          
-          // Show success popup
-          showSuccessPopup(
-            "Service Available! 🎉",
-            `We found ${data.branches.length} branch(es) serving your area.`,
-            data.branches
-          );
-          
-          // Auto navigate after 2 seconds if user doesn't close
-          setTimeout(() => {
-            if (showPopup) return; // If popup still open, don't navigate
-            handleQuickBook();
-          }, 2000);
-        }
+        localStorage.setItem("available_branches", JSON.stringify(data.branches));
+        localStorage.setItem("search_query", location.trim());
+        
+        showSuccessPopup(
+          "Service Available!",
+          `We found ${data.branches.length} branch(es) serving your area.`,
+          data.branches
+        );
+        
+        setTimeout(() => {
+          if (showPopup) return;
+          handleQuickBook();
+        }, 2000);
       } else {
-        // Service not available
         showErrorPopup(
           "Service Not Available",
           data.message || `Sorry, we don't currently serve "${location.trim()}".`
@@ -123,56 +92,29 @@ const Hero = () => {
       console.error("Error checking service:", error);
       showErrorPopup(
         "Connection Error",
-        "Unable to check service availability. Please try again later or contact support."
+        "Unable to check service availability. Please try again later."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // Show success popup
   const showSuccessPopup = (title, message, branchesData) => {
     setPopupTitle(title);
     setPopupMessage(message);
     setBranches(branchesData || []);
     setPopupType("success");
-    const position = calculatePopupPosition();
-    setPopupPosition(position);
     setShowPopup(true);
-    
-    // Scroll to popup on mobile
-    if (window.innerWidth <= 768) {
-      setTimeout(() => {
-        const popupElement = document.querySelector('.popup-content');
-        if (popupElement) {
-          popupElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      }, 100);
-    }
   };
 
-  // Show error popup
   const showErrorPopup = (title, message) => {
     setPopupTitle(title);
     setPopupMessage(message);
     setBranches([]);
     setPopupType("error");
-    const position = calculatePopupPosition();
-    setPopupPosition(position);
     setShowPopup(true);
-    
-    // Scroll to popup on mobile
-    if (window.innerWidth <= 768) {
-      setTimeout(() => {
-        const popupElement = document.querySelector('.popup-content');
-        if (popupElement) {
-          popupElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      }, 100);
-    }
   };
 
-  // Close popup
   const closePopup = () => {
     setShowPopup(false);
     setPopupTitle("");
@@ -180,7 +122,6 @@ const Hero = () => {
     setBranches([]);
   };
 
-  // Navigate to booking after popup
   const proceedToBooking = () => {
     closePopup();
     setTimeout(() => handleQuickBook(), 100);
@@ -190,68 +131,30 @@ const Hero = () => {
     checkServiceAvailability();
   };
 
-  // Handle Enter key press
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleGetStarted();
     }
   };
 
-  const features = useMemo(
-    () => [
-      { icon: "👔", text: "Expert Fabric Care" },
-      { icon: "🚚", text: "Free Pickup & Delivery" },
-      { icon: "🧺", text: "Doorstep Collection & Drop-off" },
-      { icon: "✨", text: "Premium Stain Treatment" }
-    ],
-    []
-  );
-
-  const discountItems = useMemo(
-  () => [
-    "Students get 25% OFF on any booking",
-    "Minimum top-up: £20",
-    "15% OFF on bookings between £50 and £100",
-    "20% OFF on bookings above £100 up to £300",
-    "22% OFF on bookings above £300",
-    "Applicable to each customer's first 3 orders",
-  ],
-  []
-);
-
   return (
-    <section className={`hero ${isVisible ? "visible" : ""}`}>
-      {/* BACKGROUND */}
-      <div
-        className="hero-bg"
-        style={{
-          backgroundImage: `url(${backgroundImage})`
-        }}
-      />
-      <div className="hero-gradient" />
-
-      {/* Service Availability Popup */}
+    <section className="hero">
+      {/* Popup */}
       {showPopup && (
-        <div className="service-availability-popup">
+        <div className="service-popup">
           <div className="popup-overlay" onClick={closePopup}></div>
-          <div 
-            className="popup-content"
-            style={{
-              position: window.innerWidth <= 768 ? 'absolute' : 'fixed',
-              top: popupPosition.top,
-              left: popupPosition.left,
-              width: popupPosition.width,
-              transform: popupPosition.transform,
-              maxWidth: window.innerWidth <= 768 ? 'calc(100% - 40px)' : '500px'
-            }}
-          >
+          <div className="popup-content">
             <div className={`popup-header ${popupType}`}>
               <div className="popup-icon">
-                {popupType === "success" ? "✅" : "⚠️"}
+                {popupType === "success" ? (
+                  <i className="fas fa-check-circle"></i>
+                ) : (
+                  <i className="fas fa-exclamation-circle"></i>
+                )}
               </div>
               <h3>{popupTitle}</h3>
               <button className="popup-close" onClick={closePopup}>
-                ×
+                <i className="fas fa-times"></i>
               </button>
             </div>
             <div className="popup-body">
@@ -259,44 +162,39 @@ const Hero = () => {
               
               {popupType === "success" && branches.length > 0 && (
                 <div className="available-branches">
-                  <h4>Available Branches:</h4>
+                  <h4>
+                    <i className="fas fa-store"></i>
+                    Available Branches:
+                  </h4>
                   <div className="branches-list">
-                    {branches.slice(0, 3).map((branch, index) => (
+                    {branches.slice(0, 2).map((branch, index) => (
                       <div key={branch.id || index} className="branch-card">
-                        <div className="branch-icon">🏢</div>
+                        <div className="branch-icon">
+                          <i className="fas fa-building"></i>
+                        </div>
                         <div className="branch-info">
                           <div className="branch-name">{branch.name}</div>
-                          <div className="branch-postcodes">
-                            {branch.postcodes && branch.postcodes.length > 0 && (
-                              <span>Serves: {branch.postcodes.slice(0, 3).join(", ")}</span>
-                            )}
+                          <div className="branch-distance">
+                            <i className="fas fa-location-dot"></i>
+                            {branch.distance ? `${branch.distance} miles away` : "Nearby"}
                           </div>
                         </div>
                       </div>
                     ))}
-                    {branches.length > 3 && (
-                      <div className="branch-card more-branches">
-                        <div className="branch-icon">📋</div>
-                        <div className="branch-info">
-                          <div className="branch-name">+{branches.length - 3} more branches</div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
               
               {popupType === "error" && (
                 <div className="suggestions">
-                  <h4>Suggestions:</h4>
+                  <h4>
+                    <i className="fas fa-lightbulb"></i>
+                    Suggestions:
+                  </h4>
                   <ul>
-                    <li>• Try entering just the postcode (e.g., "SW1A 1AA")</li>
-                    <li>• Try entering the area name (e.g., "Westminster")</li>
-                    <li>• Check if you're in our <button onClick={() => {
-                      closePopup();
-                      navigate("/areas");
-                    }} className="inline-link">service areas list</button></li>
-                    <li>• Contact us for expansion requests</li>
+                    <li>Try entering just the postcode</li>
+                    <li>Try entering the area name</li>
+                    <li>Check our service areas</li>
                   </ul>
                 </div>
               )}
@@ -308,22 +206,18 @@ const Hero = () => {
                     Cancel
                   </button>
                   <button className="popup-btn-primary" onClick={proceedToBooking}>
-                    Proceed to Booking →
+                    <i className="fas fa-calendar-check"></i>
+                    Book Now
                   </button>
                 </>
               ) : (
                 <>
                   <button className="popup-btn-secondary" onClick={closePopup}>
-                    Try Another Location
+                    Try Again
                   </button>
-                  <button 
-                    className="popup-btn-primary" 
-                    onClick={() => {
-                      closePopup();
-                      navigate("/areas");
-                    }}
-                  >
-                    View Service Areas
+                  <button className="popup-btn-primary" onClick={() => navigate("/areas")}>
+                    <i className="fas fa-map"></i>
+                    View Areas
                   </button>
                 </>
               )}
@@ -332,143 +226,172 @@ const Hero = () => {
         </div>
       )}
 
-      <div className="hero-container">
-        {/* LEFT SECTION — QUICK BOOKING CTA */}
-        <div className="hero-left">
-          <div className="hero-badge">✨ Trusted by 10,000+ Happy Customers</div>
-
-          <h1 className="hero-title">
-            <span className="title-main">Where Luxury Meets</span>
-            <span className="title-type">
-              <Typewriter
-                words={["Freshness", "Convenience", "Perfection", "Care"]}
-                loop
-                cursor
-                cursorStyle="|"
-                typeSpeed={60}
-                deleteSpeed={45}
-                delaySpeed={1500}
-              />
-            </span>
-          </h1>
-
-          <p className="hero-subtext">
-            Experience the future of laundry care — advanced technology combined
-            with premium techniques for spotless results.
-          </p>
-
-          {/* QUICK BOOKING CARD */}
-          <div className="quick-wrapper">
-            <div className="quick-booking-card">
-              <div className="quick-tag">QUICK BOOKING</div>
-
-              <h3 className="quick-title">Book First Order</h3>
-
-              <p className="quick-desc">
-                Quick booking lets you place an order without selecting itemized services.
-                Perfect for your first laundry experience!
-              </p>
-
-              <button
-                className="quick-btn"
-                onClick={handleQuickBook}
-                disabled={loading}
-              >
-                Quick Book Now <i className="fas fa-shopping-bag" />
-              </button>
+      <div className="hero-main-content">
+        <div className="hero-container">
+          {/* Main Content */}
+          <div className="hero-content">
+            <div className="hero-badge">
+              <i className="fas fa-crown"></i>
+              <span>Professional Laundry Service</span>
             </div>
-          </div>
-
-          {/* TRUST */}
-          <div className="hero-trust">
-            <div className="trust-item">🟢 Same-Day Service</div>
-            <div className="trust-item">🛡️ Quality Guarantee</div>
-            <div className="trust-item">💸 Minimum charges £20</div>
-          </div>
-        </div>
-
-        {/* RIGHT SECTION — FIND SERVICE CARD */}
-        <div className="hero-right">
-          <div className="feature-list">
-            {features.map((item, i) => (
-              <div 
-                className="feature-card" 
-                key={i}
-              >
-                <div className="feature-icon">
-                  {item.icon}
-                </div>
-                <div className="feature-text">
-                  {item.text}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="location-card" ref={locationCardRef}>
-            <div className="location-header">
-              <i className="fas fa-crosshairs" />
-              <span>Find Service in Your Area</span>
-            </div>
-
-            <div className="location-input-wrap">
-              <input
-                type="text"
-                placeholder="Enter your address or zip code..."
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={loading}
-              />
-
-              <button
-                className={`location-btn ${location ? "active" : ""} ${loading ? "loading" : ""}`}
-                onClick={handleGetStarted}
-                disabled={loading || !location.trim()}
-              >
-                {loading ? (
-                  <>
-                    <span className="loading-spinner"></span>
-                    Checking...
-                  </>
-                ) : (
-                  <>
-                    Check <i className="fas fa-arrow-right" />
-                  </>
-                )}
-              </button>
-            </div>
-
-            <p className="location-hint">
-              <i className="fas fa-info-circle" />
-              Enter your location to check availability & pricing
+            
+            <h1 className="hero-title">
+              Where Luxury Meets
+              <span className="title-accent"> Freshness</span>
+            </h1>
+            
+            <p className="hero-subtitle">
+              Experience the future of laundry care — advanced technology combined with premium techniques for spotless results. Professional care delivered to your doorstep.
             </p>
+            <div className="hero-cta-buttons">
+              <button className="primary-cta" onClick={handleQuickBook}>
+                <i className="fas fa-bolt"></i>
+                Quick Booking
+              </button>
+              <button className="secondary-cta" onClick={handleViewServices}>
+                <i className="fas fa-list"></i>
+                View Services
+              </button>
+            </div>            
+
+            
+            <div className="hero-stats">
+              <div className="stat-item">
+                <div className="stat-number">24/7</div>
+                <div className="stat-label">Support</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-number">100%</div>
+                <div className="stat-label">Quality</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-number">99%</div>
+                <div className="stat-label">Satisfaction</div>
+              </div>
+            </div>
+            
+
+          </div>
+
+          {/* Services Cards */}
+          <div className="services-cards">
+            <div className="service-card" style={{background:" rgba(255, 255, 255, 0.08)",border:"none"}}>
+              <div className="service-card-icon">
+                <i className="fas fa-calendar-check"></i>
+              </div>
+              <h3 className="service-card-title">Same-Day Service</h3>
+              <p className="service-card-desc">
+                Get your laundry done and delivered on the same day
+              </p>
+            </div>
+
+            <div className="service-card" style={{background:" rgba(255, 255, 255, 0.08)",border:"none"}}>
+              <div className="service-card-icon">
+                <i className="fas fa-shield-alt"></i>
+              </div>
+              <h3 className="service-card-title">Quality Guarantee</h3>
+              <p className="service-card-desc">
+                We guarantee the highest quality standards for every item
+              </p>
+            </div>
+
+            <div className="service-card" style={{background:" rgba(255, 255, 255, 0.08)",border:"none"}}>
+              <div className="service-card-icon">
+                <i className="fas fa-truck"></i>
+              </div>
+              <h3 className="service-card-title">Free Pickup & Delivery</h3>
+              <p className="service-card-desc">
+                Convenient pickup and delivery at no extra cost
+              </p>
+            </div>
+
+            <div className="service-card" style={{background:" rgba(255, 255, 255, 0.08)",border:"none"}}>
+              <div className="service-card-icon">
+                <i className="fas fa-tshirt"></i>
+              </div>
+              <h3 className="service-card-title">Expert Fabric Care</h3>
+              <p className="service-card-desc">
+                Specialized care for all fabric types and garments
+              </p>
+            </div>
+          </div>
+
+          {/* Location Check Section */}
+          <div className="location-section">
+            <div className="location-header">
+              <h2 className="location-title">Check Service Availability</h2>
+              <p className="location-subtitle">Enter your postcode to see if we serve your area</p>
+            </div>
+            
+            <div className="location-check-wrapper">
+              <div className="location-input-wrapper">
+                {/* <div className="input-icon">
+                  <i className="fas fa-map-marker-alt"></i>
+                </div> */}
+                <input
+                  type="text"
+                  className="location-input"
+                  placeholder="Enter your postcode or address"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading}
+                />
+                <button
+                  className={`location-check-btn ${location.trim() ? 'active' : ''} ${loading ? 'loading' : ''}`}
+                  onClick={handleGetStarted}
+                  disabled={loading || !location.trim()}
+                >
+                  {loading ? (
+                    <>
+                      <span className="loading-spinner"></span>
+                      Checking...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-search"></i>
+                      Check Availability
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="location-hint">
+                <i className="fas fa-info-circle"></i>
+                <span>Try entering just your postcode for faster results</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* DISCOUNT MARQUEE */}
-      <div className="hero-discount-wrapper">
-        <div className="hero-discount-label">Intro Discounts</div>
-
-        <div className="hero-discount-marquee">
-          <div className="discount-track">
-            {discountItems.map((item, idx) => (
-              <span key={`d1-${idx}`} className="discount-item">
-                {item}
-              </span>
-            ))}
-            {discountItems.map((item, idx) => (
-              <span key={`d2-${idx}`} className="discount-item">
-                {item}
-              </span>
-            ))}
+      
+      {/* Discount Section - Fixed at bottom */}
+      <div className="hero-discount-section">
+        <div className="hero-discount-wrapper">
+          <div className="hero-discount-label">
+            <i className="fas fa-tag"></i>
+            <span>Special Offers</span>
+          </div>
+          
+          <div className="hero-discount-marquee">
+            <div className="discount-track">
+              {discountItems.map((item, idx) => (
+                <span key={`d1-${idx}`} className="discount-item">
+                  <i className="fas fa-gift"></i>
+                  {item}
+                </span>
+              ))}
+              {discountItems.map((item, idx) => (
+                <span key={`d2-${idx}`} className="discount-item">
+                  <i className="fas fa-gift"></i>
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
     </section>
   );
 };
-
 
 export default Hero;

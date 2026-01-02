@@ -6,20 +6,6 @@ import { useAuth } from "../context/AuthContext";
 
 const API_BASE = "https://api.ironingboy.com";
 
-// SLUGIFY FUNCTION - Define it outside the component so it's always available
-const slugify = (text) => {
-  if (!text) return '';
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
-};
-
 // Optimized SVG Icons with better styling
 const AppleIcon = () => (
   <svg className="store-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -70,20 +56,17 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServiceOpen, setIsServiceOpen] = useState(false);
   const [isMobileServiceOpen, setIsMobileServiceOpen] = useState(false);
-  const [categories, setCategories] = useState([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [hideHeader, setHideHeader] = useState(false);
   const [lastY, setLastY] = useState(0);
   const [showLogin, setShowLogin] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [userInitial, setUserInitial] = useState("U");
-  const [loginTriggered, setLoginTriggered] = useState(false);
 
   // Use AuthContext for user state
   const { user, logout } = useAuth();
 
   const profileRef = useRef(null);
-  const dropdownRef = useRef(null);
   const menuButtonRef = useRef(null);
 
   const location = useLocation();
@@ -148,28 +131,9 @@ const Header = () => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setShowProfileMenu(false);
       }
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsServiceOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Load categories
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/categories`);
-        if (res.ok) {
-          const json = await res.json();
-          setCategories(json.data || []);
-        }
-      } catch (error) {
-        console.error("Failed to load categories:", error);
-      }
-    };
-    loadCategories();
   }, []);
 
   // Handle scroll behavior
@@ -211,7 +175,7 @@ const Header = () => {
 
   const isActive = (path) => location.pathname === path ? "active" : "";
 
-  // FIXED: Handle logout properly without navigation
+  // Handle logout properly
   const handleLogout = useCallback(async () => {
     try {
       console.log("🚪 Logging out user");
@@ -226,11 +190,6 @@ const Header = () => {
       // Reset user initial
       setUserInitial("U");
       
-      // Reset login triggered state
-      setLoginTriggered(false);
-      
-      // Ensure we don't navigate anywhere
-      // Just stay on the current page
       console.log("✅ Logout successful");
     } catch (error) {
       console.error("❌ Logout error:", error);
@@ -254,14 +213,15 @@ const Header = () => {
     document.body.style.overflow = "";
   }, []);
 
-  const toggleServiceDropdown = useCallback((e) => {
+  // Navigate to services page instead of showing dropdown
+  const handleServicesClick = useCallback((e) => {
+    e.preventDefault();
     e.stopPropagation();
-    setIsServiceOpen(prev => !prev);
-  }, []);
-
-  const toggleMobileServiceDropdown = useCallback(() => {
-    setIsMobileServiceOpen(prev => !prev);
-  }, []);
+    navigate("/services");
+    setIsServiceOpen(false);
+    setIsMobileServiceOpen(false);
+    closeMenu();
+  }, [navigate, closeMenu]);
 
   // Professional app store button handlers
   const handleAppStoreClick = (e) => {
@@ -276,7 +236,7 @@ const Header = () => {
     window.open("https://play.google.com", "_blank", "noopener,noreferrer");
   };
 
-  // Handle profile icon click - FIXED
+  // Handle profile icon click
   const handleProfileIconClick = useCallback(() => {
     if (!user) {
       // If user is not logged in, show login popup
@@ -291,7 +251,6 @@ const Header = () => {
   const handleLoginSuccess = useCallback(() => {
     console.log("✅ Login successful");
     setShowLogin(false);
-    setLoginTriggered(false);
     // AuthContext will automatically update the user state
   }, []);
 
@@ -314,7 +273,6 @@ const Header = () => {
   // Handle login popup close
   const handleLoginClose = useCallback(() => {
     setShowLogin(false);
-    setLoginTriggered(false);
   }, []);
 
   return (
@@ -336,39 +294,15 @@ const Header = () => {
                   <Link className={`nav-link ${isActive("/")}`} to="/">Home</Link>
                 </li>
 
-                {/* SERVICES DROPDOWN */}
-                <li className="dropdown" ref={dropdownRef}>
-                  <button
-                    className={`nav-link dropdown-toggle ${isServiceOpen ? "active" : ""}`}
-                    onClick={toggleServiceDropdown}
-                    aria-expanded={isServiceOpen}
-                    aria-haspopup="true"
+                {/* SERVICES LINK - Navigates to Services component */}
+                <li>
+                  <Link 
+                    className={`nav-link ${isActive("/services")}`} 
+                    to="/services"
+                    onClick={() => setIsServiceOpen(false)}
                   >
-                    Services <ArrowIcon isOpen={isServiceOpen} />
-                  </button>
-
-                  <div className={`dropdown-container ${isServiceOpen ? "show" : ""}`}>
-                    <ul className="dropdown-menu" role="menu">
-                      {categories.length > 0 ? (
-                        categories.map((category) => (
-                          <li key={category.id}>
-                            <Link 
-                              to={`/category/${slugify(category.name)}`} 
-                              onClick={() => setIsServiceOpen(false)}
-                              className="dropdown-item"
-                            >
-                              <span className="dropdown-icon">✨</span>
-                              <span className="dropdown-text">{category.name}</span>
-                            </Link>
-                          </li>
-                        ))
-                      ) : (
-                        <li className="dropdown-loading">
-                          <span className="dropdown-placeholder">Loading services...</span>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
+                    Services
+                  </Link>
                 </li>
 
                 <li><Link className={`nav-link ${isActive("/areas")}`} to="/areas">Areas</Link></li>
@@ -406,7 +340,7 @@ const Header = () => {
                 </button>
               </div>
 
-              {/* User Profile Area - FIXED */}
+              {/* User Profile Area */}
               <div ref={profileRef} className="profile-area">
                 <div 
                   className="profile-icon-container"
@@ -464,16 +398,16 @@ const Header = () => {
               </div>
             </div>
 
-            {/* Mobile Menu Button - At the end (right side) */}
-            <button
-              ref={menuButtonRef}
-              className="mobile-menu-btn"
-              onClick={toggleMenu}
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMenuOpen}
-            >
-              <MenuIcon />
-            </button>
+<button
+  ref={menuButtonRef}
+  className="mobile-menu-btn"
+  onClick={toggleMenu}
+  aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+  aria-expanded={isMenuOpen}
+>
+
+  <MenuIcon />
+</button>
           </div>
         </div>
 
@@ -514,69 +448,63 @@ const Header = () => {
                   to="/" 
                   onClick={closeMenu}
                 >
-                  <span className="menu-item-icon">🏠</span>
+                  <span className="menu-item-icon">
+                    <i className="fas fa-home"></i>
+                  </span>
                   <span className="menu-item-text">Home</span>
                 </Link>
               </li>
 
-              {/* Mobile Services Dropdown */}
-              <li className="mobile-dropdown-item">
-                <button
-                  className={`mobile-menu-item mobile-dropdown-toggle ${isMobileServiceOpen ? "active" : ""}`}
-                  onClick={toggleMobileServiceDropdown}
-                  aria-expanded={isMobileServiceOpen}
+              {/* Mobile Services Link - Navigates to Services component */}
+              <li>
+                <Link 
+                  className={`mobile-menu-item ${isActive("/services")}`} 
+                  to="/services" 
+                  onClick={closeMenu}
                 >
-                  <span className="menu-item-icon">✨</span>
+                  <span className="menu-item-icon">
+                    <i className="fas fa-sparkles"></i>
+                  </span>
                   <span className="menu-item-text">Services</span>
-                  <ArrowIcon isOpen={isMobileServiceOpen} />
-                </button>
-
-                <div className={`mobile-dropdown-content ${isMobileServiceOpen ? "show" : ""}`}>
-                  {categories.length > 0 ? (
-                    categories.map((category) => (
-                      <Link 
-                        key={category.id}
-                        to={`/category/${slugify(category.name)}`} 
-                        onClick={closeMenu}
-                        className="dropdown-link"
-                      >
-                        {category.name}
-                      </Link>
-                    ))
-                  ) : (
-                    <span className="dropdown-placeholder">Loading...</span>
-                  )}
-                </div>
+                </Link>
               </li>
 
               <li>
                 <Link className="mobile-menu-item" to="/areas" onClick={closeMenu}>
-                  <span className="menu-item-icon">📍</span>
+                  <span className="menu-item-icon">
+                    <i className="fas fa-map-marker-alt"></i>
+                  </span>
                   <span className="menu-item-text">Areas</span>
                 </Link>
               </li>
               <li>
                 <Link className="mobile-menu-item" to="/pricing" onClick={closeMenu}>
-                  <span className="menu-item-icon">💰</span>
+                  <span className="menu-item-icon">
+                    <i className="fas fa-tag"></i>
+                  </span>
                   <span className="menu-item-text">Pricing</span>
                 </Link>
               </li>
               <li>
                 <Link className="mobile-menu-item" to="/how-it-works" onClick={closeMenu}>
-                  <span className="menu-item-icon">⚙️</span>
+                  <span className="menu-item-icon">
+                    <i className="fas fa-cogs"></i>
+                  </span>
                   <span className="menu-item-text">How It Works</span>
                 </Link>
               </li>
               <li>
                 <Link className="mobile-menu-item" to="/faq" onClick={closeMenu}>
-                  <span className="menu-item-icon">❓</span>
+                  <span className="menu-item-icon">
+                    <i className="fas fa-question-circle"></i>
+                  </span>
                   <span className="menu-item-text">FAQ</span>
                 </Link>
               </li>
 
               <div className="mobile-nav-divider"></div>
 
-              {/* User Section - FIXED */}
+              {/* User Section */}
               {!user ? (
                 <>
                   <li>
@@ -587,7 +515,9 @@ const Header = () => {
                         setShowLogin(true); 
                       }}
                     >
-                      <span className="menu-item-icon">👤</span>
+                      <span className="menu-item-icon">
+                        <i className="fas fa-user-circle"></i>
+                      </span>
                       <span className="menu-item-text">Login / Signup</span>
                     </button>
                   </li>
@@ -604,7 +534,9 @@ const Header = () => {
                         goToProfile();
                       }}
                     >
-                      <span className="menu-item-icon">👤</span>
+                      <span className="menu-item-icon">
+                        <i className="fas fa-user"></i>
+                      </span>
                       <span className="menu-item-text">Personal Info</span>
                     </button>
                   </li>
@@ -615,7 +547,9 @@ const Header = () => {
                         goToOrderHistory();
                       }}
                     >
-                      <span className="menu-item-icon">📦</span>
+                      <span className="menu-item-icon">
+                        <i className="fas fa-history"></i>
+                      </span>
                       <span className="menu-item-text">Order History</span>
                     </button>
                   </li>
@@ -624,7 +558,9 @@ const Header = () => {
                       className="mobile-profile-btn logout" 
                       onClick={handleLogout}
                     >
-                      <span className="menu-item-icon">🚪</span>
+                      <span className="menu-item-icon">
+                        <i className="fas fa-sign-out-alt"></i>
+                      </span>
                       <span className="menu-item-text">Logout</span>
                     </button>
                   </li>

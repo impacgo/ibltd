@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./AddAddressModal.css";
 
-export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
+export default function AddAddressModal({ open, onClose, onSaved, apiBase, isGuest = false }) {
   const [loading, setLoading] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [placePredictions, setPlacePredictions] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -14,12 +13,12 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
   const [isManualEdit, setIsManualEdit] = useState(false);
   const [isGeolocating, setIsGeolocating] = useState(false);
   
-  // User profile data state
-  const [userProfile, setUserProfile] = useState({
+  // User data state (for both logged in and guest users)
+  const [userData, setUserData] = useState({
     name: "",
     phone: "",
     email: "",
-    loading: true
+    loading: false
   });
   
   const mapRef = useRef(null);
@@ -33,7 +32,7 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
     name: "",
     address_type: "home",
     phone: "",
-    email: "", // Added email field
+    email: "", // REQUIRED FIELD
     full_address: "",
     house_number: "",
     street_name: "",
@@ -49,10 +48,10 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
 
   const GOOGLE_API_KEY = "AIzaSyD56pnfmwCIdcJ_xerUT75wRxeR71uMPcc";
 
-  // Fetch user profile when modal opens
+  // Initialize when modal opens
   useEffect(() => {
     if (open) {
-      fetchUserProfile();
+      loadUserData();
       
       if (!window.google) {
         loadGoogleMaps();
@@ -83,14 +82,42 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
     }
   }, [mapLoaded, open]);
 
-  // Fetch user profile from backend
+  // Load user data from localStorage or API
+  const loadUserData = () => {
+    if (isGuest) {
+      // For guest users, load from localStorage
+      const guestName = localStorage.getItem('guestName') || '';
+      const guestPhone = localStorage.getItem('guestPhone') || '';
+      const guestEmail = localStorage.getItem('guestEmail') || '';
+      
+      setUserData({
+        name: guestName,
+        phone: guestPhone,
+        email: guestEmail,
+        loading: false
+      });
+
+      // Auto-fill form with guest data
+      setForm(prev => ({
+        ...prev,
+        name: guestName,
+        phone: guestPhone,
+        email: guestEmail
+      }));
+    } else {
+      // For logged in users, try to fetch from API
+      fetchUserProfile();
+    }
+  };
+
+  // Fetch user profile from backend (for logged in users)
   const fetchUserProfile = async () => {
-    setProfileLoading(true);
+    setUserData(prev => ({ ...prev, loading: true }));
     try {
       const token = localStorage.getItem("jwtToken");
       if (!token) {
-        console.warn("No JWT token found for profile fetch");
-        setUserProfile(prev => ({ ...prev, loading: false }));
+        console.warn("No JWT token found - user is guest");
+        setUserData(prev => ({ ...prev, loading: false }));
         return;
       }
 
@@ -105,14 +132,14 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
         const data = await response.json();
         console.log("✅ User profile fetched:", data);
         
-        setUserProfile({
+        setUserData({
           name: data.name || "",
           phone: data.phone || "",
           email: data.email || "",
           loading: false
         });
 
-        // Auto-fill name, phone, and email in form if they exist
+        // Auto-fill name, phone, and email in form
         setForm(prev => ({
           ...prev,
           name: data.name || prev.name,
@@ -121,44 +148,11 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
         }));
       } else {
         console.warn("Failed to fetch profile:", response.status);
-        setUserProfile(prev => ({ ...prev, loading: false }));
+        setUserData(prev => ({ ...prev, loading: false }));
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
-      setUserProfile(prev => ({ ...prev, loading: false }));
-    } finally {
-      setProfileLoading(false);
-    }
-  };
-
-  // Update user profile when user saves the address with new name/phone/email
-  const updateUserProfile = async (field, value) => {
-    const token = localStorage.getItem("jwtToken");
-    if (!token) {
-      console.warn("No JWT token found for profile update");
-      return false;
-    }
-
-    try {
-      const response = await fetch(`${apiBase}/profile`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ [field]: value }),
-      });
-
-      if (response.ok) {
-        console.log(`✅ ${field} updated successfully`);
-        return true;
-      } else {
-        console.warn(`Failed to update ${field}:`, response.status);
-        return false;
-      }
-    } catch (error) {
-      console.error(`Error updating ${field}:`, error);
-      return false;
+      setUserData(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -580,6 +574,11 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
     if (['full_address', 'house_number', 'street_name', 'city', 'postcode'].includes(field)) {
       setIsManualEdit(true);
     }
+    
+    // Save guest data to localStorage as they type
+    if (isGuest && ['name', 'phone', 'email'].includes(field)) {
+      localStorage.setItem(`guest${field.charAt(0).toUpperCase() + field.slice(1)}`, value);
+    }
   };
 
   const handleAddressTypeSelect = (type) => {
@@ -596,145 +595,187 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
     return re.test(String(email).toLowerCase());
   };
 
- const save = async () => {
-  // Enhanced validation
-  if (!form.name?.trim()) {
-    alert("Please enter your name");
-    return;
-  }
-  if (!form.phone?.trim()) {
-    alert("Please enter your phone number");
-    return;
-  }
-  if (!form.full_address?.trim()) {
-    alert("Please select or enter an address");
-    return;
-  }
-  if (!form.latitude || !form.longitude) {
-    alert("Please select a location on the map");
-    return;
-  }
+  const save = async () => {
+    // Enhanced validation
+    if (!form.name?.trim()) {
+      alert("Please enter your name");
+      return;
+    }
+    if (!form.phone?.trim()) {
+      alert("Please enter your phone number");
+      return;
+    }
+    
+    // Email is now REQUIRED
+    if (!form.email?.trim()) {
+      alert("Please enter your email address");
+      return;
+    }
+    
+    // Validate email format
+    if (!validateEmail(form.email.trim())) {
+      alert("Please enter a valid email address");
+      return;
+    }
+    
+    if (!form.full_address?.trim()) {
+      alert("Please select or enter an address");
+      return;
+    }
+    if (!form.latitude || !form.longitude) {
+      alert("Please select a location on the map");
+      return;
+    }
 
-  // Remove the specific phone validation regex check:
-  // Basic phone validation - only check if it has some digits
-  const phoneDigits = form.phone.replace(/\D/g, '');
-  if (phoneDigits.length < 5) { // Minimum 5 digits for any international number
-    alert("Please enter a valid phone number with at least 5 digits");
-    return;
-  }
+    // Basic phone validation
+    const phoneDigits = form.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 5) {
+      alert("Please enter a valid phone number with at least 5 digits");
+      return;
+    }
 
-  // Email validation (optional but if provided, must be valid)
-  if (form.email?.trim() && !validateEmail(form.email.trim())) {
-    alert("Please enter a valid email address or leave it empty");
-    return;
-  }
+    setLoading(true);
+    try {
+      // Prepare address data
+      const addressData = {
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(), // REQUIRED
+        address_type: form.address_type,
+        full_address: form.full_address.trim(),
+        additional_details: form.additional_details?.trim() || "",
+        pincode: form.pincode?.trim() || "",
+        latitude: parseFloat(form.latitude),
+        longitude: parseFloat(form.longitude),
+        house_number: form.house_number?.trim() || "",
+        street_name: form.street_name?.trim() || "",
+        postcode: form.postcode?.trim() || "",
+        city: form.city?.trim() || "",
+        state: form.state?.trim() || "",
+        country: form.country?.trim() || "",
+      };
 
-  setLoading(true);
-  try {
+      console.log("📤 Saving address:", addressData);
+
+      let savedAddress;
+      
+      if (isGuest) {
+        // For guest users, save to localStorage and return local object
+        const guestAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
+        const newAddress = {
+          ...addressData,
+          id: Date.now().toString(),
+          address_id: Date.now().toString(),
+          is_selected: guestAddresses.length === 0 // First address becomes default
+        };
+        
+        guestAddresses.push(newAddress);
+        localStorage.setItem('guestAddresses', JSON.stringify(guestAddresses));
+        
+        // Save guest email and phone for order creation
+        localStorage.setItem('guestEmail', form.email.trim());
+        localStorage.setItem('guestPhone', form.phone.trim());
+        localStorage.setItem('guestName', form.name.trim());
+        
+        savedAddress = newAddress;
+        console.log("✅ Guest address saved to localStorage:", savedAddress);
+      } else {
+        // For logged in users, save to API
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          throw new Error("Not authenticated. Please login again.");
+        }
+
+        // Update user profile with new email if changed
+        if (form.email.trim() !== userData.email && form.email.trim()) {
+          console.log("📝 Updating profile email...");
+          await updateUserProfile("email", form.email.trim());
+        }
+
+        const response = await fetch(`${apiBase}/addresses`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(addressData),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || data.error || `Failed to save address (Status: ${response.status})`);
+        }
+        
+        savedAddress = data.address || data;
+        console.log("✅ Address saved to API:", savedAddress);
+      }
+
+      // Reset form
+      setForm({
+        name: userData.name || "",
+        address_type: "home",
+        phone: userData.phone || "",
+        email: userData.email || "",
+        full_address: "",
+        house_number: "",
+        street_name: "",
+        postcode: "",
+        pincode: "",
+        city: "",
+        state: "",
+        country: "",
+        additional_details: "",
+        latitude: "",
+        longitude: "",
+      });
+      setSearchInput("");
+      setPlacePredictions([]);
+      setSelectedLocation(currentLocation);
+      
+      // Call onSaved callback with the saved address
+      onSaved(savedAddress);
+      onClose();
+      
+    } catch (error) {
+      console.error("❌ Save error:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper function to update user profile (for logged in users)
+  const updateUserProfile = async (field, value) => {
     const token = localStorage.getItem("jwtToken");
     if (!token) {
-      throw new Error("Not authenticated. Please login again.");
+      console.warn("No JWT token found for profile update");
+      return false;
     }
 
-    const addressData = {
-      name: form.name.trim(),
-      phone: form.phone.trim(), // Store exactly as entered, including country code
-      email: form.email?.trim() || "",
-      address_type: form.address_type,
-      full_address: form.full_address.trim(),
-      additional_details: form.additional_details?.trim() || "",
-      pincode: form.pincode?.trim() || "",
-      latitude: parseFloat(form.latitude),
-      longitude: parseFloat(form.longitude),
-      house_number: form.house_number?.trim() || "",
-      street_name: form.street_name?.trim() || "",
-      postcode: form.postcode?.trim() || "",
-      city: form.city?.trim() || "",
-      state: form.state?.trim() || "",
-      country: form.country?.trim() || "",
-    };
+    try {
+      const response = await fetch(`${apiBase}/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ [field]: value }),
+      });
 
-    console.log("📤 Saving address:", addressData);
-
-    // First, check if user profile needs updating
-    const profileUpdates = [];
-    
-    // If name is different from profile OR user wants to update it, update profile
-    if (form.name.trim() !== userProfile.name && form.name.trim()) {
-      console.log("📝 Updating profile name...");
-      const nameUpdated = await updateUserProfile("name", form.name.trim());
-      if (nameUpdated) {
-        setUserProfile(prev => ({ ...prev, name: form.name.trim() }));
+      if (response.ok) {
+        console.log(`✅ ${field} updated successfully`);
+        setUserData(prev => ({ ...prev, [field]: value }));
+        return true;
+      } else {
+        console.warn(`Failed to update ${field}:`, response.status);
+        return false;
       }
+    } catch (error) {
+      console.error(`Error updating ${field}:`, error);
+      return false;
     }
-    
-    // If phone is different from profile OR user wants to update it, update profile
-    if (form.phone.trim() !== userProfile.phone && form.phone.trim()) {
-      console.log("📝 Updating profile phone...");
-      const phoneUpdated = await updateUserProfile("phone", form.phone.trim());
-      if (phoneUpdated) {
-        setUserProfile(prev => ({ ...prev, phone: form.phone.trim() }));
-      }
-    }
-    
-    // If email is different from profile OR user wants to update it, update profile
-    if (form.email.trim() !== userProfile.email && form.email.trim()) {
-      console.log("📝 Updating profile email...");
-      const emailUpdated = await updateUserProfile("email", form.email.trim());
-      if (emailUpdated) {
-        setUserProfile(prev => ({ ...prev, email: form.email.trim() }));
-      }
-    }
-
-    // Save the address
-    const response = await fetch(`${apiBase}/addresses`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(addressData),
-    });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.message || data.error || `Failed to save address (Status: ${response.status})`);
-    }
-    
-    console.log("✅ Address saved successfully:", data);
-    
-    // Reset form
-    setForm({
-      name: userProfile.name || "",
-      address_type: "home",
-      phone: userProfile.phone || "",
-      email: userProfile.email || "",
-      full_address: "",
-      house_number: "",
-      street_name: "",
-      postcode: "",
-      pincode: "",
-      city: "",
-      state: "",
-      country: "",
-      additional_details: "",
-      latitude: "",
-      longitude: "",
-    });
-    setSearchInput("");
-    setPlacePredictions([]);
-    setSelectedLocation(currentLocation);
-    
-    onSaved(data.address || data);
-    onClose();
-  } catch (error) {
-    console.error("❌ Save error:", error);
-    alert(`Error: ${error.message}`);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   if (!open) return null;
 
@@ -752,33 +793,32 @@ export default function AddAddressModal({ open, onClose, onSaved, apiBase }) {
     others: "Others"
   };
 
-  // Helper function to display profile loading state
-  // Update the renderProfileInfo function:
-const renderProfileInfo = () => {
-  if (profileLoading) {
+  // Helper function to display user data loading state
+  const renderUserInfo = () => {
+    if (userData.loading) {
+      return (
+        <div className="am-profile-loading">
+          <div className="am-spinner-tiny"></div>
+          <span>Loading your information...</span>
+        </div>
+      );
+    }
+    
     return (
-      <div className="am-profile-loading">
-        <div className="am-spinner-tiny"></div>
-        <span>Loading your profile...</span>
+      <div className="am-profile-info">
+        <span className="am-profile-note">
+          {userData.name || userData.phone ? 
+            "Your information loaded. You can edit if needed." : 
+            "Please enter your personal details."}
+        </span>
+        {isGuest && (
+          <span className="am-profile-phone-hint">
+            Your details will be saved for this session
+          </span>
+        )}
       </div>
     );
-  }
-  
-  return (
-    <div className="am-profile-info">
-      <span className="am-profile-note">
-        {userProfile.name || userProfile.phone ? 
-          "Profile data loaded. You can edit if needed." : 
-          "Please enter your personal details."}
-      </span>
-      {userProfile.phone && (
-        <span className="am-profile-phone-hint">
-          Phone: {userProfile.phone} (International format accepted)
-        </span>
-      )}
-    </div>
-  );
-};
+  };
 
   return (
     <div className="am-backdrop">
@@ -929,11 +969,11 @@ const renderProfileInfo = () => {
             </div>
           </div>
 
-          {/* Personal Details with Profile Info */}
+          {/* Personal Details with User Info */}
           <div className="am-section">
             <div className="am-section-header">
               <h3 className="am-section-title">Personal Details</h3>
-              {renderProfileInfo()}
+              {renderUserInfo()}
             </div>
             
             <div className="am-form-group">
@@ -946,8 +986,8 @@ const renderProfileInfo = () => {
                 onChange={handleChange("name")}
                 required
               />
-              {userProfile.name && form.name === userProfile.name && (
-                <div className="am-field-hint">Loaded from your profile</div>
+              {userData.name && form.name === userData.name && (
+                <div className="am-field-hint">Loaded from your information</div>
               )}
             </div>
             
@@ -961,25 +1001,28 @@ const renderProfileInfo = () => {
                 onChange={handleChange("phone")}
                 required
               />
-              {userProfile.phone && form.phone === userProfile.phone && (
-                <div className="am-field-hint">Loaded from your profile</div>
+              {userData.phone && form.phone === userData.phone && (
+                <div className="am-field-hint">Loaded from your information</div>
               )}
             </div>
             
             <div className="am-form-group">
-              <label>Email Address (Optional)</label>
+              <label>Email Address *</label>
               <input
                 type="email"
                 className="am-input"
                 placeholder="Enter your email address"
                 value={form.email}
                 onChange={handleChange("email")}
+                required
               />
-              {userProfile.email && form.email === userProfile.email && (
-                <div className="am-field-hint">Loaded from your profile</div>
+              {userData.email && form.email === userData.email && (
+                <div className="am-field-hint">Loaded from your information</div>
               )}
-              {form.email && !userProfile.email && (
-                <div className="am-field-hint am-field-hint-new">Will be saved to your profile</div>
+              {!userData.email && form.email && (
+                <div className="am-field-hint am-field-hint-new">
+                  {isGuest ? "Will be saved for this session" : "Will be saved to your profile"}
+                </div>
               )}
             </div>
           </div>
@@ -1083,7 +1126,7 @@ const renderProfileInfo = () => {
           <button 
             className="am-btn am-btn-save" 
             onClick={save} 
-            disabled={loading || !form.name || !form.phone || !form.full_address || !form.latitude || !form.longitude}
+            disabled={loading || !form.name || !form.phone || !form.email || !form.full_address || !form.latitude || !form.longitude}
           >
             {loading ? (
               <>
