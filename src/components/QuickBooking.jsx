@@ -13,7 +13,7 @@
 //   PaymentElement,
 // } from "@stripe/react-stripe-js";
 
-// const API_BASE = "http://13.60.56.137:3000";
+// const API_BASE = "https://api.ironingboy.com";
 
 
 // // Initialize Stripe
@@ -3581,4 +3581,5 @@ export default function QuickBooking() {
       )}
     </div>
   );
+
 }
