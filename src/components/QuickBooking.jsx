@@ -13,7 +13,7 @@
 //   PaymentElement,
 // } from "@stripe/react-stripe-js";
 
-// const API_BASE = "https://api.ironingboy.com";
+// const API_BASE = "http://13.60.56.137:3000";
 
 
 // // Initialize Stripe
@@ -1794,7 +1794,7 @@ import {
   PaymentElement,
 } from "@stripe/react-stripe-js";
 
-const API_BASE = "http://13.60.56.137:3000";
+const API_BASE = "https://api.ironingboy.com";
 
 // Initialize Stripe
 const stripePromise = loadStripe("pk_live_51SUiy73fSKIcHb6THsEQatj2g1tJOjUhzaym490HNFobNn6gOtdzpelQnV2knmKkXPiqxKqJjwEQ6dtSNRKuO4yx00HFqYnkEI");
@@ -1971,7 +1971,7 @@ export default function QuickBooking() {
   const [userToken, setUserToken] = useState(localStorage.getItem("jwtToken"));
   const [bookingData, setBookingData] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
-  const [pendingBookingData, setPendingBookingData] = useState(null); // Store booking data before Stripe setup
+  const [pendingBookingData, setPendingBookingData] = useState(null);
 
   // Unified payment option for ALL users
   const [saveCardOption, setSaveCardOption] = useState(true);
@@ -2216,14 +2216,18 @@ export default function QuickBooking() {
     }
   }, []);
 
-  /* -------------------------- Time Slot Functions ------------------------- */
+  /* -------------------------- FIXED TIME SLOT FUNCTIONS ------------------------- */
+  // FIXED: This function now works properly with your API
   const fetchTimeSlots = useCallback(async (dateIso, isDelivery = false) => {
     if (!dateIso) return [];
 
     const tzOffset = -new Date().getTimezoneOffset();
 
+    // Format date for API (YYYY-MM-DD)
+    const formattedDate = dateIso;
+    
     const params = new URLSearchParams({
-      date: dateIso,
+      date: formattedDate,
       format: "24",
       tzOffset: tzOffset.toString(),
     });
@@ -2232,35 +2236,66 @@ export default function QuickBooking() {
       params.set("isDelivery", "true");
 
       if (collectDate && selectedCollectSlotStart) {
+        // Format the pickup date
+        const pickupFormattedDate = collectDate;
         const h = selectedCollectSlotStart.getHours().toString().padStart(2, "0");
         const m = selectedCollectSlotStart.getMinutes().toString().padStart(2, "0");
-        params.set("pickupDate", collectDate);
+        params.set("pickupDate", pickupFormattedDate);
         params.set("pickupSlotStart", `${h}:${m}`);
       }
     }
 
     try {
-      const response = await fetch(`${API_BASE}/time-slots?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch slots");
+      console.log(`Fetching ${isDelivery ? 'delivery' : 'pickup'} slots for date:`, formattedDate);
+      
+      const response = await fetch(`${API_BASE}/time-slots?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log("Response status:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server error:", errorText);
+        throw new Error(`Failed to fetch slots: ${response.status}`);
+      }
 
       const data = await response.json();
-      return data.slots || [];
+      console.log("Fetched slots data:", data);
+      
+      // Handle response format - ensure we return an array
+      if (data.slots && Array.isArray(data.slots)) {
+        return data.slots;
+      } else if (Array.isArray(data)) {
+        return data;
+      } else {
+        console.warn("Unexpected response format, returning empty array");
+        return [];
+      }
     } catch (error) {
       console.error("Error fetching time slots:", error);
+      showToast(`Error loading time slots: ${error.message}`, "error");
       return [];
     }
-  }, [collectDate, selectedCollectSlotStart]);
+  }, [collectDate, selectedCollectSlotStart, showToast]);
 
   const fetchCollectSlots = useCallback(async () => {
     if (!collectDate) return;
     
+    console.log("Fetching collect slots for date:", collectDate);
     setLoadingSlots(prev => ({ ...prev, collect: true }));
     
     try {
       const slots = await fetchTimeSlots(collectDate, false);
+      console.log("Received collect slots:", slots);
       setCollectSlots(slots);
 
-      if (selectedCollectSlot) {
+      // Reset selected slot if it's no longer valid
+      if (selectedCollectSlot && slots.length > 0) {
         const stillValid = slots.find(
           (s) => s.start === selectedCollectSlot.start && s.enabled
         );
@@ -2271,23 +2306,30 @@ export default function QuickBooking() {
         }
       }
     } catch (error) {
-      console.error("Error fetching collect slots:", error);
+      console.error("Error in fetchCollectSlots:", error);
+      showToast("Failed to load pickup time slots. Please try again.", "error");
       setCollectSlots([]);
     } finally {
       setLoadingSlots(prev => ({ ...prev, collect: false }));
     }
-  }, [collectDate, fetchTimeSlots, selectedCollectSlot]);
+  }, [collectDate, fetchTimeSlots, selectedCollectSlot, showToast]);
 
   const fetchDeliverySlots = useCallback(async () => {
-    if (!deliverDate || !collectDate || !selectedCollectSlotStart) return;
+    if (!deliverDate || !collectDate || !selectedCollectSlotStart) {
+      console.log("Missing requirements for delivery slots:", { deliverDate, collectDate, selectedCollectSlotStart });
+      return;
+    }
     
+    console.log("Fetching delivery slots for date:", deliverDate);
     setLoadingSlots(prev => ({ ...prev, deliver: true }));
     
     try {
       const slots = await fetchTimeSlots(deliverDate, true);
+      console.log("Received delivery slots:", slots);
       setDeliverSlots(slots);
 
-      if (selectedDeliverSlot) {
+      // Reset selected slot if it's no longer valid
+      if (selectedDeliverSlot && slots.length > 0) {
         const stillValid = slots.find(
           (s) => s.start === selectedDeliverSlot.start && s.enabled
         );
@@ -2298,12 +2340,13 @@ export default function QuickBooking() {
         }
       }
     } catch (error) {
-      console.error("Error fetching delivery slots:", error);
+      console.error("Error in fetchDeliverySlots:", error);
+      showToast("Failed to load delivery time slots. Please try again.", "error");
       setDeliverSlots([]);
     } finally {
       setLoadingSlots(prev => ({ ...prev, deliver: false }));
     }
-  }, [deliverDate, collectDate, selectedCollectSlotStart, fetchTimeSlots, selectedDeliverSlot]);
+  }, [deliverDate, collectDate, selectedCollectSlotStart, fetchTimeSlots, selectedDeliverSlot, showToast]);
 
   /* ------------------------- Order Preparation ---------------------------- */
   const prepareOrderData = useCallback(() => {
@@ -2403,7 +2446,7 @@ export default function QuickBooking() {
 
       // 3️⃣ Store booking data
       setBookingData(bookingData);
-      setPendingBookingData(bookingData); // Store for later use
+      setPendingBookingData(bookingData);
 
       // 4️⃣ Save token and update state
       if (bookingData.token) {
@@ -2431,11 +2474,9 @@ export default function QuickBooking() {
 
       // 6️⃣ For ALL users: If they want to save card, show Stripe setup
       if (saveCardOption) {
-        // User wants to save card, so initiate Stripe setup
         showToast("Please complete card setup to confirm your booking", "info");
         await initiateStripeSetup(bookingData.token, bookingData.stripeCustomerId);
       } else {
-        // User doesn't want to save card, navigate directly to thank you
         showToast("Booking created successfully!", "success");
         
         setTimeout(() => {
@@ -2477,11 +2518,9 @@ export default function QuickBooking() {
         throw new Error("Selected card not found");
       }
 
-      // User has saved card, create booking with saved card
       const order = prepareOrderData();
       if (!order) throw new Error("Order data missing");
 
-      // Add payment method to order
       const orderWithPayment = {
         ...order,
         payment_method_id: selectedCardData.payment_method_id,
@@ -2531,7 +2570,6 @@ export default function QuickBooking() {
     try {
       setSetupProcessing(true);
       
-      // First create the booking
       const order = prepareOrderData();
       if (!order) throw new Error("Please select pickup and delivery times");
 
@@ -2552,7 +2590,6 @@ export default function QuickBooking() {
       setBookingData(bookingData);
       setPendingBookingData(bookingData);
 
-      // Then initiate Stripe setup with existing token
       const token = userToken || localStorage.getItem("jwtToken");
       if (!token) throw new Error("Authentication required");
       
@@ -2574,14 +2611,12 @@ export default function QuickBooking() {
         throw new Error("Authentication token missing");
       }
 
-      // Call Stripe setup intent endpoint with the token
       const setupData = await createSetupIntent(token);
       
       if (!setupData || !setupData.setupIntentClientSecret) {
         throw new Error("Stripe setup failed");
       }
 
-      // Set the client secret and show payment modal
       setSetupClientSecret(setupData.setupIntentClientSecret);
       setCustomerId(setupData.customerId || stripeCustomerId);
       setShowPaymentSetup(true);
@@ -2590,8 +2625,6 @@ export default function QuickBooking() {
       console.error("Stripe setup error:", error);
       showToast(error.message || "Failed to setup card payment", "error");
       
-      // If Stripe fails, show error but don't navigate to thank you
-      // User must complete card setup to confirm booking
       setTimeout(() => {
         showToast("Please try again to complete your booking", "error");
       }, 2000);
@@ -2613,7 +2646,6 @@ export default function QuickBooking() {
         throw new Error("Payment method not returned by Stripe");
       }
 
-      // Set as default card
       if (customerId) {
         await fetch(`${API_BASE}/stripe/set-default-payment`, {
           method: "POST",
@@ -2628,11 +2660,9 @@ export default function QuickBooking() {
         });
       }
 
-      // Close payment modal and show success
       setShowPaymentSetup(false);
       showToast("Card saved successfully! Your booking is confirmed.", "success");
       
-      // Navigate to thank you page with booking data
       setTimeout(() => {
         navigate("/thankyou", {
           state: {
@@ -2652,7 +2682,6 @@ export default function QuickBooking() {
       console.error("Setup success error:", error);
       showToast(error.message || "Failed to save card", "error");
       
-      // If setting default card fails, still proceed with booking confirmation
       if (bookingData || pendingBookingData) {
         setTimeout(() => {
           navigate("/thankyou", {
@@ -2682,15 +2711,13 @@ export default function QuickBooking() {
     setShowPaymentSetup(false);
     setSetupClientSecret(null);
     
-    // Show message that booking is not confirmed without card
     showToast("Booking not confirmed. Please complete card setup to confirm your booking.", "warning");
-    
-    // Don't navigate to thank you - booking is not confirmed without card
   };
 
   /* ---------------------------- UI Handlers ------------------------------- */
   const handleCollectDateChange = (e) => {
     const newDate = e.target.value;
+    console.log("Collect date changed to:", newDate);
     setCollectDate(newDate);
     setSelectedCollectSlot(null);
     setSelectedCollectSlotStart(null);
@@ -2703,6 +2730,8 @@ export default function QuickBooking() {
 
   const handleDeliverDateChange = (e) => {
     const newDate = e.target.value;
+    console.log("Delivery date changed to:", newDate);
+    
     if (collectDate && newDate < collectDate) {
       showToast("Delivery date cannot be before pickup date", "error");
       return;
@@ -2718,8 +2747,10 @@ export default function QuickBooking() {
   const handleCollectSlotSelect = (slot) => {
     if (!slot.enabled) return;
 
+    console.log("Selected collect slot:", slot);
+    
     const start = new Date(slot.start);
-    const end = new Date(slot.end);
+    const end = slot.end ? new Date(slot.end) : null;
     
     setSelectedCollectSlot(slot);
     setSelectedCollectSlotStart(start);
@@ -2735,8 +2766,10 @@ export default function QuickBooking() {
   const handleDeliverSlotSelect = (slot) => {
     if (!slot.enabled) return;
     
+    console.log("Selected delivery slot:", slot);
+    
     const start = new Date(slot.start);
-    const end = new Date(slot.end);
+    const end = slot.end ? new Date(slot.end) : null;
     
     setSelectedDeliverSlot(slot);
     setSelectedDeliverSlotStart(start);
@@ -2767,7 +2800,6 @@ export default function QuickBooking() {
 
   const handleAddAddressClick = () => {
     setShowAddressForm(true);
-    // Reset form
     setAddressForm({
       street_address: "",
       postcode: "",
@@ -2789,15 +2821,23 @@ export default function QuickBooking() {
     }
   }, [userToken, fetchUserProfile, fetchAddresses, fetchSavedCards, ensureStripeCustomer]);
 
+  // Effect to fetch collect slots when collectDate changes
   useEffect(() => {
     if (collectDate) {
-      fetchCollectSlots();
+      const timer = setTimeout(() => {
+        fetchCollectSlots();
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [collectDate, fetchCollectSlots]);
 
+  // Effect to fetch delivery slots when deliverDate or pickup details change
   useEffect(() => {
     if (deliverDate && selectedCollectSlotStart) {
-      fetchDeliverySlots();
+      const timer = setTimeout(() => {
+        fetchDeliverySlots();
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [deliverDate, selectedCollectSlotStart, fetchDeliverySlots]);
 
@@ -2818,18 +2858,15 @@ export default function QuickBooking() {
 
   // Check if form is valid for booking
   const isBookingValid = () => {
-    // Basic validations for all users
     if (!userInfo.name.trim()) return false;
     if (!userInfo.email.trim()) return false;
     if (!userInfo.phone.trim()) return false;
     if (!selectedCollectSlot || !selectedDeliverSlot) return false;
     
     if (userToken && addresses.length > 0 && !showAddressForm) {
-      // Logged-in user with saved addresses
       if (!selectedAddressId) return false;
       if (!useSameAddress && !selectedPickupAddressId) return false;
     } else {
-      // New user or user without saved addresses
       if (!addressForm.street_address.trim()) return false;
       if (!addressForm.postcode.trim()) return false;
     }
@@ -2933,7 +2970,6 @@ export default function QuickBooking() {
           </div>
 
           {userToken && addresses.length > 0 && !showAddressForm ? (
-            // User with saved addresses - show selection
             <>
               <div className="qb-address-selection">
                 <h3 className="qb-address-selection-title">Select a Saved Address</h3>
@@ -3009,7 +3045,6 @@ export default function QuickBooking() {
               </div>
             </>
           ) : (
-            // Address form for new users or when adding new address
             <div className="qb-address-form-section">
               <div className="qb-form-grid">
                 <div className="qb-form-group">
@@ -3354,7 +3389,6 @@ export default function QuickBooking() {
                 <p>Loading your saved cards...</p>
               </div>
             ) : userToken && savedCards.length > 0 ? (
-              // Logged-in user WITH saved cards
               <>
                 <div className="qb-saved-cards-section">
                   <h3 className="qb-saved-cards-title">
@@ -3429,7 +3463,6 @@ export default function QuickBooking() {
                 </div>
               </>
             ) : (
-              // Non-logged-in OR logged-in user WITHOUT saved cards
               <>
                 <div className="qb-payment-options">
                   <div className="qb-payment-option">
@@ -3581,5 +3614,4 @@ export default function QuickBooking() {
       )}
     </div>
   );
-
 }
