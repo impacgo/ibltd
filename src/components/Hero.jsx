@@ -1,218 +1,395 @@
-import React, { useState, useEffect } from 'react';
-import { Typewriter } from 'react-simple-typewriter';
-import './Hero.css';
-import backgroundImage from "../images/herosec.jpg";
+// src/components/Hero.jsx
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import "./Hero.css";
+
+const API_BASE = "https://api.ironingboy.com";
 
 const Hero = () => {
-  const [location, setLocation] = useState('');
-  const [isVisible, setIsVisible] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isMobile, setIsMobile] = useState(false);
+  const [location, setLocation] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupTitle, setPopupTitle] = useState("");
+  const [popupMessage, setPopupMessage] = useState("");
+  const [branches, setBranches] = useState([]);
+  const [popupType, setPopupType] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setIsVisible(true);
-    
-    // Check if device is mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    const handleMouseMove = (e) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
+    document.body.style.overflowX = 'hidden';
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', checkMobile);
+      document.body.style.overflowX = 'visible';
     };
   }, []);
 
-  const scrollToSection = (sectionId) => {
-    const el = document.getElementById(sectionId);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  const discountItems = useMemo(
+    () => [
+      "Students get 25% OFF on any booking!",
+      "Minimum top up - £20",
+      "If booking amount is £30 - £49 then 10% discount",
+      "If booking amount is £50 - £99 then 15% discount",
+      "If booking amount is £100 - £299 then 20% discount",
+      "If booking amount is more than £300 then 22% discount",
+      "Applicable on each customer's first 3 orders"
+    ],
+    []
+  );
+
+  const handleQuickBook = () => {
+    navigate("/quick-booking");
   };
 
-  const handleGetStarted = () => {
-    if (location.trim()) {
-      scrollToSection('services');
+  const handleViewServices = () => {
+    navigate("/services");
+  };
+
+  const checkServiceAvailability = async () => {
+    if (!location.trim()) {
+      showErrorPopup("Input Required", "Please enter your address or postal code.");
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`${API_BASE}/postcode-check`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: location.trim()
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Service check failed");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem("available_branches", JSON.stringify(data.branches));
+        localStorage.setItem("search_query", location.trim());
+        
+        showSuccessPopup(
+          "Service Available!",
+          `We found ${data.branches.length} branch(es) serving your area.`,
+          data.branches
+        );
+        
+        setTimeout(() => {
+          if (showPopup) return;
+          handleQuickBook();
+        }, 2000);
+      } else {
+        showErrorPopup(
+          "Service Not Available",
+          data.message || `Sorry, we don't currently serve "${location.trim()}".`
+        );
+      }
+    } catch (error) {
+      console.error("Error checking service:", error);
+      showErrorPopup(
+        "Connection Error",
+        "Unable to check service availability. Please try again later."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const features = [
-    { icon: '⚡', text: '2-Hour Express Delivery' },
-    { icon: '👔', text: 'Expert Fabric Care' },
-    { icon: '🌿', text: 'Eco-Friendly Products' },
-    { icon: '🏠', text: 'Free Pickup & Delivery' }
-  ];
+  const showSuccessPopup = (title, message, branchesData) => {
+    setPopupTitle(title);
+    setPopupMessage(message);
+    setBranches(branchesData || []);
+    setPopupType("success");
+    setShowPopup(true);
+  };
+
+  const showErrorPopup = (title, message) => {
+    setPopupTitle(title);
+    setPopupMessage(message);
+    setBranches([]);
+    setPopupType("error");
+    setShowPopup(true);
+  };
+
+  const closePopup = () => {
+    setShowPopup(false);
+    setPopupTitle("");
+    setPopupMessage("");
+    setBranches([]);
+  };
+
+  const proceedToBooking = () => {
+    closePopup();
+    setTimeout(() => handleQuickBook(), 100);
+  };
+
+  const handleGetStarted = () => {
+    checkServiceAvailability();
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleGetStarted();
+    }
+  };
 
   return (
-    <section className={`hero ${isVisible ? 'visible' : ''}`}>
-      {/* Animated Background with Parallax (disabled on mobile) */}
-      <div 
-        className="hero-background"
-        style={{ 
-          backgroundImage: `url(${backgroundImage})`,
-          transform: isMobile ? 'none' : `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`
-        }}
-      />
-      
-      {/* Gradient Overlays */}
-      <div className="gradient-overlay top"></div>
-      <div className="gradient-overlay bottom"></div>
-      
-      {/* Floating Particles (reduced on mobile) */}
-      <div className="particles">
-        {[...Array(isMobile ? 8 : 15)].map((_, i) => (
-          <div key={i} className="particle" style={{
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 5}s`
-          }}></div>
-        ))}
-      </div>
-
-      {/* Main Content */}
-      <div className="hero-container">
-        {/* Left Content */}
-        <div className="content-left">
-          <div className="premium-badge">
-            <div className="sparkle">✨</div>
-            <span>Trusted by 10,000+ Happy Customers</span>
-          </div>
-
-          <div className="main-headline">
-            <div className="eyebrow">PREMIUM LAUNDRY SERVICE</div>
-            <h1>
-              <span className="static-text">Where Luxury Meets</span>
-              <br />
-              <span className="animated-text">
-                <Typewriter
-                  words={[
-                    'Freshness',
-                    'Convenience',
-                    'Perfection',
-                    'Care'
-                  ]}
-                  loop
-                  cursor
-                  cursorStyle="|"
-                  typeSpeed={80}
-                  deleteSpeed={50}
-                  delaySpeed={2000}
-                />
-              </span>
-            </h1>
-          </div>
-
-          <p className="hero-description">
-            Experience the future of laundry care. We combine cutting-edge technology 
-            with artisan techniques to deliver impeccable results that make your 
-            clothes look and feel brand new, every single time.
-          </p>
-
-          {/* Enhanced Interactive Location Finder */}
-          <div className="location-finder highlighted" style={{animation:"none"}}>
-            <div className="finder-header" style={{animation:"none"}}>
-              <i className="fas fa-crosshairs"></i>
-              <span>Find Service in Your Area</span>
-            </div>
-            <div className="input-group">
-              <input 
-                type="text" 
-                placeholder="Enter your address or zip code..."
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleGetStarted()}
-                className="location-input"
-              />
-              <button 
-                className={`find-btn ${location ? 'active' : ''}`}
-                onClick={handleGetStarted}
-              >
-                <span>Check Availability</span>
-                <i className="fas fa-arrow-right"></i>
+    <section className="hero">
+      {/* Popup */}
+      {showPopup && (
+        <div className="service-popup">
+          <div className="popup-overlay" onClick={closePopup}></div>
+          <div className="popup-content">
+            <div className={`popup-header ${popupType}`}>
+              <div className="popup-icon">
+                {popupType === "success" ? (
+                  <i className="fas fa-check-circle"></i>
+                ) : (
+                  <i className="fas fa-exclamation-circle"></i>
+                )}
+              </div>
+              <h3>{popupTitle}</h3>
+              <button className="popup-close" onClick={closePopup}>
+                <i className="fas fa-times"></i>
               </button>
             </div>
-            <div className="location-hint">
-              <i className="fas fa-info-circle"></i>
-              <span>Enter your location to check service availability and pricing</span>
+            <div className="popup-body">
+              <p>{popupMessage}</p>
+              
+              {popupType === "success" && branches.length > 0 && (
+                <div className="available-branches">
+                  <h4>
+                    <i className="fas fa-store"></i>
+                    Available Branches:
+                  </h4>
+                  <div className="branches-list">
+                    {branches.slice(0, 2).map((branch, index) => (
+                      <div key={branch.id || index} className="branch-card">
+                        <div className="branch-icon">
+                          <i className="fas fa-building"></i>
+                        </div>
+                        <div className="branch-info">
+                          <div className="branch-name">{branch.name}</div>
+                          <div className="branch-distance">
+                            <i className="fas fa-location-dot"></i>
+                            {branch.distance ? `${branch.distance} miles away` : "Nearby"}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {popupType === "error" && (
+                <div className="suggestions">
+                  <h4>
+                    <i className="fas fa-lightbulb"></i>
+                    Suggestions:
+                  </h4>
+                  <ul>
+                    <li>Try entering just the postcode</li>
+                    <li>Try entering the area name</li>
+                    <li>Check our service areas</li>
+                  </ul>
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* Trust Indicators */}
-          <div className="trust-indicators">
-            <div className="trust-item">
-              <div className="trust-icon">✅</div>
-              <span>Same-Day Service Available</span>
-            </div>
-            <div className="trust-item">
-              <div className="trust-icon">🛡️</div>
-              <span>Quality Guarantee</span>
-            </div>
-            <div className="trust-item">
-              <div className="trust-icon">💸</div>
-              <span>Minimum charges £20</span>
+            <div className="popup-footer">
+              {popupType === "success" ? (
+                <>
+                  <button className="popup-btn-secondary" onClick={closePopup}>
+                    Cancel
+                  </button>
+                  <button className="popup-btn-primary" onClick={proceedToBooking}>
+                    <i className="fas fa-calendar-check"></i>
+                    Book Now
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="popup-btn-secondary" onClick={closePopup}>
+                    Try Again
+                  </button>
+                  <button className="popup-btn-primary" onClick={() => navigate("/areas")}>
+                    <i className="fas fa-map"></i>
+                    View Areas
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
+      )}
 
-        {/* Right Content - Feature Cards */}
-        <div className="content-right">
-          <div className="feature-grid">
-            {features.map((feature, index) => (
-              <div 
-                key={index} 
-                className="feature-card"
-                style={{ animationDelay: `${index * 0.2}s` }}
-              >
-                <div className="feature-icon">{feature.icon}</div>
-                <div className="feature-text">{feature.text}</div>
+      <div className="hero-main-content">
+        <div className="hero-container">
+          {/* Main Content */}
+          <div className="hero-content">
+            <div className="hero-badge">
+              <i className="fas fa-crown"></i>
+              <span>Professional Laundry Service</span>
+            </div>
+            
+            <h1 className="hero-title">
+              Where Luxury Meets
+              <span className="title-accent"> Freshness</span>
+            </h1>
+            
+            <p className="hero-subtitle">
+              Experience the future of laundry care — advanced technology combined with premium techniques for spotless results. Professional care delivered to your doorstep.
+            </p>
+            <div className="hero-cta-buttons">
+              <button className="primary-cta" onClick={handleQuickBook}>
+                <i className="fas fa-bolt"></i>
+                Quick Booking
+              </button>
+              <button className="secondary-cta" onClick={handleViewServices}>
+                <i className="fas fa-list"></i>
+                View Services
+              </button>
+            </div>            
+
+            
+            <div className="hero-stats">
+              <div className="stat-item">
+                <div className="stat-number">24/7</div>
+                <div className="stat-label">Support</div>
               </div>
-            ))}
-          </div>
-
-          {/* CTA Card */}
-          <div className="cta-card">
-            <div className="offer-badge">
-              <span>SPECIAL OFFER</span>
+              <div className="stat-item">
+                <div className="stat-number">100%</div>
+                <div className="stat-label">Quality</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-number">99%</div>
+                <div className="stat-label">Satisfaction</div>
+              </div>
             </div>
-            <h3>First-Time Customer?</h3>
-            <p>Get <strong>30% OFF</strong> your first order + free delivery</p>
-            <button className="offer-btn">
-              Claim Your Discount
-              <i className="fas fa-gift"></i>
-            </button>
+            
+
+          </div>
+
+          {/* Services Cards */}
+          <div className="services-cards">
+            <div className="service-card" style={{background:" rgba(255, 255, 255, 0.08)",border:"none"}}>
+              <div className="service-card-icon">
+                <i className="fas fa-calendar-check"></i>
+              </div>
+              <h3 className="service-card-title">Same-Day Service</h3>
+              <p className="service-card-desc">
+                Get your laundry done and delivered on the same day
+              </p>
+            </div>
+
+            <div className="service-card" style={{background:" rgba(255, 255, 255, 0.08)",border:"none"}}>
+              <div className="service-card-icon">
+                <i className="fas fa-shield-alt"></i>
+              </div>
+              <h3 className="service-card-title">Quality Guarantee</h3>
+              <p className="service-card-desc">
+                We guarantee the highest quality standards for every item
+              </p>
+            </div>
+
+            <div className="service-card" style={{background:" rgba(255, 255, 255, 0.08)",border:"none"}}>
+              <div className="service-card-icon">
+                <i className="fas fa-truck"></i>
+              </div>
+              <h3 className="service-card-title">Free Pickup & Delivery</h3>
+              <p className="service-card-desc">
+                Convenient pickup and delivery at no extra cost
+              </p>
+            </div>
+
+            <div className="service-card" style={{background:" rgba(255, 255, 255, 0.08)",border:"none"}}>
+              <div className="service-card-icon">
+                <i className="fas fa-tshirt"></i>
+              </div>
+              <h3 className="service-card-title">Expert Fabric Care</h3>
+              <p className="service-card-desc">
+                Specialized care for all fabric types and garments
+              </p>
+            </div>
+          </div>
+
+          {/* Location Check Section */}
+          <div className="location-section">
+            <div className="location-header">
+              <h2 className="location-title">Check Service Availability</h2>
+              <p className="location-subtitle">Enter your postcode to see if we serve your area</p>
+            </div>
+            
+            <div className="location-check-wrapper">
+              <div className="location-input-wrapper">
+                {/* <div className="input-icon">
+                  <i className="fas fa-map-marker-alt"></i>
+                </div> */}
+                <input
+                  type="text"
+                  className="location-input"
+                  placeholder="Enter your postcode or address"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading}
+                />
+                <button
+                  className={`location-check-btn ${location.trim() ? 'active' : ''} ${loading ? 'loading' : ''}`}
+                  onClick={handleGetStarted}
+                  disabled={loading || !location.trim()}
+                >
+                  {loading ? (
+                    <>
+                      <span className="loading-spinner"></span>
+                      Checking...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-search"></i>
+                      Check Availability
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="location-hint">
+                <i className="fas fa-info-circle"></i>
+                <span>Try entering just your postcode for faster results</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Bottom Stats Bar */}
-      <div className="stats-bar">
-        <div className="stat" style={{background:"none", border:"none"}}>
-          <div className="stat-number">50K+</div>
-          <div className="stat-label">Items Cleaned</div>
-        </div>
-        <div className="stat" style={{background:"none", border:"none"}}>
-          <div className="stat-number">4.9★</div>
-          <div className="stat-label">Customer Rating</div>
-        </div>
-        <div className="stat" style={{background:"none", border:"none"}}>
-          <div className="stat-number">24/7</div>
-          <div className="stat-label">Support</div>
-        </div>
-        <div className="stat" style={{background:"none", border:"none"}}>
-          <div className="stat-number">98%</div>
-          <div className="stat-label">On Time</div>
+      
+      {/* Discount Section - Fixed at bottom */}
+      <div className="hero-discount-section">
+        <div className="hero-discount-wrapper">
+          <div className="hero-discount-label">
+            <i className="fas fa-tag"></i>
+            <span>Special Offers</span>
+          </div>
+          
+          <div className="hero-discount-marquee">
+            <div className="discount-track">
+              {discountItems.map((item, idx) => (
+                <span key={`d1-${idx}`} className="discount-item">
+                  <i className="fas fa-gift"></i>
+                  {item}
+                </span>
+              ))}
+              {discountItems.map((item, idx) => (
+                <span key={`d2-${idx}`} className="discount-item">
+                  <i className="fas fa-gift"></i>
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-
-      
     </section>
   );
 };

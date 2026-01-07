@@ -24,6 +24,19 @@ export default function ServiceAreas() {
     navigate(`/areas/${slug}`);
   };
 
+  const handleBookCollection = () => {
+    navigate("/quick-booking");
+  };
+
+  const handleContactSupport = () => {
+    navigate("/contact");
+  };
+
+  const handleCheckAvailability = () => {
+    // Navigate to home page and pass state to trigger service availability check
+    navigate("/", { state: { openServiceCheck: true } });
+  };
+
   const filteredAreas = AREAS.filter(area => {
     if (activeFilter === "london") {
       return !area.name.toLowerCase().includes("oxford");
@@ -259,7 +272,10 @@ export default function ServiceAreas() {
                     <i className="fas fa-clock"></i>
                     <span>Same-day collection available in all areas</span>
                   </div>
-                  <button className="book-all-btn">
+                  <button 
+                    className="book-all-btn"
+                    onClick={handleBookCollection}
+                  >
                     <i className="fas fa-calendar-check"></i>
                     Book Collection Now
                   </button>
@@ -274,11 +290,17 @@ export default function ServiceAreas() {
               <h3>Not in Our Service Area Yet?</h3>
               <p>We're expanding rapidly! Contact us to request service in your area.</p>
               <div className="cta-actions">
-                <button className="cta-primary">
+                <button 
+                  className="cta-primary"
+                  onClick={handleContactSupport}
+                >
                   <i className="fas fa-phone-alt"></i>
                   Request Service Expansion
                 </button>
-                <button className="cta-secondary">
+                <button 
+                  className="cta-secondary"
+                  onClick={handleCheckAvailability}
+                >
                   <i className="fas fa-question-circle"></i>
                   Check Service Availability
                 </button>

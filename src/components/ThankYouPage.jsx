@@ -502,7 +502,7 @@ const ThankYouPage = () => {
                 </div>
               </a>
               
-              <a href="https://wa.me/442031231010" className="contact-option whatsapp" target="_blank" rel="noopener noreferrer">
+              {/* <a href="https://wa.me/442031231010" className="contact-option whatsapp" target="_blank" rel="noopener noreferrer">
                 <div className="contact-icon">
                   <i className="fab fa-whatsapp"></i>
                 </div>
@@ -510,7 +510,7 @@ const ThankYouPage = () => {
                   <div className="contact-label">WHATSAPP</div>
                   <div className="contact-value">Chat Now</div>
                 </div>
-              </a>
+              </a> */}
             </div>
           </div>
         </div>

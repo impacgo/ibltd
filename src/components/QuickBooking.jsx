@@ -1,4 +1,6 @@
-// // src/components/QuickBooking.jsx
+
+
+// src/components/QuickBooking.jsx
 // import React, { useEffect, useState, useCallback } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { useAuth } from "../context/AuthContext";
@@ -13,8 +15,7 @@
 //   PaymentElement,
 // } from "@stripe/react-stripe-js";
 
-// const API_BASE = "http://13.60.56.137:3000";
-
+// const API_BASE = "https://api.ironingboy.com";
 
 // // Initialize Stripe
 // const stripePromise = loadStripe("pk_live_51SUiy73fSKIcHb6THsEQatj2g1tJOjUhzaym490HNFobNn6gOtdzpelQnV2knmKkXPiqxKqJjwEQ6dtSNRKuO4yx00HFqYnkEI");
@@ -27,8 +28,7 @@
 //   onSetupError,
 //   onCancel,
 //   setupProcessing,
-//   userToken,
-//   onTokenUpdate
+//   userToken
 // }) => {
 //   const [consent, setConsent] = useState(false);
 //   const [error, setError] = useState(null);
@@ -76,88 +76,99 @@
 
 //   return (
 //     <div className="stripe-payment-modal">
-//       <div className="payment-header">
-//         <h3>Save Your Card for Future Payments</h3>
-//         <p style={{color:"black"}}>
-//           <i className="fas fa-credit-card" style={{ marginRight: "8px" , color:"black"}}></i>
-//           Your card will be securely saved by Stripe for automatic invoice payments.
-//           No charges will be made until your laundry manager sends the invoice.
-//         </p>
-//       </div>
-
-//       <form onSubmit={handleSubmit} className="payment-form">
-//         <div className="payment-element-wrapper">
-//           <PaymentElement 
-//             options={{
-//               layout: {
-//                 type: 'tabs',
-//                 defaultCollapsed: false,
-//               },
-//               wallets: {
-//                 applePay: 'never',
-//                 googlePay: 'never',
-//               }
-//             }}
-//           />
-//           <div className="card-save-note">
-//             <i className="fas fa-info-circle"></i>
-//             <span>Stripe will automatically save your card details securely for future payments.</span>
+//       <div className="stripe-modal-overlay" onClick={onCancel}></div>
+//       <div className="stripe-modal-content">
+//         <div className="stripe-modal-header">
+//           <div className="stripe-modal-icon">
+//             <i className="fas fa-shield-alt"></i>
 //           </div>
-//         </div>
-        
-//         <div className="consent-checkbox-container">
-//           <label>
-//             <input
-//               type="checkbox"
-//               checked={consent}
-//               onChange={(e) => setConsent(e.target.checked)}
-//               required
-//             />
-//             <span className="consent-text" style={{color:"black"}}>
-//               <strong>Yes, save my card</strong>
-//               <br />
-//               I authorize IroningBoy to save this card and use it for automatic payment 
-//               of laundry service invoices.
-//             </span>
-//           </label>
-//         </div>
-        
-//         {error && (
-//           <div className="payment-error">
-//             <i className="fas fa-exclamation-circle"></i>
-//             <span>{error}</span>
+//           <div>
+//             <h3>Save Card to Complete Booking</h3>
+//             <p>Your booking will be confirmed after you save your card securely.</p>
 //           </div>
-//         )}
-        
-//         <div className="payment-actions">
-//           <button
-//             type="button"
+//           <button 
+//             className="stripe-modal-close" 
 //             onClick={onCancel}
 //             disabled={submitting || setupProcessing}
-//             className="payment-cancel-btn"
 //           >
-//             Cancel
-//           </button>
-          
-//           <button
-//             type="submit"
-//             disabled={!stripe || submitting || setupProcessing || !consent}
-//             className="payment-confirm-btn"
-//           >
-//             {submitting ? (
-//               <>
-//                 <div className="payment-loading-spinner"></div>
-//                 Saving Card...
-//               </>
-//             ) : (
-//               <>
-//                 <i className="fas fa-save"></i>
-//                 Save Card & Confirm Booking
-//               </>
-//             )}
+//             <i className="fas fa-times"></i>
 //           </button>
 //         </div>
-//       </form>
+
+//         <form onSubmit={handleSubmit} className="stripe-form">
+//           <div className="stripe-form-content">
+//             <div className="stripe-payment-info">
+//               <div className="stripe-info-icon">
+//                 <i className="fas fa-credit-card"></i>
+//               </div>
+//               <div className="stripe-info-text">
+//                 <h4>No Charges Now</h4>
+//                 <p>Your card will only be charged after your laundry manager sends the invoice.</p>
+//               </div>
+//             </div>
+
+//             <div className="stripe-element-container">
+//               <PaymentElement 
+//                 options={{
+//                   layout: {
+//                     type: 'tabs',
+//                     defaultCollapsed: false,
+//                   },
+//                   wallets: {
+//                     applePay: 'never',
+//                     googlePay: 'never',
+//                   }
+//                 }}
+//               />
+//             </div>
+            
+//             <div className="stripe-consent-section">
+//               <div className="stripe-consent-checkbox">
+//                 <input
+//                   type="checkbox"
+//                   id="consent-checkbox"
+//                   checked={consent}
+//                   onChange={(e) => setConsent(e.target.checked)}
+//                   required
+//                 />
+//                 <label htmlFor="consent-checkbox" className="stripe-consent-label">
+//                   <span className="stripe-consent-title">Yes, save my card for future payments</span>
+//                   <span className="stripe-consent-description">
+//                     I authorize IroningBoy to securely save this card and use it for automatic payment of laundry service invoices.
+//                   </span>
+//                 </label>
+//               </div>
+//             </div>
+            
+//             {error && (
+//               <div className="stripe-error-message">
+//                 <i className="fas fa-exclamation-triangle"></i>
+//                 <span>{error}</span>
+//               </div>
+//             )}
+//           </div>
+
+//           <div className="stripe-modal-actions">
+//             <button
+//               type="submit"
+//               disabled={!stripe || submitting || setupProcessing || !consent}
+//               className="stripe-confirm-btn"
+//             >
+//               {submitting ? (
+//                 <>
+//                   <div className="stripe-loading-spinner"></div>
+//                   Processing...
+//                 </>
+//               ) : (
+//                 <>
+//                   <i className="fas fa-lock"></i>
+//                   Complete Booking & Save Card
+//                 </>
+//               )}
+//             </button>
+//           </div>
+//         </form>
+//       </div>
 //     </div>
 //   );
 // };
@@ -174,40 +185,18 @@
 //   const [setupProcessing, setSetupProcessing] = useState(false);
 //   const [showPaymentSetup, setShowPaymentSetup] = useState(false);
 //   const [toast, setToast] = useState(null);
-//   const [useNewCard, setUseNewCard] = useState(false);
 //   const [savedCards, setSavedCards] = useState([]);
 //   const [loadingCards, setLoadingCards] = useState(true);
 //   const [setupClientSecret, setSetupClientSecret] = useState(null);
 //   const [customerId, setCustomerId] = useState(null);
 //   const [userToken, setUserToken] = useState(localStorage.getItem("jwtToken"));
-//   const ensureTokenExists = async () => {
+//   const [bookingData, setBookingData] = useState(null);
+//   const [showAddressForm, setShowAddressForm] = useState(false);
+//   const [pendingBookingData, setPendingBookingData] = useState(null);
 
-//   let token = userToken || localStorage.getItem("jwtToken");
- 
-//   // If token does not exist → create user + token
-
-//   if (!token) {
-
-//     const ensureTokenExists = async () => {
-
-//   return userToken || localStorage.getItem("jwtToken");
-
-// };
-
- 
-//     localStorage.setItem("jwtToken", token);
-
-//     setUserToken(token);
-
-//   }
- 
-//   return token;
-
-// };
-  
-//   // NEW: Add payment option for non-logged-in users
-//   const [saveCardOption, setSaveCardOption] = useState(false);
-//   const [bookingWithoutAccount, setBookingWithoutAccount] = useState(false);
+//   // Unified payment option for ALL users
+//   const [saveCardOption, setSaveCardOption] = useState(true);
+//   const [selectedCard, setSelectedCard] = useState(null);
 
 //   // Time slots state
 //   const [loadingSlots, setLoadingSlots] = useState({
@@ -225,7 +214,6 @@
 
 //   // User info and addresses
 //   const [userInfo, setUserInfo] = useState(() => {
-//     // Initialize with user data if logged in
 //     if (user) {
 //       return {
 //         name: user.name || "",
@@ -250,7 +238,8 @@
 //     street_address: "",
 //     postcode: "",
 //     city: "",
-//     additional_details: ""
+//     additional_details: "",
+//     house_number: ""
 //   });
 
 //   // Form state
@@ -259,13 +248,11 @@
 //   const [notes, setNotes] = useState("");
 
 //   // Constants
-//   const SERVICE_CHARGE = 2.0;
-//   const MINIMUM_ORDER_AMOUNT = 20.0;
 //   const today = new Date().toISOString().split("T")[0];
 
 //   // Show toast notification
-//   const showToast = useCallback((msg) => {
-//     setToast(msg);
+//   const showToast = useCallback((msg, type = "info") => {
+//     setToast({ msg, type });
 //     setTimeout(() => setToast(null), 3000);
 //   }, []);
 
@@ -304,25 +291,26 @@
 //     }
 //   };
 
-//   const formatDateTimeDisplay = (dateString, timeString) => {
-//     const date = formatDateDDMMYYYY(dateString);
-//     const time = formatTime24Hour(timeString);
-//     if (date && time) return `${date} at ${time}`;
-//     return date || time || "";
-//   };
-
 //   const getCardBrandClass = (brand) => {
-//     if (!brand) return '';
+//     if (!brand) return 'card-brand-unknown';
 //     const brandLower = brand.toLowerCase();
 //     if (brandLower.includes('visa')) return 'card-brand-visa';
 //     if (brandLower.includes('mastercard')) return 'card-brand-mastercard';
 //     if (brandLower.includes('amex') || brandLower.includes('american express')) return 'card-brand-amex';
 //     if (brandLower.includes('discover')) return 'card-brand-discover';
-//     return '';
+//     return 'card-brand-unknown';
+//   };
+
+//   const getCardBrandIcon = (brand) => {
+//     const brandLower = brand?.toLowerCase() || '';
+//     if (brandLower.includes('visa')) return 'fab fa-cc-visa';
+//     if (brandLower.includes('mastercard')) return 'fab fa-cc-mastercard';
+//     if (brandLower.includes('amex') || brandLower.includes('american express')) return 'fab fa-cc-amex';
+//     if (brandLower.includes('discover')) return 'fab fa-cc-discover';
+//     return 'fas fa-credit-card';
 //   };
 
 //   /* ---------------------------- Data Fetching ----------------------------- */
-//   // Fetch user profile if logged in
 //   const fetchUserProfile = useCallback(async () => {
 //     if (!userToken) return;
     
@@ -346,7 +334,6 @@
 //     }
 //   }, [userToken]);
 
-//   // Fetch addresses if logged in
 //   const fetchAddresses = useCallback(async () => {
 //     if (!userToken) return;
     
@@ -361,7 +348,6 @@
 //         const data = await response.json();
 //         setAddresses(data);
         
-//         // Select first address or default address
 //         if (data.length > 0) {
 //           const defaultAddress = data.find(addr => addr.is_selected) || data[0];
 //           if (defaultAddress) {
@@ -376,7 +362,6 @@
 //     }
 //   }, [userToken]);
 
-//   // Fetch saved cards if logged in
 //   const fetchSavedCards = useCallback(async () => {
 //     if (!userToken) {
 //       setLoadingCards(false);
@@ -393,6 +378,12 @@
 //       if (response.ok) {
 //         const data = await response.json();
 //         setSavedCards(data.cards || []);
+//         if (data.cards?.length > 0) {
+//           const defaultCard = data.cards.find(card => card.is_default);
+//           if (defaultCard) {
+//             setSelectedCard(defaultCard.id);
+//           }
+//         }
 //       }
 //     } catch (error) {
 //       console.error("Error fetching saved cards:", error);
@@ -402,7 +393,6 @@
 //     }
 //   }, [userToken]);
 
-//   // Create Stripe customer if logged in
 //   const ensureStripeCustomer = useCallback(async () => {
 //     if (!userToken) return;
 
@@ -424,14 +414,13 @@
 //     }
 //   }, [userToken]);
 
-//   // Create setup intent for all users
-//   const createSetupIntent = useCallback(async (token = userToken) => {
+//   const createSetupIntent = useCallback(async (token) => {
 //     try {
 //       const response = await fetch(`${API_BASE}/stripe/init-setup-intent`, {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
-//           ...(token && { "Authorization": `Bearer ${token}` }),
+//           "Authorization": `Bearer ${token}`,
 //         },
 //       });
 
@@ -446,17 +435,20 @@
 //       console.error("Error creating setup intent:", error);
 //       return null;
 //     }
-//   }, [userToken]);
+//   }, []);
 
-//   /* -------------------------- Time Slot Functions ------------------------- */
-//   // Fetch time slots (available for all users)
+//   /* -------------------------- FIXED TIME SLOT FUNCTIONS ------------------------- */
+//   // FIXED: This function now works properly with your API
 //   const fetchTimeSlots = useCallback(async (dateIso, isDelivery = false) => {
 //     if (!dateIso) return [];
 
 //     const tzOffset = -new Date().getTimezoneOffset();
 
+//     // Format date for API (YYYY-MM-DD)
+//     const formattedDate = dateIso;
+    
 //     const params = new URLSearchParams({
-//       date: dateIso,
+//       date: formattedDate,
 //       format: "24",
 //       tzOffset: tzOffset.toString(),
 //     });
@@ -465,36 +457,66 @@
 //       params.set("isDelivery", "true");
 
 //       if (collectDate && selectedCollectSlotStart) {
+//         // Format the pickup date
+//         const pickupFormattedDate = collectDate;
 //         const h = selectedCollectSlotStart.getHours().toString().padStart(2, "0");
 //         const m = selectedCollectSlotStart.getMinutes().toString().padStart(2, "0");
-//         params.set("pickupDate", collectDate);
+//         params.set("pickupDate", pickupFormattedDate);
 //         params.set("pickupSlotStart", `${h}:${m}`);
 //       }
 //     }
 
 //     try {
-//       const response = await fetch(`${API_BASE}/time-slots?${params.toString()}`);
-//       if (!response.ok) throw new Error("Failed to fetch slots");
+//       console.log(`Fetching ${isDelivery ? 'delivery' : 'pickup'} slots for date:`, formattedDate);
+      
+//       const response = await fetch(`${API_BASE}/time-slots?${params.toString()}`, {
+//         method: 'GET',
+//         headers: {
+//           'Accept': 'application/json',
+//           'Content-Type': 'application/json',
+//         },
+//       });
+      
+//       console.log("Response status:", response.status);
+      
+//       if (!response.ok) {
+//         const errorText = await response.text();
+//         console.error("Server error:", errorText);
+//         throw new Error(`Failed to fetch slots: ${response.status}`);
+//       }
 
 //       const data = await response.json();
-//       return data.slots || [];
+//       console.log("Fetched slots data:", data);
+      
+//       // Handle response format - ensure we return an array
+//       if (data.slots && Array.isArray(data.slots)) {
+//         return data.slots;
+//       } else if (Array.isArray(data)) {
+//         return data;
+//       } else {
+//         console.warn("Unexpected response format, returning empty array");
+//         return [];
+//       }
 //     } catch (error) {
 //       console.error("Error fetching time slots:", error);
+//       showToast(`Error loading time slots: ${error.message}`, "error");
 //       return [];
 //     }
-//   }, [collectDate, selectedCollectSlotStart]);
+//   }, [collectDate, selectedCollectSlotStart, showToast]);
 
 //   const fetchCollectSlots = useCallback(async () => {
 //     if (!collectDate) return;
     
+//     console.log("Fetching collect slots for date:", collectDate);
 //     setLoadingSlots(prev => ({ ...prev, collect: true }));
     
 //     try {
 //       const slots = await fetchTimeSlots(collectDate, false);
+//       console.log("Received collect slots:", slots);
 //       setCollectSlots(slots);
 
-//       // Reset if selected slot is no longer valid
-//       if (selectedCollectSlot) {
+//       // Reset selected slot if it's no longer valid
+//       if (selectedCollectSlot && slots.length > 0) {
 //         const stillValid = slots.find(
 //           (s) => s.start === selectedCollectSlot.start && s.enabled
 //         );
@@ -505,24 +527,30 @@
 //         }
 //       }
 //     } catch (error) {
-//       console.error("Error fetching collect slots:", error);
+//       console.error("Error in fetchCollectSlots:", error);
+//       showToast("Failed to load pickup time slots. Please try again.", "error");
 //       setCollectSlots([]);
 //     } finally {
 //       setLoadingSlots(prev => ({ ...prev, collect: false }));
 //     }
-//   }, [collectDate, fetchTimeSlots, selectedCollectSlot]);
+//   }, [collectDate, fetchTimeSlots, selectedCollectSlot, showToast]);
 
 //   const fetchDeliverySlots = useCallback(async () => {
-//     if (!deliverDate || !collectDate || !selectedCollectSlotStart) return;
+//     if (!deliverDate || !collectDate || !selectedCollectSlotStart) {
+//       console.log("Missing requirements for delivery slots:", { deliverDate, collectDate, selectedCollectSlotStart });
+//       return;
+//     }
     
+//     console.log("Fetching delivery slots for date:", deliverDate);
 //     setLoadingSlots(prev => ({ ...prev, deliver: true }));
     
 //     try {
 //       const slots = await fetchTimeSlots(deliverDate, true);
+//       console.log("Received delivery slots:", slots);
 //       setDeliverSlots(slots);
 
-//       // Reset if selected slot is no longer valid
-//       if (selectedDeliverSlot) {
+//       // Reset selected slot if it's no longer valid
+//       if (selectedDeliverSlot && slots.length > 0) {
 //         const stillValid = slots.find(
 //           (s) => s.start === selectedDeliverSlot.start && s.enabled
 //         );
@@ -533,64 +561,16 @@
 //         }
 //       }
 //     } catch (error) {
-//       console.error("Error fetching delivery slots:", error);
+//       console.error("Error in fetchDeliverySlots:", error);
+//       showToast("Failed to load delivery time slots. Please try again.", "error");
 //       setDeliverSlots([]);
 //     } finally {
 //       setLoadingSlots(prev => ({ ...prev, deliver: false }));
 //     }
-//   }, [deliverDate, collectDate, selectedCollectSlotStart, fetchTimeSlots, selectedDeliverSlot]);
-
-//   /* ------------------------- Create/Update User Account ------------------- */
-//   // Create or update user account and get JWT token
-//   const createOrUpdateUserAccount = useCallback(async () => {
-//     if (!userInfo.name.trim() || !userInfo.email.trim() || !userInfo.phone.trim()) {
-//       throw new Error("Please fill in all personal information");
-//     }
-
-//     try {
-//       const response = await fetch(`${API_BASE}/quick-booking`, {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           name: userInfo.name,
-//           email: userInfo.email,
-//           phone: userInfo.phone,
-//         }),
-//       });
-
-//       const data = await response.json();
-      
-//       if (!response.ok) {
-//         throw new Error(data.message || "Failed to create/update user account");
-//       }
-
-//       // Save the token
-//       if (data.token) {
-//         localStorage.setItem("jwtToken", data.token);
-//         setUserToken(data.token);
-        
-//         // Update auth context
-//         if (data.user) {
-//           login({
-//             id: data.user.id,
-//             name: data.user.name,
-//             email: data.user.email,
-//             phone: data.user.phone,
-//           });
-//         }
-//       }
-
-//       return data.token;
-//     } catch (error) {
-//       console.error("Error creating/updating user account:", error);
-//       throw error;
-//     }
-//   }, [userInfo, login]);
+//   }, [deliverDate, collectDate, selectedCollectSlotStart, fetchTimeSlots, selectedDeliverSlot, showToast]);
 
 //   /* ------------------------- Order Preparation ---------------------------- */
-//   const prepareOrderData = useCallback((paymentMethodId = null, includePaymentInfo = false) => {
+//   const prepareOrderData = useCallback(() => {
 //     if (!selectedCollectSlot || !selectedDeliverSlot || !collectDate || !deliverDate) {
 //       return null;
 //     }
@@ -608,7 +588,6 @@
 //     // Get address details
 //     let addressData = {};
 //     if (userToken && addresses.length > 0 && selectedAddressId) {
-//       // For users with saved addresses
 //       const selectedAddress = addresses.find(addr => 
 //         String(addr.address_id) === selectedAddressId
 //       );
@@ -620,19 +599,22 @@
 //         postcode: selectedAddress?.postcode || "",
 //         city: selectedAddress?.city || "",
 //         house_number: selectedAddress?.house_number || "",
+//         full_address: selectedAddress?.full_address || "",
+//         street_name: selectedAddress?.full_address || "",
 //       };
 //     } else {
-//       // For users without saved addresses (new users)
 //       addressData = {
 //         street_address: addressForm.street_address,
 //         postcode: addressForm.postcode,
 //         city: addressForm.city || "",
 //         full_address: addressForm.street_address,
 //         additional_details: addressForm.additional_details || "",
+//         house_number: addressForm.house_number || "",
+//         street_name: addressForm.street_address || "",
 //       };
 //     }
 
-//     const baseOrder = {
+//     return {
 //       ...addressData,
 //       name: userInfo.name,
 //       email: userInfo.email,
@@ -641,21 +623,7 @@
 //       delivery_slot: deliverySlotText,
 //       notes: notes.trim() || null,
 //       images: [],
-//       minimum_order_amount: MINIMUM_ORDER_AMOUNT,
-//       service_charge: SERVICE_CHARGE,
-//       estimated_total: 0,
-//       currency: "gbp",
 //     };
-
-//     // Add payment info only if includePaymentInfo is true AND we have paymentMethodId
-//     if (includePaymentInfo && paymentMethodId) {
-//       baseOrder.payment_status = "card_saved";
-//       baseOrder.payment_type = "invoice_based";
-//       baseOrder.stripe_customer_id = customerId;
-//       baseOrder.payment_method_id = paymentMethodId;
-//     }
-
-//     return baseOrder;
 //   }, [
 //     selectedCollectSlot,
 //     selectedDeliverSlot,
@@ -668,19 +636,163 @@
 //     useSameAddress,
 //     addressForm,
 //     notes,
-//     customerId,
 //     userInfo,
 //   ]);
 
-//   /* ------------------------- NEW: Booking Without Card -------------------- */
-//   const handleBookingWithoutCard = async () => {
+//   /* ------------------------- Main Booking Flow ---------------------------- */
+//   const handleConfirmBooking = async () => {
 //     setLoading(true);
     
 //     try {
+//       // 1️⃣ Prepare order data
+//       const order = prepareOrderData();
+//       if (!order) throw new Error("Please select pickup and delivery times");
+
+//       console.log("Creating quick booking:", order);
+
+//       // 2️⃣ Create quick booking (ALWAYS FIRST)
+//       const response = await fetch(`${API_BASE}/quick-booking`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(order),
+//       });
+
+//       const bookingData = await response.json();
+
+//       if (!response.ok) {
+//         throw new Error(bookingData.message || "Failed to create booking");
+//       }
+
+//       // 3️⃣ Store booking data
+//       setBookingData(bookingData);
+//       setPendingBookingData(bookingData);
+
+//       // 4️⃣ Save token and update state
+//       if (bookingData.token) {
+//         localStorage.setItem("jwtToken", bookingData.token);
+//         setUserToken(bookingData.token);
+        
+//         if (bookingData.user) {
+//           login({
+//             id: bookingData.user.id,
+//             name: bookingData.user.name,
+//             email: bookingData.user.email,
+//             phone: bookingData.user.phone,
+//           });
+//         }
+//       }
+
+//       // 5️⃣ Store user data for PersonalInfo component
+//       const userInfoData = {
+//         name: userInfo.name,
+//         email: userInfo.email,
+//         phone: userInfo.phone,
+//         bookingId: bookingData.order?.id
+//       };
+//       localStorage.setItem("quick_booking_user_info", JSON.stringify(userInfoData));
+
+//       // 6️⃣ For ALL users: If they want to save card, show Stripe setup
+//       if (saveCardOption) {
+//         showToast("Please complete card setup to confirm your booking", "info");
+//         await initiateStripeSetup(bookingData.token, bookingData.stripeCustomerId);
+//       } else {
+//         showToast("Booking created successfully!", "success");
+        
+//         setTimeout(() => {
+//           navigate("/thankyou", {
+//             state: {
+//               orderId: bookingData.order?.id,
+//               paymentStatus: "pending",
+//               paymentMethod: "invoice",
+//               pickupDate: formatDateDDMMYYYY(collectDate),
+//               pickupTime: formatTimeRange24Hour(selectedCollectSlot?.start, selectedCollectSlot?.end),
+//               deliveryDate: formatDateDDMMYYYY(deliverDate),
+//               deliveryTime: formatTimeRange24Hour(selectedDeliverSlot?.start, selectedDeliverSlot?.end),
+//               message: "Your quick booking has been confirmed! You'll receive an invoice after service.",
+//             },
+//           });
+//         }, 1000);
+//       }
+
+//     } catch (error) {
+//       console.error("Booking error:", error);
+//       showToast(error.message || "Failed to create booking", "error");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Handle saved card booking for logged-in users with saved cards
+//   const handleSavedCardBooking = async () => {
+//     if (!selectedCard) {
+//       showToast("Please select a card to use", "error");
+//       return;
+//     }
+
+//     setLoading(true);
+    
+//     try {
+//       const selectedCardData = savedCards.find(card => card.id === selectedCard);
+//       if (!selectedCardData) {
+//         throw new Error("Selected card not found");
+//       }
+
 //       const order = prepareOrderData();
 //       if (!order) throw new Error("Order data missing");
 
-//       console.log("Creating booking without card:", order);
+//       const orderWithPayment = {
+//         ...order,
+//         payment_method_id: selectedCardData.payment_method_id,
+//         stripe_customer_id: customerId,
+//       };
+
+//       const response = await fetch(`${API_BASE}/express_order`, {
+//         method: "POST",
+//         headers: {
+//           "Authorization": `Bearer ${userToken}`,
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(orderWithPayment),
+//       });
+
+//       const data = await response.json();
+//       if (!response.ok) {
+//         throw new Error(data.error || "Order creation failed");
+//       }
+
+//       showToast("Booking confirmed with saved card!", "success");
+      
+//       setTimeout(() => {
+//         navigate("/thankyou", {
+//           state: {
+//             orderId: data.order_id,
+//             paymentStatus: "card_saved",
+//             paymentMethod: "saved_card",
+//             pickupDate: formatDateDDMMYYYY(collectDate),
+//             pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
+//             deliveryDate: formatDateDDMMYYYY(deliverDate),
+//             deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
+//           },
+//         });
+//       }, 1000);
+
+//     } catch (error) {
+//       console.error("Saved card booking error:", error);
+//       showToast(error.message || "Failed to create booking", "error");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Handle "Use Another Card" for logged-in users
+//   const handleUseAnotherCard = async () => {
+//     try {
+//       setSetupProcessing(true);
+      
+//       const order = prepareOrderData();
+//       if (!order) throw new Error("Please select pickup and delivery times");
 
 //       const response = await fetch(`${API_BASE}/quick-booking`, {
 //         method: "POST",
@@ -690,180 +802,59 @@
 //         body: JSON.stringify(order),
 //       });
 
-//       const data = await response.json();
+//       const bookingData = await response.json();
 
 //       if (!response.ok) {
-//         throw new Error(data.message || "Failed to create booking");
+//         throw new Error(bookingData.message || "Failed to create booking");
 //       }
 
-//       // If user was created, store the token
-//       if (data.token) {
-//         localStorage.setItem("jwtToken", data.token);
-//         setUserToken(data.token);
-        
-//         if (data.user) {
-//           login({
-//             id: data.user.id,
-//             name: data.user.name,
-//             email: data.user.email,
-//             phone: data.user.phone,
-//           });
-//         }
-//       }
+//       setBookingData(bookingData);
+//       setPendingBookingData(bookingData);
 
-//       // Show success and redirect
-//       showToast("Booking created successfully!");
+//       const token = userToken || localStorage.getItem("jwtToken");
+//       if (!token) throw new Error("Authentication required");
       
-//       setTimeout(() => {
-//         navigate("/thankyou", {
-//           state: {
-//             orderId: data.order?.id || data.order_id,
-//             paymentStatus: "pending",
-//             paymentMethod: "invoice",
-//             pickupDate: formatDateDDMMYYYY(collectDate),
-//             pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
-//             deliveryDate: formatDateDDMMYYYY(deliverDate),
-//             deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
-//             message: "Your quick booking has been confirmed! You'll receive an invoice after service.",
-//           },
-//         });
-//       }, 1000);
+//       await initiateStripeSetup(token, bookingData.stripeCustomerId);
+      
+//     } catch (err) {
+//       showToast(err.message || "Failed to setup card", "error");
+//     } finally {
+//       setSetupProcessing(false);
+//     }
+//   };
+
+//   // Initiate Stripe setup AFTER booking
+//   const initiateStripeSetup = async (token, stripeCustomerId) => {
+//     setSetupProcessing(true);
+
+//     try {
+//       if (!token) {
+//         throw new Error("Authentication token missing");
+//       }
+
+//       const setupData = await createSetupIntent(token);
+      
+//       if (!setupData || !setupData.setupIntentClientSecret) {
+//         throw new Error("Stripe setup failed");
+//       }
+
+//       setSetupClientSecret(setupData.setupIntentClientSecret);
+//       setCustomerId(setupData.customerId || stripeCustomerId);
+//       setShowPaymentSetup(true);
 
 //     } catch (error) {
-//       console.error("Booking without card error:", error);
-//       showToast(error.message || "Failed to create booking. Please try again.");
+//       console.error("Stripe setup error:", error);
+//       showToast(error.message || "Failed to setup card payment", "error");
+      
+//       setTimeout(() => {
+//         showToast("Please try again to complete your booking", "error");
+//       }, 2000);
 //     } finally {
-//       setLoading(false);
+//       setSetupProcessing(false);
 //     }
 //   };
 
-//   /* ------------------------- Booking Flow Handlers ------------------------ */
-//   // Main booking handler for all users
-// const handleConfirmBooking = async () => {
-
-//   setSetupProcessing(true);
- 
-//   try {
-
-//     // 1️⃣ ALWAYS create token first
-
-//     let token = userToken || localStorage.getItem("jwtToken");
- 
-// // Create user ONLY when booking is confirmed
-
-// if (!token) {
-
-//   token = await createOrUpdateUserAccount();
-
-// }
-
-
- 
-//     // 2️⃣ If card save / new card → Stripe flow
-
-//     if (saveCardOption || useNewCard || savedCards.length === 0) {
-
-//       await initiatePaymentFlow();
-
-//       return;
-
-//     }
- 
-//     // 3️⃣ Else use saved card
-
-//     await handleSavedCardBooking(token);
- 
-//   } catch (err) {
-
-//     console.error(err);
-
-//     showToast(err.message || "Booking failed");
-
-//   } finally {
-
-//     setSetupProcessing(false);
-
-//   }
-
-// };
-
- 
-
-//   // Handle saved card booking for users with saved cards
-//   const handleSavedCardBooking = async (token) => {
-//     const defaultCard = savedCards.find(card => card.is_default);
-//     if (!defaultCard) {
-//       throw new Error("No saved card found");
-//     }
-
-//     const order = prepareOrderData(defaultCard.payment_method_id, true);
-//     if (!order) throw new Error("Order data missing");
-
-//     const response = await fetch(`${API_BASE}/express_order`, {
-//       method: "POST",
-//       headers: {
-//         "Authorization": `Bearer ${token}`,
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify(order),
-//     });
-
-//     const data = await response.json();
-//     if (!response.ok) {
-//       throw new Error(data.error || "Order creation failed");
-//     }
-
-//     showToast("Booking confirmed with saved card!");
-    
-//     setTimeout(() => {
-//       navigate("/thankyou", {
-//         state: {
-//           orderId: data.order_id,
-//           paymentStatus: "card_saved",
-//           paymentMethod: "saved_card",
-//           pickupDate: formatDateDDMMYYYY(collectDate),
-//           pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
-//           deliveryDate: formatDateDDMMYYYY(deliverDate),
-//           deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
-//         },
-//       });
-//     }, 1000);
-//   };
-
-//   // Initiate payment flow for new card
-// const initiatePaymentFlow = async () => {
-
-//   // 1️⃣ FIRST ensure token exists
-
-//   const token = userToken || localStorage.getItem("jwtToken");
- 
-// if (!token) {
-
-//   throw new Error("User token missing. Booking not initialised.");
-
-// }
-
- 
-//   // 2️⃣ THEN call Stripe (SAFE)
-
-//   const setupData = await createSetupIntent(token);
- 
-//   if (!setupData || !setupData.setupIntentClientSecret) {
-
-//     throw new Error("Stripe setup failed");
-
-//   }
- 
-//   setSetupClientSecret(setupData.setupIntentClientSecret);
-
-//   setCustomerId(setupData.customerId || customerId);
-
-//   setShowPaymentSetup(true);
-
-// };
- 
-
-//   // Handle Stripe setup success
+//   // Handle Stripe setup success (card saved)
 //   const handleSetupSuccess = async (setupIntent) => {
 //     setSetupProcessing(true);
 
@@ -876,8 +867,7 @@
 //         throw new Error("Payment method not returned by Stripe");
 //       }
 
-//       // Set as default card if user is logged in
-//       if (token) {
+//       if (customerId) {
 //         await fetch(`${API_BASE}/stripe/set-default-payment`, {
 //           method: "POST",
 //           headers: {
@@ -891,101 +881,64 @@
 //         });
 //       }
 
-//       // Create order with new card
-//       const order = prepareOrderData(paymentMethodId, true);
-//       if (!order) throw new Error("Order data missing");
-
-//       // Use appropriate endpoint based on user status
-//       const endpoint = token ? `${API_BASE}/express_order` : `${API_BASE}/quick-booking`;
-//       const headers = {
-//         "Content-Type": "application/json",
-//         ...(token && { "Authorization": `Bearer ${token}` }),
-//       };
-
-//       const response = await fetch(endpoint, {
-//         method: "POST",
-//         headers,
-//         body: JSON.stringify(order),
-//       });
-
-//       const data = await response.json();
-//       if (!response.ok) {
-//         throw new Error(data.message || data.error || "Order creation failed");
-//       }
-
-//       // Close payment modal
 //       setShowPaymentSetup(false);
-//       showToast("Booking confirmed successfully!");
+//       showToast("Card saved successfully! Your booking is confirmed.", "success");
       
-//       // Navigate to thank you page
 //       setTimeout(() => {
 //         navigate("/thankyou", {
 //           state: {
-//             orderId: data.order_id || data.order?.id,
+//             orderId: bookingData?.order?.id || pendingBookingData?.order?.id,
 //             paymentStatus: "card_saved",
 //             paymentMethod: "new_card",
 //             pickupDate: formatDateDDMMYYYY(collectDate),
-//             pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
+//             pickupTime: formatTimeRange24Hour(selectedCollectSlot?.start, selectedCollectSlot?.end),
 //             deliveryDate: formatDateDDMMYYYY(deliverDate),
-//             deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
+//             deliveryTime: formatTimeRange24Hour(selectedDeliverSlot?.start, selectedDeliverSlot?.end),
+//             message: "Your booking is confirmed and your card has been saved for future payments.",
 //           },
 //         });
 //       }, 1000);
 
 //     } catch (error) {
 //       console.error("Setup success error:", error);
-//       showToast(error.message || "Failed to confirm booking");
+//       showToast(error.message || "Failed to save card", "error");
+      
+//       if (bookingData || pendingBookingData) {
+//         setTimeout(() => {
+//           navigate("/thankyou", {
+//             state: {
+//               orderId: bookingData?.order?.id || pendingBookingData?.order?.id,
+//               paymentStatus: "card_saved",
+//               paymentMethod: "new_card",
+//               pickupDate: formatDateDDMMYYYY(collectDate),
+//               pickupTime: formatTimeRange24Hour(selectedCollectSlot?.start, selectedCollectSlot?.end),
+//               deliveryDate: formatDateDDMMYYYY(deliverDate),
+//               deliveryTime: formatTimeRange24Hour(selectedDeliverSlot?.start, selectedDeliverSlot?.end),
+//               message: "Your booking is confirmed! There was an issue setting your card as default, but you can update it later.",
+//             },
+//           });
+//         }, 1000);
+//       }
 //     } finally {
 //       setSetupProcessing(false);
 //     }
 //   };
 
 //   const handleSetupError = (errorMessage) => {
-//     showToast(errorMessage || "Failed to save card. Please try again.");
-//   };
-
-// const handleUseAnotherCard = async () => {
-
-//   try {
-
-//     setSetupProcessing(true);
- 
-//     // 1️⃣ Ensure token first
-
-//     await ensureTokenExists();
- 
-//     // 2️⃣ Then Stripe
-
-//     await initiatePaymentFlow();
- 
-//   } catch (err) {
-
-//     showToast(err.message || "Failed to setup card");
-
-//   } finally {
-
-//     setSetupProcessing(false);
-
-//   }
-
-// };
-
- 
-
-//   const handleBackToSavedCard = () => {
-//     setUseNewCard(false);
-//     setShowPaymentSetup(false);
+//     showToast(errorMessage || "Failed to save card. Please try again.", "error");
 //   };
 
 //   const handlePaymentModalCancel = () => {
 //     setShowPaymentSetup(false);
 //     setSetupClientSecret(null);
-//     setUseNewCard(false);
+    
+//     showToast("Booking not confirmed. Please complete card setup to confirm your booking.", "warning");
 //   };
 
 //   /* ---------------------------- UI Handlers ------------------------------- */
 //   const handleCollectDateChange = (e) => {
 //     const newDate = e.target.value;
+//     console.log("Collect date changed to:", newDate);
 //     setCollectDate(newDate);
 //     setSelectedCollectSlot(null);
 //     setSelectedCollectSlotStart(null);
@@ -998,8 +951,10 @@
 
 //   const handleDeliverDateChange = (e) => {
 //     const newDate = e.target.value;
+//     console.log("Delivery date changed to:", newDate);
+    
 //     if (collectDate && newDate < collectDate) {
-//       showToast("Delivery date cannot be before pickup date");
+//       showToast("Delivery date cannot be before pickup date", "error");
 //       return;
 //     }
 
@@ -1013,8 +968,10 @@
 //   const handleCollectSlotSelect = (slot) => {
 //     if (!slot.enabled) return;
 
+//     console.log("Selected collect slot:", slot);
+    
 //     const start = new Date(slot.start);
-//     const end = new Date(slot.end);
+//     const end = slot.end ? new Date(slot.end) : null;
     
 //     setSelectedCollectSlot(slot);
 //     setSelectedCollectSlotStart(start);
@@ -1030,8 +987,10 @@
 //   const handleDeliverSlotSelect = (slot) => {
 //     if (!slot.enabled) return;
     
+//     console.log("Selected delivery slot:", slot);
+    
 //     const start = new Date(slot.start);
-//     const end = new Date(slot.end);
+//     const end = slot.end ? new Date(slot.end) : null;
     
 //     setSelectedDeliverSlot(slot);
 //     setSelectedDeliverSlotStart(start);
@@ -1060,6 +1019,17 @@
 //     }));
 //   };
 
+//   const handleAddAddressClick = () => {
+//     setShowAddressForm(true);
+//     setAddressForm({
+//       street_address: "",
+//       postcode: "",
+//       city: "",
+//       additional_details: "",
+//       house_number: ""
+//     });
+//   };
+
 //   /* ---------------------------- Effects ----------------------------------- */
 //   useEffect(() => {
 //     if (userToken) {
@@ -1072,15 +1042,23 @@
 //     }
 //   }, [userToken, fetchUserProfile, fetchAddresses, fetchSavedCards, ensureStripeCustomer]);
 
+//   // Effect to fetch collect slots when collectDate changes
 //   useEffect(() => {
 //     if (collectDate) {
-//       fetchCollectSlots();
+//       const timer = setTimeout(() => {
+//         fetchCollectSlots();
+//       }, 300);
+//       return () => clearTimeout(timer);
 //     }
 //   }, [collectDate, fetchCollectSlots]);
 
+//   // Effect to fetch delivery slots when deliverDate or pickup details change
 //   useEffect(() => {
 //     if (deliverDate && selectedCollectSlotStart) {
-//       fetchDeliverySlots();
+//       const timer = setTimeout(() => {
+//         fetchDeliverySlots();
+//       }, 300);
+//       return () => clearTimeout(timer);
 //     }
 //   }, [deliverDate, selectedCollectSlotStart, fetchDeliverySlots]);
 
@@ -1101,18 +1079,15 @@
 
 //   // Check if form is valid for booking
 //   const isBookingValid = () => {
-//     // Basic validations for all users
 //     if (!userInfo.name.trim()) return false;
 //     if (!userInfo.email.trim()) return false;
 //     if (!userInfo.phone.trim()) return false;
 //     if (!selectedCollectSlot || !selectedDeliverSlot) return false;
     
-//     if (userToken && addresses.length > 0) {
-//       // Logged-in user with saved addresses
+//     if (userToken && addresses.length > 0 && !showAddressForm) {
 //       if (!selectedAddressId) return false;
 //       if (!useSameAddress && !selectedPickupAddressId) return false;
 //     } else {
-//       // New user or user without saved addresses
 //       if (!addressForm.street_address.trim()) return false;
 //       if (!addressForm.postcode.trim()) return false;
 //     }
@@ -1123,18 +1098,22 @@
 //   /* ------------------------------ Render ---------------------------------- */
 //   return (
 //     <div className="qb-page">
-//       <main className="qb-container">
+//       <div className="qb-container">
+
 //         {/* Title Section */}
 //         <div className="qb-title-section">
-//           <h1 className="qb-title">Quick Booking</h1>
+//           <h1 className="qb-title">
+//             <i className="fas fa-calendar-check qb-title-icon"></i>
+//             Book Laundry Service
+//           </h1>
 //           <p className="qb-subtitle">
-//             Fill in your details and we'll take care of the rest. No account needed!
+//             Fill in your details, choose pickup & delivery times, and we'll handle the rest
 //           </p>
           
 //           {userToken && (
 //             <div className="qb-user-info">
-//               <i className="fas fa-user-circle"></i>
-//               <span>Welcome back, {userInfo.name || user?.email}! Your information has been loaded.</span>
+//               <i className="fas fa-user-check"></i>
+//               <span>Welcome back, {userInfo.name || user?.email}! Your info is pre-filled.</span>
 //             </div>
 //           )}
 //         </div>
@@ -1142,22 +1121,26 @@
 //         {/* Personal Information Card */}
 //         <div className="qb-card">
 //           <div className="qb-card-header">
-//             <div className="qb-card-icon">
+//             <div className="qb-section-icon">
 //               <i className="fas fa-user"></i>
 //             </div>
-//             <h2 className="qb-card-title">Personal Information</h2>
+//             <div>
+//               <h2 className="qb-section-title">Your Information</h2>
+//               <p className="qb-section-subtitle">We'll use this to contact you about your order</p>
+//             </div>
 //           </div>
 
 //           <div className="qb-form-grid">
 //             <div className="qb-form-group">
 //               <label className="qb-form-label">
-//                 Full Name *
+//                 <i className="fas fa-user-tag"></i>
+//                 Full Name
 //                 <input
 //                   type="text"
 //                   className="qb-form-input"
 //                   value={userInfo.name}
 //                   onChange={handleUserInfoChange("name")}
-//                   placeholder="Enter your full name"
+//                   placeholder="John Smith"
 //                   required
 //                 />
 //               </label>
@@ -1165,13 +1148,14 @@
 
 //             <div className="qb-form-group">
 //               <label className="qb-form-label">
-//                 Email Address *
+//                 <i className="fas fa-envelope"></i>
+//                 Email Address
 //                 <input
 //                   type="email"
 //                   className="qb-form-input"
 //                   value={userInfo.email}
 //                   onChange={handleUserInfoChange("email")}
-//                   placeholder="Enter your email"
+//                   placeholder="john@example.com"
 //                   required
 //                 />
 //               </label>
@@ -1179,13 +1163,14 @@
 
 //             <div className="qb-form-group">
 //               <label className="qb-form-label">
-//                 Phone Number *
+//                 <i className="fas fa-phone"></i>
+//                 Phone Number
 //                 <input
 //                   type="tel"
 //                   className="qb-form-input"
 //                   value={userInfo.phone}
 //                   onChange={handleUserInfoChange("phone")}
-//                   placeholder="Enter your phone number"
+//                   placeholder="+44 20 1234 5678"
 //                   required
 //                 />
 //               </label>
@@ -1196,63 +1181,75 @@
 //         {/* Address Section */}
 //         <div className="qb-card">
 //           <div className="qb-card-header">
-//             <div className="qb-card-icon">
+//             <div className="qb-section-icon">
 //               <i className="fas fa-map-marker-alt"></i>
 //             </div>
-//             <h2 className="qb-card-title">Delivery Address</h2>
+//             <div>
+//               <h2 className="qb-section-title">Delivery Address</h2>
+//               <p className="qb-section-subtitle">Where should we pick up and deliver your laundry?</p>
+//             </div>
 //           </div>
 
-//           {userToken && addresses.length > 0 ? (
-//             // User with saved addresses
+//           {userToken && addresses.length > 0 && !showAddressForm ? (
 //             <>
-//               <div className="qb-address-grid">
-//                 {addresses.map((addr) => (
-//                   <div
-//                     key={addr.address_id}
-//                     className={`qb-address-card ${
-//                       selectedAddressId === String(addr.address_id) ? "selected" : ""
-//                     }`}
-//                     onClick={() => {
-//                       setSelectedAddressId(String(addr.address_id));
-//                       if (useSameAddress) setSelectedPickupAddressId(String(addr.address_id));
-//                     }}
-//                   >
-//                     <div className="qb-address-header">
-//                       <h3 className="qb-address-name">
-//                         <i className="fas fa-map-marker-alt qb-address-type-icon"></i>
-//                         {addr.name || addr.address_type || "Address"}
-//                       </h3>
-//                       {addr.is_selected && (
-//                         <span className="qb-default-badge">Default</span>
+//               <div className="qb-address-selection">
+//                 <h3 className="qb-address-selection-title">Select a Saved Address</h3>
+//                 <div className="qb-address-grid">
+//                   {addresses.map((addr) => (
+//                     <div
+//                       key={addr.address_id}
+//                       className={`qb-address-option ${
+//                         selectedAddressId === String(addr.address_id) ? "selected" : ""
+//                       }`}
+//                       onClick={() => {
+//                         setSelectedAddressId(String(addr.address_id));
+//                         if (useSameAddress) setSelectedPickupAddressId(String(addr.address_id));
+//                       }}
+//                     >
+//                       <div className="qb-address-option-header">
+//                         <div className="qb-address-type">
+//                           <i className="fas fa-home"></i>
+//                           <span>{addr.name || "Home"}</span>
+//                         </div>
+//                         {addr.is_selected && (
+//                           <span className="qb-default-badge">
+//                             <i className="fas fa-star"></i>
+//                             Default
+//                           </span>
+//                         )}
+//                       </div>
+//                       <div className="qb-address-option-details">
+//                         <p className="qb-address-text">{addr.full_address}</p>
+//                         <p className="qb-address-postcode">
+//                           <i className="fas fa-map-pin"></i>
+//                           {addr.postcode}
+//                         </p>
+//                       </div>
+//                       {selectedAddressId === String(addr.address_id) && (
+//                         <div className="qb-address-selected">
+//                           <i className="fas fa-check-circle"></i>
+//                         </div>
 //                       )}
 //                     </div>
-//                     <div className="qb-address-details">
-//                       <div className="qb-address-line">
-//                         <strong>{addr.full_address}</strong>
-//                       </div>
-//                       {addr.city && (
-//                         <div className="qb-address-line">{addr.city}</div>
-//                       )}
-//                       {addr.postcode && (
-//                         <div className="qb-address-line">Postcode: {addr.postcode}</div>
-//                       )}
-//                     </div>
-//                     {selectedAddressId === String(addr.address_id) && (
-//                       <div className="qb-address-check">
-//                         <i className="fas fa-check-circle"></i>
-//                       </div>
-//                     )}
-//                   </div>
-//                 ))}
+//                   ))}
 
-//                 <div className="qb-add-address" onClick={() => navigate("/addresses")}>
-//                   <i className="fas fa-plus qb-add-icon"></i>
-//                   <span className="qb-add-text">Add New Address</span>
+//                   <div 
+//                     className="qb-add-address-option"
+//                     onClick={handleAddAddressClick}
+//                   >
+//                     <div className="qb-add-address-icon">
+//                       <i className="fas fa-plus-circle"></i>
+//                     </div>
+//                     <div className="qb-add-address-text">
+//                       <h4>Add New Address</h4>
+//                       <p>Enter a different delivery address</p>
+//                     </div>
+//                   </div>
 //                 </div>
 //               </div>
 
-//               <div className="qb-toggle">
-//                 <label className="qb-toggle-label">
+//               <div className="qb-address-toggle">
+//                 <label className="qb-toggle-container">
 //                   <div className="qb-toggle-switch">
 //                     <input
 //                       type="checkbox"
@@ -1261,23 +1258,40 @@
 //                     />
 //                     <span className="qb-toggle-slider"></span>
 //                   </div>
-//                   Use same address for pickup
+//                   <div className="qb-toggle-label">
+//                     <span className="qb-toggle-title">Use same address for pickup</span>
+//                     <span className="qb-toggle-description">Pickup and delivery at the same location</span>
+//                   </div>
 //                 </label>
 //               </div>
 //             </>
 //           ) : (
-//             // New user or user without saved addresses
-//             <div className="qb-address-form">
+//             <div className="qb-address-form-section">
 //               <div className="qb-form-grid">
+//                 <div className="qb-form-group">
+//                   <label className="qb-form-label">
+//                     <i className="fas fa-home"></i>
+//                     House/Flat Number
+//                     <input
+//                       type="text"
+//                       className="qb-form-input"
+//                       value={addressForm.house_number}
+//                       onChange={handleAddressFormChange("house_number")}
+//                       placeholder="123"
+//                     />
+//                   </label>
+//                 </div>
+
 //                 <div className="qb-form-group full-width">
 //                   <label className="qb-form-label">
+//                     <i className="fas fa-road"></i>
 //                     Street Address *
 //                     <input
 //                       type="text"
 //                       className="qb-form-input"
 //                       value={addressForm.street_address}
 //                       onChange={handleAddressFormChange("street_address")}
-//                       placeholder="123 Main Street, Apt 4B"
+//                       placeholder="Main Street, Apt 4B"
 //                       required
 //                     />
 //                   </label>
@@ -1285,6 +1299,7 @@
 
 //                 <div className="qb-form-group">
 //                   <label className="qb-form-label">
+//                     <i className="fas fa-map-pin"></i>
 //                     Postcode *
 //                     <input
 //                       type="text"
@@ -1299,7 +1314,8 @@
 
 //                 <div className="qb-form-group">
 //                   <label className="qb-form-label">
-//                     City
+//                     <i className="fas fa-city"></i>
+//                     City/Town
 //                     <input
 //                       type="text"
 //                       className="qb-form-input"
@@ -1312,17 +1328,28 @@
 
 //                 <div className="qb-form-group full-width">
 //                   <label className="qb-form-label">
+//                     <i className="fas fa-info-circle"></i>
 //                     Additional Details (Optional)
 //                     <textarea
-//                       className="qb-form-input"
+//                       className="qb-form-textarea"
 //                       value={addressForm.additional_details}
 //                       onChange={handleAddressFormChange("additional_details")}
-//                       placeholder="Floor, building, landmarks..."
+//                       placeholder="Floor, building, landmarks, access instructions..."
 //                       rows="2"
 //                     />
 //                   </label>
 //                 </div>
 //               </div>
+
+//               {userToken && addresses.length > 0 && showAddressForm && (
+//                 <button
+//                   className="qb-secondary-btn"
+//                   onClick={() => setShowAddressForm(false)}
+//                 >
+//                   <i className="fas fa-arrow-left"></i>
+//                   Back to Saved Addresses
+//                 </button>
+//               )}
 //             </div>
 //           )}
 //         </div>
@@ -1330,75 +1357,97 @@
 //         {/* Pickup & Delivery Schedule */}
 //         <div className="qb-card">
 //           <div className="qb-card-header">
-//             <div className="qb-card-icon">
+//             <div className="qb-section-icon">
 //               <i className="fas fa-calendar-alt"></i>
 //             </div>
-//             <h2 className="qb-card-title">Schedule Pickup & Delivery</h2>
+//             <div>
+//               <h2 className="qb-section-title">Schedule Pickup & Delivery</h2>
+//               <p className="qb-section-subtitle">Choose convenient times for collection and return</p>
+//             </div>
 //           </div>
 
-//           <div className="qb-schedule-grid">
-//             {/* Pickup Date */}
+//           <div className="qb-schedule-container">
+//             {/* Pickup Section */}
 //             <div className="qb-schedule-section">
 //               <div className="qb-schedule-header">
-//                 <i className="fas fa-truck-loading qb-schedule-icon"></i>
-//                 <h3 className="qb-schedule-title">Pickup Date & Time</h3>
+//                 <div className="qb-schedule-icon pickup">
+//                   <i className="fas fa-truck-loading"></i>
+//                 </div>
+//                 <div>
+//                   <h3 className="qb-schedule-title">Pickup</h3>
+//                   <p className="qb-schedule-subtitle">When should we collect your laundry?</p>
+//                 </div>
 //               </div>
 
-//               <div className="qb-date-input">
-//                 <label className="qb-date-label">Select Pickup Date</label>
-//                 <input
-//                   type="date"
-//                   className="qb-date-field"
-//                   value={collectDate}
-//                   onChange={handleCollectDateChange}
-//                   min={today}
-//                 />
+//               <div className="qb-date-section">
+//                 <label className="qb-date-label">
+//                   <i className="fas fa-calendar-day"></i>
+//                   Pickup Date
+//                 </label>
+//                 <div className="qb-date-input-container">
+//                   <input
+//                     type="date"
+//                     className="qb-date-input"
+//                     value={collectDate}
+//                     onChange={handleCollectDateChange}
+//                     min={today}
+//                   />
+//                   <i className="fas fa-calendar-alt qb-date-icon"></i>
+//                 </div>
 //                 {collectDate && (
-//                   <p className="qb-date-display">{formatDateDDMMYYYY(collectDate)}</p>
+//                   <p className="qb-date-display">
+//                     <i className="fas fa-check-circle"></i>
+//                     Selected: {formatDateDDMMYYYY(collectDate)}
+//                   </p>
 //                 )}
 //               </div>
 
 //               {collectDate && (
-//                 <div className="qb-slots-container">
-//                   <label className="qb-slots-label">Available Pickup Times</label>
+//                 <div className="qb-time-slots-section">
+//                   <label className="qb-time-label">
+//                     <i className="fas fa-clock"></i>
+//                     Available Pickup Times
+//                   </label>
                   
 //                   {loadingSlots.collect ? (
-//                     <div className="qb-loading-slots">
-//                       <div className="qb-loading-spinner-small"></div>
+//                     <div className="qb-loading-state">
+//                       <div className="qb-loading-spinner"></div>
 //                       <p>Loading available slots...</p>
 //                     </div>
 //                   ) : collectSlots.length === 0 ? (
-//                     <div className="qb-no-slots">
+//                     <div className="qb-empty-state">
 //                       <i className="fas fa-calendar-times"></i>
 //                       <p>No slots available for this date</p>
 //                     </div>
 //                   ) : (
-//                     <div className="qb-slots-grid">
+//                     <div className="qb-time-slots-grid">
 //                       {collectSlots.map((slot, index) => (
 //                         <button
 //                           key={`collect-${slot.start}-${index}`}
 //                           type="button"
-//                           className={`qb-slot-chip ${
+//                           className={`qb-time-slot ${
 //                             selectedCollectSlot?.start === slot.start ? "selected" : ""
 //                           } ${!slot.enabled ? "disabled" : ""}`}
 //                           onClick={() => handleCollectSlotSelect(slot)}
 //                           disabled={!slot.enabled}
 //                         >
-//                           {formatTimeRange24Hour(slot.start, slot.end)}
+//                           <span className="qb-slot-time">{formatTimeRange24Hour(slot.start, slot.end)}</span>
+//                           {selectedCollectSlot?.start === slot.start && (
+//                             <i className="fas fa-check qb-slot-check"></i>
+//                           )}
 //                         </button>
 //                       ))}
 //                     </div>
 //                   )}
 
 //                   {selectedCollectSlot && (
-//                     <div className="qb-selected-slot">
+//                     <div className="qb-selected-slot-info">
 //                       <div className="qb-selected-slot-header">
-//                         <i className="fas fa-check-circle qb-selected-icon"></i>
-//                         <span>Selected Pickup Time</span>
+//                         <i className="fas fa-check-circle"></i>
+//                         <span>Pickup Scheduled</span>
 //                       </div>
 //                       <div className="qb-selected-slot-details">
-//                         {formatDateTimeDisplay(collectDate, selectedCollectSlot.start)}
-//                         {selectedCollectSlot.end && ` to ${formatTime24Hour(selectedCollectSlot.end)}`}
+//                         {formatDateDDMMYYYY(collectDate)} at {formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end)}
 //                       </div>
 //                     </div>
 //                   )}
@@ -1406,72 +1455,94 @@
 //               )}
 //             </div>
 
-//             {/* Delivery Date */}
+//             {/* Delivery Section */}
 //             <div className="qb-schedule-section">
 //               <div className="qb-schedule-header">
-//                 <i className="fas fa-truck qb-schedule-icon"></i>
-//                 <h3 className="qb-schedule-title">Delivery Date & Time</h3>
+//                 <div className="qb-schedule-icon delivery">
+//                   <i className="fas fa-truck"></i>
+//                 </div>
+//                 <div>
+//                   <h3 className="qb-schedule-title">Delivery</h3>
+//                   <p className="qb-section-subtitle">When should we return your laundry?</p>
+//                 </div>
 //               </div>
 
-//               <div className="qb-date-input">
-//                 <label className="qb-date-label">Select Delivery Date</label>
-//                 <input
-//                   type="date"
-//                   className="qb-date-field"
-//                   value={deliverDate}
-//                   onChange={handleDeliverDateChange}
-//                   min={minDeliveryDate}
-//                   disabled={!collectDate}
-//                 />
-//                 {deliverDate && (
-//                   <p className="qb-date-display">{formatDateDDMMYYYY(deliverDate)}</p>
-//                 )}
+//               <div className="qb-date-section">
+//                 <label className="qb-date-label">
+//                   <i className="fas fa-calendar-day"></i>
+//                   Delivery Date
+//                 </label>
+//                 <div className="qb-date-input-container">
+//                   <input
+//                     type="date"
+//                     className="qb-date-input"
+//                     value={deliverDate}
+//                     onChange={handleDeliverDateChange}
+//                     min={minDeliveryDate}
+//                     disabled={!collectDate}
+//                   />
+//                   <i className="fas fa-calendar-alt qb-date-icon"></i>
+//                 </div>
 //                 {!collectDate && (
-//                   <p className="qb-date-hint">Select pickup date first</p>
+//                   <p className="qb-date-hint">
+//                     <i className="fas fa-info-circle"></i>
+//                     Select pickup date first
+//                   </p>
+//                 )}
+//                 {deliverDate && (
+//                   <p className="qb-date-display">
+//                     <i className="fas fa-check-circle"></i>
+//                     Selected: {formatDateDDMMYYYY(deliverDate)}
+//                   </p>
 //                 )}
 //               </div>
 
 //               {deliverDate && (
-//                 <div className="qb-slots-container">
-//                   <label className="qb-slots-label">Available Delivery Times</label>
+//                 <div className="qb-time-slots-section">
+//                   <label className="qb-time-label">
+//                     <i className="fas fa-clock"></i>
+//                     Available Delivery Times
+//                   </label>
                   
 //                   {loadingSlots.deliver ? (
-//                     <div className="qb-loading-slots">
-//                       <div className="qb-loading-spinner-small"></div>
+//                     <div className="qb-loading-state">
+//                       <div className="qb-loading-spinner"></div>
 //                       <p>Loading available slots...</p>
 //                     </div>
 //                   ) : deliverSlots.length === 0 ? (
-//                     <div className="qb-no-slots">
+//                     <div className="qb-empty-state">
 //                       <i className="fas fa-calendar-times"></i>
 //                       <p>No slots available for this date</p>
 //                     </div>
 //                   ) : (
-//                     <div className="qb-slots-grid">
+//                     <div className="qb-time-slots-grid">
 //                       {deliverSlots.map((slot, index) => (
 //                         <button
 //                           key={`deliver-${slot.start}-${index}`}
 //                           type="button"
-//                           className={`qb-slot-chip ${
+//                           className={`qb-time-slot ${
 //                             selectedDeliverSlot?.start === slot.start ? "selected" : ""
 //                           } ${!slot.enabled ? "disabled" : ""}`}
 //                           onClick={() => handleDeliverSlotSelect(slot)}
 //                           disabled={!slot.enabled}
 //                         >
-//                           {formatTimeRange24Hour(slot.start, slot.end)}
+//                           <span className="qb-slot-time">{formatTimeRange24Hour(slot.start, slot.end)}</span>
+//                           {selectedDeliverSlot?.start === slot.start && (
+//                             <i className="fas fa-check qb-slot-check"></i>
+//                           )}
 //                         </button>
 //                       ))}
 //                     </div>
 //                   )}
 
 //                   {selectedDeliverSlot && (
-//                     <div className="qb-selected-slot">
+//                     <div className="qb-selected-slot-info">
 //                       <div className="qb-selected-slot-header">
-//                         <i className="fas fa-check-circle qb-selected-icon"></i>
-//                         <span>Selected Delivery Time</span>
+//                         <i className="fas fa-check-circle"></i>
+//                         <span>Delivery Scheduled</span>
 //                       </div>
 //                       <div className="qb-selected-slot-details">
-//                         {formatDateTimeDisplay(deliverDate, selectedDeliverSlot.start)}
-//                         {selectedDeliverSlot.end && ` to ${formatTime24Hour(selectedDeliverSlot.end)}`}
+//                         {formatDateDDMMYYYY(deliverDate)} at {formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end)}
 //                       </div>
 //                     </div>
 //                   )}
@@ -1484,295 +1555,282 @@
 //         {/* Special Instructions */}
 //         <div className="qb-card">
 //           <div className="qb-card-header">
-//             <div className="qb-card-icon">
+//             <div className="qb-section-icon">
 //               <i className="fas fa-sticky-note"></i>
 //             </div>
-//             <h2 className="qb-card-title">Special Instructions</h2>
+//             <div>
+//               <h2 className="qb-section-title">Special Instructions</h2>
+//               <p className="qb-section-subtitle">Any specific requirements for our team?</p>
+//             </div>
 //           </div>
 
-//           <textarea
-//             className="qb-notes-field"
-//             placeholder="Any specific requirements or notes for our team..."
-//             value={notes}
-//             onChange={(e) => setNotes(e.target.value)}
-//             maxLength={500}
-//             rows={4}
-//           />
-//           <p className="qb-notes-hint">
-//             Optional: Provide details to help us serve you better
-//             {notes.length > 0 && (
-//               <span className="qb-notes-counter"> ({notes.length}/500)</span>
-//             )}
-//           </p>
+//           <div className="qb-notes-container">
+//             <textarea
+//               className="qb-notes-input"
+//               placeholder="Example: Please ring bell twice, fragile items, specific handling instructions..."
+//               value={notes}
+//               onChange={(e) => setNotes(e.target.value)}
+//               maxLength={500}
+//               rows={3}
+//             />
+//             <div className="qb-notes-footer">
+//               <div className="qb-notes-hint">
+//                 <i className="fas fa-lightbulb"></i>
+//                 Optional but helpful for better service
+//               </div>
+//               {notes.length > 0 && (
+//                 <div className="qb-notes-counter">
+//                   {notes.length}/500 characters
+//                 </div>
+//               )}
+//             </div>
+//           </div>
 //         </div>
 
-//         {/* Payment Section - Different for logged-in vs non-logged-in users */}
-//         {!userToken ? (
-//           /* Payment Option for Non-logged-in Users */
+//         {/* Payment Section */}
+//         {!showPaymentSetup && (
 //           <div className="qb-card">
-//             <div className="payment-method-header">
-//               <div className="payment-method-title">
+//             <div className="qb-card-header">
+//               <div className="qb-section-icon">
 //                 <i className="fas fa-credit-card"></i>
-//                 <h2 className="qb-card-title">Payment Option</h2>
+//               </div>
+//               <div>
+//                 <h2 className="qb-section-title">Payment Method</h2>
+//                 <p className="qb-section-subtitle">Choose how you'd like to pay</p>
+//               </div>
+//               <div className="qb-security-badge">
+//                 <i className="fas fa-shield-alt"></i>
+//                 <span>Secure Payment</span>
 //               </div>
 //             </div>
 
-//             <div className="save-card-option">
-//               <div className="save-card-toggle">
-//                 <label className="save-card-label">
-//                   <input
-//                     type="checkbox"
-//                     checked={saveCardOption}
-//                     onChange={(e) => setSaveCardOption(e.target.checked)}
-//                   />
-//                   <span className="save-card-text">
-//                     <strong>Save my card for faster checkout next time</strong>
-//                     <br />
-//                     Your card will be securely saved by Stripe. No charges until your laundry manager sends the invoice.
-//                   </span>
-//                 </label>
+//             {userToken && loadingCards ? (
+//               <div className="qb-loading-cards">
+//                 <div className="qb-loading-spinner"></div>
+//                 <p>Loading your saved cards...</p>
 //               </div>
-              
-//               <div className="payment-actions-container">
-//                 <button 
-//                   className="qb-submit-btn" 
-//                   onClick={handleConfirmBooking}
-//                   disabled={!isBookingValid() || loading || setupProcessing}
-//                 >
-//                   {loading || setupProcessing ? (
-//                     <>
-//                       <div className="payment-loading-spinner"></div>
-//                       Processing...
-//                     </>
-//                   ) : saveCardOption ? (
-//                     <>
-//                       <i className="fas fa-credit-card"></i>
-//                       Book Now & Save Card
-//                     </>
-//                   ) : (
-//                     <>
-//                       <i className="fas fa-check-circle"></i>
-//                       Book Now (Pay Later)
-//                     </>
-//                   )}
-//                 </button>
-                
-//                 {!saveCardOption && (
-//                   <div className="payment-info-note">
-//                     <i className="fas fa-info-circle"></i>
-//                     <span>
-//                       You'll receive an invoice after service completion. No upfront payment required.
-//                     </span>
-//                   </div>
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-//         ) : (
-//           /* Payment Section for Logged-in Users */
-//           !showPaymentSetup && (
-//             <div className="qb-card">
-//               <div className="payment-method-header">
-//                 <div className="payment-method-title">
-//                   <i className="fas fa-credit-card"></i>
-//                   <h2 className="qb-card-title">Payment Method</h2>
-//                 </div>
-//                 {savedCards.length > 0 && !useNewCard && (
-//                   <div className="payment-security-badge">
-//                     <i className="fas fa-shield-alt"></i>
-//                     <span>Secure Payment</span>
-//                   </div>
-//                 )}
-//               </div>
-
-//               {loadingCards ? (
-//                 <div className="saved-cards-loading">
-//                   <div className="saved-cards-loading-spinner"></div>
-//                   <p>Loading saved cards...</p>
-//                 </div>
-//               ) : savedCards.length > 0 && !useNewCard ? (
-//                 <>
-//                   <div className="saved-card-info">
-//                     <div className="saved-card-display">
-//                       <div className="saved-card-icon">
-//                         <i className={`fas fa-credit-card ${getCardBrandClass(savedCards.find(c => c.is_default)?.brand)}`}></i>
-//                       </div>
-//                       <div className="saved-card-details">
-//                         <div className="saved-card-brand">
-//                           {savedCards.find(c => c.is_default)?.brand?.toUpperCase() || 'CARD'}
-//                         </div>
-//                         <div className="saved-card-number">
-//                           •••• {savedCards.find(c => c.is_default)?.last4}
-//                         </div>
-//                         <div className="saved-card-default-badge">
-//                           <i className="fas fa-check-circle"></i>
-//                           Default Card
-//                         </div>
-//                       </div>
-//                     </div>
-                    
-//                     <div className="payment-info-note">
-//                       <i className="fas fa-info-circle"></i>
-//                       <span>
-//                         Your saved card will be charged only after your laundry manager sends the invoice.
-//                         No upfront charges.
-//                       </span>
-//                     </div>
-//                   </div>
-
-//                   <div className="payment-actions-container">
-//                     <button 
-//                       className="qb-submit-btn" 
-//                       onClick={handleConfirmBooking}
-//                       disabled={!isBookingValid() || setupProcessing}
-//                     >
-//                       {setupProcessing ? (
-//                         <>
-//                           <div className="payment-loading-spinner"></div>
-//                           Processing...
-//                         </>
-//                       ) : (
-//                         <>
-//                           <i className="fas fa-check-circle"></i>
-//                           Use Saved Card & Confirm Booking
-//                         </>
-//                       )}
-//                     </button>
-
-//                     <div className="or-divider">
-//                       <span>OR</span>
-//                     </div>
-
-//                     <button 
-//                       className="qb-link-btn use-another-card-btn" 
-//                       onClick={handleUseAnotherCard}
-//                       disabled={setupProcessing}
-//                     >
-//                       <i className="fas fa-credit-card"></i>
-//                       Pay with a different card
-//                     </button>
-//                   </div>
-//                 </>
-//               ) : (
-//                 <>
-//                   {savedCards.length > 0 && (
-//                     <div className="back-to-saved-card">
-//                       <button 
-//                         className="back-to-saved-btn"
-//                         onClick={handleBackToSavedCard}
-//                       >
-//                         <i className="fas fa-arrow-left"></i>
-//                         Back to saved card
-//                       </button>
-//                     </div>
-//                   )}
+//             ) : userToken && savedCards.length > 0 ? (
+//               <>
+//                 <div className="qb-saved-cards-section">
+//                   <h3 className="qb-saved-cards-title">
+//                     <i className="fas fa-credit-card"></i>
+//                     Your Saved Cards
+//                   </h3>
+//                   <p className="qb-saved-cards-subtitle">Select a card or add a new one</p>
                   
-//                   <div className="add-new-card-prompt">
-//                     <div className="add-card-icon">
+//                   <div className="qb-cards-list">
+//                     {savedCards.map((card) => (
+//                       <div
+//                         key={card.id}
+//                         className={`qb-card-option ${
+//                           selectedCard === card.id ? "selected" : ""
+//                         }`}
+//                         onClick={() => setSelectedCard(card.id)}
+//                       >
+//                         <div className="qb-card-option-icon">
+//                           <i className={`${getCardBrandIcon(card.brand)} ${getCardBrandClass(card.brand)}`}></i>
+//                         </div>
+//                         <div className="qb-card-option-details">
+//                           <div className="qb-card-brand">{card.brand?.toUpperCase() || 'CARD'}</div>
+//                           <div className="qb-card-number">•••• {card.last4}</div>
+//                           {card.is_default && (
+//                             <div className="qb-card-default">
+//                               <i className="fas fa-check-circle"></i>
+//                               Default Card
+//                             </div>
+//                           )}
+//                         </div>
+//                         {selectedCard === card.id && (
+//                           <div className="qb-card-selected">
+//                             <i className="fas fa-check-circle"></i>
+//                           </div>
+//                         )}
+//                       </div>
+//                     ))}
+//                   </div>
+
+//                   <div className="qb-add-card-option" onClick={handleUseAnotherCard}>
+//                     <div className="qb-add-card-icon">
+//                       <i className="fas fa-plus-circle"></i>
+//                     </div>
+//                     <div className="qb-add-card-text">
+//                       <h4>Use New Card</h4>
+//                       <p>Save a different card for future payments</p>
+//                     </div>
+//                     <div className="qb-add-card-arrow">
+//                       <i className="fas fa-chevron-right"></i>
+//                     </div>
+//                   </div>
+//                 </div>
+
+//                 <div className="qb-payment-actions">
+//                   <button 
+//                     className="qb-primary-btn qb-book-btn" 
+//                     onClick={handleSavedCardBooking}
+//                     disabled={!isBookingValid() || !selectedCard || loading}
+//                   >
+//                     {loading ? (
+//                       <>
+//                         <div className="qb-btn-spinner"></div>
+//                         Processing...
+//                       </>
+//                     ) : (
+//                       <>
+//                         <i className="fas fa-check-circle"></i>
+//                         Book with Selected Card
+//                       </>
+//                     )}
+//                   </button>
+//                 </div>
+//               </>
+//             ) : (
+//               <>
+//                 <div className="qb-payment-options">
+//                   <div className="qb-payment-option">
+//                     <div className="qb-payment-icon">
 //                       <i className="fas fa-credit-card"></i>
 //                     </div>
-//                     <div className="add-card-content">
-//                       <h3 className="add-card-title">
-//                         {savedCards.length > 0 ? "Add Another Payment Method" : "Add Payment Method"}
-//                       </h3>
-//                       <p className="add-card-description">
-//                         Your card will be securely saved for future payments. 
-//                         No charges until your laundry manager sends the invoice.
+//                     <div className="qb-payment-content">
+//                       <h3 className="qb-payment-title">Save Card for Faster Checkout</h3>
+//                       <p className="qb-payment-description">
+//                         Securely save your card with Stripe. No charges until your laundry manager sends the invoice.
 //                       </p>
 //                     </div>
-//                     <button 
-//                       className="qb-submit-btn add-card-btn" 
-//                       onClick={handleUseAnotherCard}
-//                       disabled={!isBookingValid() || setupProcessing}
-//                     >
-//                       {setupProcessing ? (
-//                         <>
-//                           <div className="payment-loading-spinner"></div>
-//                           Processing...
-//                         </>
-//                       ) : (
-//                         <>
-//                           <i className="fas fa-plus-circle"></i>
-//                           Add Card & Confirm Booking
-//                         </>
-//                       )}
-//                     </button>
+//                     <div className="qb-payment-toggle">
+//                       <label className="qb-switch">
+//                         <input
+//                           type="checkbox"
+//                           checked={saveCardOption}
+//                           onChange={(e) => setSaveCardOption(e.target.checked)}
+//                         />
+//                         <span className="qb-switch-slider"></span>
+//                       </label>
+//                     </div>
 //                   </div>
-//                 </>
-//               )}
+//                 </div>
+
+//                 <div className="qb-payment-info">
+//                   <div className="qb-payment-info-icon">
+//                     <i className="fas fa-info-circle"></i>
+//                   </div>
+//                   <div className="qb-payment-info-text">
+//                     {saveCardOption 
+//                       ? "Your card details are encrypted and stored securely by Stripe. Booking will be confirmed after card setup."
+//                       : "You'll receive an invoice after service completion. No card required for booking."}
+//                   </div>
+//                 </div>
+
+//                 <div className="qb-payment-actions">
+//                   <button 
+//                     className="qb-primary-btn qb-book-btn" 
+//                     onClick={handleConfirmBooking}
+//                     disabled={!isBookingValid() || loading || setupProcessing}
+//                   >
+//                     {loading || setupProcessing ? (
+//                       <>
+//                         <div className="qb-btn-spinner"></div>
+//                         Processing...
+//                       </>
+//                     ) : saveCardOption ? (
+//                       <>
+//                         <i className="fas fa-lock"></i>
+//                         Book Now & Save Card
+//                       </>
+//                     ) : (
+//                       <>
+//                         <i className="fas fa-calendar-check"></i>
+//                         Book Now (Pay Later)
+//                       </>
+//                     )}
+//                   </button>
+//                 </div>
+//               </>
+//             )}
+
+//             <div className="qb-cancel-section">
+//               <button
+//                 className="qb-secondary-btn"
+//                 onClick={() => navigate("/")}
+//                 disabled={loading || setupProcessing}
+//               >
+//                 <i className="fas fa-times"></i>
+//                 Cancel Booking
+//               </button>
 //             </div>
-//           )
+//           </div>
 //         )}
 
-//         {/* Action Buttons */}
-//         <div className="qb-actions">
-//           <button
-//             type="button"
-//             className="qb-cancel-btn"
-//             onClick={() => navigate("/")}
-//             disabled={setupProcessing || loading}
-//           >
-//             <i className="fas fa-times"></i> Cancel
-//           </button>
-          
-//           {!userToken && (
-//             <button
-//               type="button"
-//               className="qb-submit-btn"
-//               onClick={handleConfirmBooking}
-//               disabled={!isBookingValid() || setupProcessing || loading}
-//             >
-//               {setupProcessing || loading ? (
-//                 <>
-//                   <div className="payment-loading-spinner"></div>
-//                   Processing...
-//                 </>
-//               ) : (
-//                 <>
-//                   <i className="fas fa-check-circle"></i>
-//                   {saveCardOption ? "Book Now & Save Card" : "Book Now"}
-//                 </>
-//               )}
-//             </button>
-//           )}
+//         {/* Summary Section (Fixed at bottom on mobile) */}
+//         <div className="qb-summary-section">
+//           <div className="qb-summary-content">
+//             <div className="qb-summary-info">
+//               <div className="qb-summary-item">
+//                 <i className="fas fa-calendar"></i>
+//                 <span>Pickup: {selectedCollectSlot ? formatDateDDMMYYYY(collectDate) : "Not selected"}</span>
+//               </div>
+//               <div className="qb-summary-item">
+//                 <i className="fas fa-truck"></i>
+//                 <span>Delivery: {selectedDeliverSlot ? formatDateDDMMYYYY(deliverDate) : "Not selected"}</span>
+//               </div>
+//             </div>
+//             <div className="qb-summary-action">
+//               <button 
+//                 className="qb-primary-btn qb-confirm-btn"
+//                 onClick={userToken && savedCards.length > 0 ? handleSavedCardBooking : handleConfirmBooking}
+//                 disabled={!isBookingValid() || loading || setupProcessing}
+//               >
+//                 {loading ? (
+//                   <>
+//                     <div className="qb-btn-spinner"></div>
+//                     Processing...
+//                   </>
+//                 ) : (
+//                   <>
+//                     <i className="fas fa-check-circle"></i>
+//                     Confirm Booking
+//                   </>
+//                 )}
+//               </button>
+//             </div>
+//           </div>
 //         </div>
-//       </main>
+//       </div>
 
 //       {/* Stripe Payment Modal */}
 //       {showPaymentSetup && (
-//         <div className="payment-modal-backdrop">
-//           <div className="payment-modal">
-//             {!setupClientSecret ? (
-//               <div className="payment-loading-state">
-//                 <div className="payment-loading-spinner"></div>
-//                 <p>Initializing secure payment…</p>
-//               </div>
-//             ) : (
-//               <Elements
-//                 stripe={stripePromise}
-//                 options={{
-//                   clientSecret: setupClientSecret,
-//                   appearance: { theme: "stripe" },
-//                 }}
-//               >
-//                 <StripeSetupForm
-//                   onSetupSuccess={handleSetupSuccess}
-//                   onSetupError={handleSetupError}
-//                   onCancel={handlePaymentModalCancel}
-//                   setupProcessing={setupProcessing}
-//                   userToken={userToken}
-//                 />
-//               </Elements>
-//             )}
-//           </div>
-//         </div>
+//         <Elements
+//           stripe={stripePromise}
+//           options={{
+//             clientSecret: setupClientSecret,
+//             appearance: { theme: "stripe" },
+//           }}
+//         >
+//           <StripeSetupForm
+//             onSetupSuccess={handleSetupSuccess}
+//             onSetupError={handleSetupError}
+//             onCancel={handlePaymentModalCancel}
+//             setupProcessing={setupProcessing}
+//             userToken={userToken}
+//           />
+//         </Elements>
 //       )}
 
 //       {/* Toast Notification */}
 //       {toast && (
-//         <div className="qb-toast">
-//           <i className="fas fa-info-circle"></i>
-//           {toast}
+//         <div className={`qb-toast qb-toast-${toast.type}`}>
+//           <div className="qb-toast-icon">
+//             {toast.type === 'success' ? (
+//               <i className="fas fa-check-circle"></i>
+//             ) : toast.type === 'error' ? (
+//               <i className="fas fa-exclamation-circle"></i>
+//             ) : (
+//               <i className="fas fa-info-circle"></i>
+//             )}
+//           </div>
+//           <div className="qb-toast-message">{toast.msg}</div>
+//           <button className="qb-toast-close" onClick={() => setToast(null)}>
+//             <i className="fas fa-times"></i>
+//           </button>
 //         </div>
 //       )}
 //     </div>
@@ -1971,9 +2029,10 @@ export default function QuickBooking() {
   const [userToken, setUserToken] = useState(localStorage.getItem("jwtToken"));
   const [bookingData, setBookingData] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [showPickupAddressForm, setShowPickupAddressForm] = useState(false);
   const [pendingBookingData, setPendingBookingData] = useState(null);
 
-  // Unified payment option for ALL users
+  // Payment option - ALWAYS require card for ALL users
   const [saveCardOption, setSaveCardOption] = useState(true);
   const [selectedCard, setSelectedCard] = useState(null);
 
@@ -2011,9 +2070,19 @@ export default function QuickBooking() {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [useSameAddress, setUseSameAddress] = useState(true);
   const [selectedPickupAddressId, setSelectedPickupAddressId] = useState(null);
+  const [pickupAddresses, setPickupAddresses] = useState([]);
 
   // Address form for all users
   const [addressForm, setAddressForm] = useState({
+    street_address: "",
+    postcode: "",
+    city: "",
+    additional_details: "",
+    house_number: ""
+  });
+
+  // Pickup address form (when useSameAddress is false)
+  const [pickupAddressForm, setPickupAddressForm] = useState({
     street_address: "",
     postcode: "",
     city: "",
@@ -2090,6 +2159,57 @@ export default function QuickBooking() {
   };
 
   /* ---------------------------- Data Fetching ----------------------------- */
+  
+  // NEW: Check if phone number exists and auto-fill user info
+  const checkPhoneNumberExists = useCallback(async (phone) => {
+    if (!phone || phone.trim().length < 5) return;
+    
+    try {
+      const response = await fetch(`${API_BASE}/check-phone`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone: phone.trim() }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.exists && data.user) {
+          // Auto-fill user info
+          setUserInfo(prev => ({
+            ...prev,
+            name: data.user.name || prev.name,
+            email: data.user.email || prev.email,
+            phone: data.user.phone || prev.phone,
+          }));
+          
+          showToast("Welcome back! Your details have been auto-filled.", "success");
+          
+          // If user is found but not logged in, log them in
+          if (data.token && !userToken) {
+            localStorage.setItem("jwtToken", data.token);
+            setUserToken(data.token);
+            login({
+              id: data.user.id,
+              name: data.user.name,
+              email: data.user.email,
+              phone: data.user.phone,
+            });
+            
+            // Fetch their saved data
+            fetchUserProfile();
+            fetchAddresses();
+            fetchSavedCards();
+            ensureStripeCustomer();
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error checking phone number:", error);
+    }
+  }, [showToast, userToken, login]);
+
   const fetchUserProfile = useCallback(async () => {
     if (!userToken) return;
     
@@ -2126,6 +2246,7 @@ export default function QuickBooking() {
       if (response.ok) {
         const data = await response.json();
         setAddresses(data);
+        setPickupAddresses(data); // Also set pickup addresses
         
         if (data.length > 0) {
           const defaultAddress = data.find(addr => addr.is_selected) || data[0];
@@ -2216,14 +2337,101 @@ export default function QuickBooking() {
     }
   }, []);
 
-  /* -------------------------- FIXED TIME SLOT FUNCTIONS ------------------------- */
-  // FIXED: This function now works properly with your API
+  // NEW: Add pickup address
+  const addPickupAddress = useCallback(async () => {
+    if (!userToken) {
+      showToast("Please log in to save pickup address", "error");
+      return null;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/addresses`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${userToken}`,
+        },
+        body: JSON.stringify({
+          street_address: pickupAddressForm.street_address,
+          postcode: pickupAddressForm.postcode,
+          city: pickupAddressForm.city,
+          additional_details: pickupAddressForm.additional_details,
+          house_number: pickupAddressForm.house_number,
+          name: "Pickup Location",
+          is_selected: false,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        showToast("Pickup address saved successfully", "success");
+        
+        // Refresh addresses list
+        fetchAddresses();
+        
+        // Select the new address
+        setSelectedPickupAddressId(String(data.address_id));
+        setShowPickupAddressForm(false);
+        
+        return data.address_id;
+      } else {
+        throw new Error("Failed to save pickup address");
+      }
+    } catch (error) {
+      console.error("Error adding pickup address:", error);
+      showToast(error.message || "Failed to save pickup address", "error");
+      return null;
+    }
+  }, [userToken, pickupAddressForm, showToast, fetchAddresses]);
+
+  /* -------------------------- UPDATED TIME SLOT FUNCTIONS ------------------------- */
+  // Helper function to get postcode for time slot fetching
+  const getPostcodeForTimeSlots = useCallback((type = 'pickup') => {
+    if (type === 'pickup') {
+      if (useSameAddress) {
+        // Use delivery address for pickup when same address
+        if (userToken && addresses.length > 0 && selectedAddressId) {
+          const selectedAddress = addresses.find(addr => String(addr.address_id) === selectedAddressId);
+          return selectedAddress?.postcode || null;
+        } else {
+          return addressForm.postcode || null;
+        }
+      } else {
+        // Use pickup address
+        if (userToken && pickupAddresses.length > 0 && selectedPickupAddressId && selectedPickupAddressId !== "new") {
+          const selectedPickupAddress = pickupAddresses.find(addr => String(addr.address_id) === selectedPickupAddressId);
+          return selectedPickupAddress?.postcode || null;
+        } else if (userToken && selectedPickupAddressId === "new") {
+          return pickupAddressForm.postcode || null;
+        } else if (!userToken) {
+          return pickupAddressForm.postcode || null;
+        }
+      }
+    } else if (type === 'delivery') {
+      // Always use delivery address for delivery slots
+      if (userToken && addresses.length > 0 && selectedAddressId) {
+        const selectedAddress = addresses.find(addr => String(addr.address_id) === selectedAddressId);
+        return selectedAddress?.postcode || null;
+      } else {
+        return addressForm.postcode || null;
+      }
+    }
+    return null;
+  }, [
+    userToken, 
+    addresses, 
+    selectedAddressId, 
+    addressForm, 
+    useSameAddress, 
+    pickupAddresses, 
+    selectedPickupAddressId, 
+    pickupAddressForm
+  ]);
+
   const fetchTimeSlots = useCallback(async (dateIso, isDelivery = false) => {
     if (!dateIso) return [];
 
     const tzOffset = -new Date().getTimezoneOffset();
-
-    // Format date for API (YYYY-MM-DD)
     const formattedDate = dateIso;
     
     const params = new URLSearchParams({
@@ -2236,7 +2444,6 @@ export default function QuickBooking() {
       params.set("isDelivery", "true");
 
       if (collectDate && selectedCollectSlotStart) {
-        // Format the pickup date
         const pickupFormattedDate = collectDate;
         const h = selectedCollectSlotStart.getHours().toString().padStart(2, "0");
         const m = selectedCollectSlotStart.getMinutes().toString().padStart(2, "0");
@@ -2245,9 +2452,16 @@ export default function QuickBooking() {
       }
     }
 
+    // Get postcode based on pickup/delivery type
+    const postcode = getPostcodeForTimeSlots(isDelivery ? 'delivery' : 'pickup');
+    
+    // Add postcode to params if available (remove spaces and uppercase as per Flutter code)
+    if (postcode) {
+      const cleanPostcode = postcode.replace(/\s/g, '').toUpperCase();
+      params.set("postcode", cleanPostcode);
+    }
+
     try {
-      console.log(`Fetching ${isDelivery ? 'delivery' : 'pickup'} slots for date:`, formattedDate);
-      
       const response = await fetch(`${API_BASE}/time-slots?${params.toString()}`, {
         method: 'GET',
         headers: {
@@ -2256,8 +2470,6 @@ export default function QuickBooking() {
         },
       });
       
-      console.log("Response status:", response.status);
-      
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Server error:", errorText);
@@ -2265,9 +2477,7 @@ export default function QuickBooking() {
       }
 
       const data = await response.json();
-      console.log("Fetched slots data:", data);
       
-      // Handle response format - ensure we return an array
       if (data.slots && Array.isArray(data.slots)) {
         return data.slots;
       } else if (Array.isArray(data)) {
@@ -2281,20 +2491,17 @@ export default function QuickBooking() {
       showToast(`Error loading time slots: ${error.message}`, "error");
       return [];
     }
-  }, [collectDate, selectedCollectSlotStart, showToast]);
+  }, [collectDate, selectedCollectSlotStart, showToast, getPostcodeForTimeSlots]);
 
   const fetchCollectSlots = useCallback(async () => {
     if (!collectDate) return;
     
-    console.log("Fetching collect slots for date:", collectDate);
     setLoadingSlots(prev => ({ ...prev, collect: true }));
     
     try {
       const slots = await fetchTimeSlots(collectDate, false);
-      console.log("Received collect slots:", slots);
       setCollectSlots(slots);
 
-      // Reset selected slot if it's no longer valid
       if (selectedCollectSlot && slots.length > 0) {
         const stillValid = slots.find(
           (s) => s.start === selectedCollectSlot.start && s.enabled
@@ -2316,19 +2523,15 @@ export default function QuickBooking() {
 
   const fetchDeliverySlots = useCallback(async () => {
     if (!deliverDate || !collectDate || !selectedCollectSlotStart) {
-      console.log("Missing requirements for delivery slots:", { deliverDate, collectDate, selectedCollectSlotStart });
       return;
     }
     
-    console.log("Fetching delivery slots for date:", deliverDate);
     setLoadingSlots(prev => ({ ...prev, deliver: true }));
     
     try {
       const slots = await fetchTimeSlots(deliverDate, true);
-      console.log("Received delivery slots:", slots);
       setDeliverSlots(slots);
 
-      // Reset selected slot if it's no longer valid
       if (selectedDeliverSlot && slots.length > 0) {
         const stillValid = slots.find(
           (s) => s.start === selectedDeliverSlot.start && s.enabled
@@ -2364,16 +2567,14 @@ export default function QuickBooking() {
       selectedDeliverSlot.end
     )}`;
 
-    // Get address details
-    let addressData = {};
+    // Get delivery address details
+    let deliveryAddressData = {};
     if (userToken && addresses.length > 0 && selectedAddressId) {
       const selectedAddress = addresses.find(addr => 
         String(addr.address_id) === selectedAddressId
       );
-      addressData = {
+      deliveryAddressData = {
         address_id: selectedAddressId,
-        pickup_address_id: useSameAddress ? selectedAddressId : selectedPickupAddressId,
-        use_same_address: useSameAddress,
         street_address: selectedAddress?.full_address || "",
         postcode: selectedAddress?.postcode || "",
         city: selectedAddress?.city || "",
@@ -2382,7 +2583,7 @@ export default function QuickBooking() {
         street_name: selectedAddress?.full_address || "",
       };
     } else {
-      addressData = {
+      deliveryAddressData = {
         street_address: addressForm.street_address,
         postcode: addressForm.postcode,
         city: addressForm.city || "",
@@ -2393,8 +2594,38 @@ export default function QuickBooking() {
       };
     }
 
+    // Get pickup address details
+    let pickupAddressData = {};
+    if (useSameAddress) {
+      pickupAddressData = { ...deliveryAddressData };
+    } else if (userToken && pickupAddresses.length > 0 && selectedPickupAddressId) {
+      const selectedPickupAddress = pickupAddresses.find(addr => 
+        String(addr.address_id) === selectedPickupAddressId
+      );
+      if (selectedPickupAddress) {
+        pickupAddressData = {
+          pickup_address_id: selectedPickupAddressId,
+          pickup_street_address: selectedPickupAddress.full_address || "",
+          pickup_postcode: selectedPickupAddress.postcode || "",
+          pickup_city: selectedPickupAddress.city || "",
+          pickup_full_address: selectedPickupAddress.full_address || "",
+        };
+      }
+    } else if (!userToken || showPickupAddressForm) {
+      pickupAddressData = {
+        pickup_street_address: pickupAddressForm.street_address,
+        pickup_postcode: pickupAddressForm.postcode,
+        pickup_city: pickupAddressForm.city || "",
+        pickup_full_address: pickupAddressForm.street_address,
+        pickup_additional_details: pickupAddressForm.additional_details || "",
+        pickup_house_number: pickupAddressForm.house_number || "",
+      };
+    }
+
     return {
-      ...addressData,
+      ...deliveryAddressData,
+      ...pickupAddressData,
+      use_same_address: useSameAddress,
       name: userInfo.name,
       email: userInfo.email,
       phone: userInfo.phone,
@@ -2411,9 +2642,12 @@ export default function QuickBooking() {
     userToken,
     addresses,
     selectedAddressId,
+    pickupAddresses,
     selectedPickupAddressId,
     useSameAddress,
     addressForm,
+    pickupAddressForm,
+    showPickupAddressForm,
     notes,
     userInfo,
   ]);
@@ -2426,6 +2660,37 @@ export default function QuickBooking() {
       // 1️⃣ Prepare order data
       const order = prepareOrderData();
       if (!order) throw new Error("Please select pickup and delivery times");
+
+      // NEW: Validate pickup address when useSameAddress is false
+      if (!useSameAddress) {
+        if (userToken && (!selectedPickupAddressId || selectedPickupAddressId === "new")) {
+          // User needs to select or add a pickup address
+          if (selectedPickupAddressId === "new" && !showPickupAddressForm) {
+            setShowPickupAddressForm(true);
+            showToast("Please add pickup address details", "info");
+            setLoading(false);
+            return;
+          }
+          
+          if (showPickupAddressForm) {
+            if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) {
+              throw new Error("Please complete pickup address details");
+            }
+            
+            // Add the new pickup address
+            const newAddressId = await addPickupAddress();
+            if (!newAddressId) {
+              throw new Error("Failed to save pickup address");
+            }
+          } else if (!selectedPickupAddressId) {
+            throw new Error("Please select a pickup address");
+          }
+        } else if (!userToken) {
+          if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) {
+            throw new Error("Please complete pickup address details");
+          }
+        }
+      }
 
       console.log("Creating quick booking:", order);
 
@@ -2472,28 +2737,9 @@ export default function QuickBooking() {
       };
       localStorage.setItem("quick_booking_user_info", JSON.stringify(userInfoData));
 
-      // 6️⃣ For ALL users: If they want to save card, show Stripe setup
-      if (saveCardOption) {
-        showToast("Please complete card setup to confirm your booking", "info");
-        await initiateStripeSetup(bookingData.token, bookingData.stripeCustomerId);
-      } else {
-        showToast("Booking created successfully!", "success");
-        
-        setTimeout(() => {
-          navigate("/thankyou", {
-            state: {
-              orderId: bookingData.order?.id,
-              paymentStatus: "pending",
-              paymentMethod: "invoice",
-              pickupDate: formatDateDDMMYYYY(collectDate),
-              pickupTime: formatTimeRange24Hour(selectedCollectSlot?.start, selectedCollectSlot?.end),
-              deliveryDate: formatDateDDMMYYYY(deliverDate),
-              deliveryTime: formatTimeRange24Hour(selectedDeliverSlot?.start, selectedDeliverSlot?.end),
-              message: "Your quick booking has been confirmed! You'll receive an invoice after service.",
-            },
-          });
-        }, 1000);
-      }
+      // 6️⃣ ALWAYS show Stripe setup - payment is required
+      showToast("Please complete card setup to confirm your booking", "info");
+      await initiateStripeSetup(bookingData.token, bookingData.stripeCustomerId);
 
     } catch (error) {
       console.error("Booking error:", error);
@@ -2513,6 +2759,13 @@ export default function QuickBooking() {
     setLoading(true);
     
     try {
+      // Validate pickup address when useSameAddress is false
+      if (!useSameAddress) {
+        if (!selectedPickupAddressId) {
+          throw new Error("Please select a pickup address");
+        }
+      }
+
       const selectedCardData = savedCards.find(card => card.id === selectedCard);
       if (!selectedCardData) {
         throw new Error("Selected card not found");
@@ -2715,9 +2968,26 @@ export default function QuickBooking() {
   };
 
   /* ---------------------------- UI Handlers ------------------------------- */
+  
+  // NEW: Handle phone number change with auto-fill
+  const handlePhoneChange = (e) => {
+    const newPhone = e.target.value;
+    setUserInfo(prev => ({
+      ...prev,
+      phone: newPhone
+    }));
+    
+    // Check if phone exists after user stops typing
+    if (newPhone && newPhone.trim().length >= 5) {
+      const timer = setTimeout(() => {
+        checkPhoneNumberExists(newPhone);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  };
+
   const handleCollectDateChange = (e) => {
     const newDate = e.target.value;
-    console.log("Collect date changed to:", newDate);
     setCollectDate(newDate);
     setSelectedCollectSlot(null);
     setSelectedCollectSlotStart(null);
@@ -2730,7 +3000,6 @@ export default function QuickBooking() {
 
   const handleDeliverDateChange = (e) => {
     const newDate = e.target.value;
-    console.log("Delivery date changed to:", newDate);
     
     if (collectDate && newDate < collectDate) {
       showToast("Delivery date cannot be before pickup date", "error");
@@ -2746,8 +3015,6 @@ export default function QuickBooking() {
 
   const handleCollectSlotSelect = (slot) => {
     if (!slot.enabled) return;
-
-    console.log("Selected collect slot:", slot);
     
     const start = new Date(slot.start);
     const end = slot.end ? new Date(slot.end) : null;
@@ -2766,8 +3033,6 @@ export default function QuickBooking() {
   const handleDeliverSlotSelect = (slot) => {
     if (!slot.enabled) return;
     
-    console.log("Selected delivery slot:", slot);
-    
     const start = new Date(slot.start);
     const end = slot.end ? new Date(slot.end) : null;
     
@@ -2781,6 +3046,18 @@ export default function QuickBooking() {
     setUseSameAddress(checked);
     if (checked && selectedAddressId) {
       setSelectedPickupAddressId(selectedAddressId);
+      setShowPickupAddressForm(false);
+    }
+  };
+
+  // NEW: Handle pickup address selection
+  const handlePickupAddressSelect = (addressId) => {
+    if (addressId === "new") {
+      setShowPickupAddressForm(true);
+      setSelectedPickupAddressId("new");
+    } else {
+      setSelectedPickupAddressId(addressId);
+      setShowPickupAddressForm(false);
     }
   };
 
@@ -2793,6 +3070,14 @@ export default function QuickBooking() {
 
   const handleAddressFormChange = (field) => (e) => {
     setAddressForm(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }));
+  };
+
+  // NEW: Handle pickup address form changes
+  const handlePickupAddressFormChange = (field) => (e) => {
+    setPickupAddressForm(prev => ({
       ...prev,
       [field]: e.target.value
     }));
@@ -2863,18 +3148,193 @@ export default function QuickBooking() {
     if (!userInfo.phone.trim()) return false;
     if (!selectedCollectSlot || !selectedDeliverSlot) return false;
     
+    // Delivery address validation
     if (userToken && addresses.length > 0 && !showAddressForm) {
       if (!selectedAddressId) return false;
-      if (!useSameAddress && !selectedPickupAddressId) return false;
     } else {
       if (!addressForm.street_address.trim()) return false;
       if (!addressForm.postcode.trim()) return false;
+    }
+    
+    // Pickup address validation (when useSameAddress is false)
+    if (!useSameAddress) {
+      if (userToken) {
+        if (!selectedPickupAddressId) return false;
+        if (selectedPickupAddressId === "new" && showPickupAddressForm) {
+          if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
+        }
+      } else {
+        if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
+      }
     }
     
     return true;
   };
 
   /* ------------------------------ Render ---------------------------------- */
+  
+  // NEW: Render pickup address section
+  const renderPickupAddressSection = () => {
+    if (useSameAddress) return null;
+
+    return (
+      <div className="qb-address-section" style={{ marginTop: '24px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
+        <h3 className="qb-address-section-title">
+          <i className="fas fa-truck-pickup"></i>
+          Pickup Address
+          <span className="qb-required-badge">Required</span>
+        </h3>
+        <p className="qb-address-section-subtitle">
+          Where should we collect your laundry from?
+        </p>
+
+        {userToken && pickupAddresses.length > 0 && !showPickupAddressForm ? (
+          <>
+            <div className="qb-address-grid">
+              {pickupAddresses.map((addr) => (
+                <div
+                  key={`pickup-${addr.address_id}`}
+                  className={`qb-address-option ${
+                    selectedPickupAddressId === String(addr.address_id) ? "selected" : ""
+                  }`}
+                  onClick={() => handlePickupAddressSelect(String(addr.address_id))}
+                >
+                  <div className="qb-address-option-header">
+                    <div className="qb-address-type">
+                      <i className="fas fa-home"></i>
+                      <span>{addr.name || "Home"}</span>
+                    </div>
+                    {addr.is_selected && (
+                      <span className="qb-default-badge">
+                        <i className="fas fa-star"></i>
+                        Default
+                      </span>
+                    )}
+                  </div>
+                  <div className="qb-address-option-details">
+                    <p className="qb-address-text">{addr.full_address}</p>
+                    <p className="qb-address-postcode">
+                      <i className="fas fa-map-pin"></i>
+                      {addr.postcode}
+                    </p>
+                  </div>
+                  {selectedPickupAddressId === String(addr.address_id) && (
+                    <div className="qb-address-selected">
+                      <i className="fas fa-check-circle"></i>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              <div 
+                className="qb-add-address-option"
+                onClick={() => handlePickupAddressSelect("new")}
+              >
+                <div className="qb-add-address-icon">
+                  <i className="fas fa-plus-circle"></i>
+                </div>
+                <div className="qb-add-address-text">
+                  <h4>Add New Pickup Address</h4>
+                  <p>Enter a different pickup location</p>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="qb-address-form-section">
+            <div className="qb-form-grid">
+              <div className="qb-form-group">
+                <label className="qb-form-label">
+                  <i className="fas fa-home"></i>
+                  House/Flat Number
+                  <input
+                    type="text"
+                    className="qb-form-input"
+                    value={pickupAddressForm.house_number}
+                    onChange={handlePickupAddressFormChange("house_number")}
+                    placeholder="123"
+                  />
+                </label>
+              </div>
+
+              <div className="qb-form-group full-width">
+                <label className="qb-form-label">
+                  <i className="fas fa-road"></i>
+                  Street Address *
+                  <input
+                    type="text"
+                    className="qb-form-input"
+                    value={pickupAddressForm.street_address}
+                    onChange={handlePickupAddressFormChange("street_address")}
+                    placeholder="Main Street, Apt 4B"
+                    required
+                  />
+                </label>
+              </div>
+
+              <div className="qb-form-group">
+                <label className="qb-form-label">
+                  <i className="fas fa-map-pin"></i>
+                  Postcode *
+                  <input
+                    type="text"
+                    className="qb-form-input"
+                    value={pickupAddressForm.postcode}
+                    onChange={handlePickupAddressFormChange("postcode")}
+                    placeholder="SW1A 1AA"
+                    required
+                  />
+                </label>
+              </div>
+
+              <div className="qb-form-group">
+                <label className="qb-form-label">
+                  <i className="fas fa-city"></i>
+                  City/Town
+                  <input
+                    type="text"
+                    className="qb-form-input"
+                    value={pickupAddressForm.city}
+                    onChange={handlePickupAddressFormChange("city")}
+                    placeholder="London"
+                  />
+                </label>
+              </div>
+
+              <div className="qb-form-group full-width">
+                <label className="qb-form-label">
+                  <i className="fas fa-info-circle"></i>
+                  Additional Details (Optional)
+                  <textarea
+                    className="qb-form-textarea"
+                    value={pickupAddressForm.additional_details}
+                    onChange={handlePickupAddressFormChange("additional_details")}
+                    placeholder="Floor, building, landmarks, access instructions..."
+                    rows="2"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {userToken && pickupAddresses.length > 0 && showPickupAddressForm && (
+              <button
+                className="qb-secondary-btn"
+                onClick={() => {
+                  setShowPickupAddressForm(false);
+                  setSelectedPickupAddressId(null);
+                }}
+                style={{ marginTop: '10px' }}
+              >
+                <i className="fas fa-arrow-left"></i>
+                Back to Saved Pickup Addresses
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="qb-page">
       <div className="qb-container">
@@ -2948,10 +3408,14 @@ export default function QuickBooking() {
                   type="tel"
                   className="qb-form-input"
                   value={userInfo.phone}
-                  onChange={handleUserInfoChange("phone")}
+                  onChange={handlePhoneChange}
                   placeholder="+44 20 1234 5678"
                   required
                 />
+                <div className="qb-phone-hint">
+                  <i className="fas fa-info-circle"></i>
+                  Enter phone number to check for existing account
+                </div>
               </label>
             </div>
           </div>
@@ -2965,7 +3429,7 @@ export default function QuickBooking() {
             </div>
             <div>
               <h2 className="qb-section-title">Delivery Address</h2>
-              <p className="qb-section-subtitle">Where should we pick up and deliver your laundry?</p>
+              <p className="qb-section-subtitle">Where should we deliver your laundry?</p>
             </div>
           </div>
 
@@ -2980,10 +3444,7 @@ export default function QuickBooking() {
                       className={`qb-address-option ${
                         selectedAddressId === String(addr.address_id) ? "selected" : ""
                       }`}
-                      onClick={() => {
-                        setSelectedAddressId(String(addr.address_id));
-                        if (useSameAddress) setSelectedPickupAddressId(String(addr.address_id));
-                      }}
+                      onClick={() => setSelectedAddressId(String(addr.address_id))}
                     >
                       <div className="qb-address-option-header">
                         <div className="qb-address-type">
@@ -3129,8 +3590,31 @@ export default function QuickBooking() {
                   Back to Saved Addresses
                 </button>
               )}
+
+              {/* Same Address Toggle for non-logged in users or when adding new address */}
+              {(!userToken || showAddressForm) && (
+                <div className="qb-address-toggle" style={{ marginTop: '20px' }}>
+                  <label className="qb-toggle-container">
+                    <div className="qb-toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={useSameAddress}
+                        onChange={handleToggleSameAddress}
+                      />
+                      <span className="qb-toggle-slider"></span>
+                    </div>
+                    <div className="qb-toggle-label">
+                      <span className="qb-toggle-title">Use same address for pickup</span>
+                      <span className="qb-toggle-description">Pickup and delivery at the same location</span>
+                    </div>
+                  </label>
+                </div>
+              )}
             </div>
           )}
+
+          {/* Render separate pickup address section when useSameAddress is false */}
+          {renderPickupAddressSection()}
         </div>
 
         {/* Pickup & Delivery Schedule */}
@@ -3366,7 +3850,7 @@ export default function QuickBooking() {
           </div>
         </div>
 
-        {/* Payment Section */}
+        {/* Payment Section - ALWAYS SHOW PAYMENT */}
         {!showPaymentSetup && (
           <div className="qb-card">
             <div className="qb-card-header">
@@ -3375,7 +3859,7 @@ export default function QuickBooking() {
               </div>
               <div>
                 <h2 className="qb-section-title">Payment Method</h2>
-                <p className="qb-section-subtitle">Choose how you'd like to pay</p>
+                <p className="qb-section-subtitle">Payment is required to confirm your booking</p>
               </div>
               <div className="qb-security-badge">
                 <i className="fas fa-shield-alt"></i>
@@ -3442,6 +3926,16 @@ export default function QuickBooking() {
                   </div>
                 </div>
 
+                <div className="qb-payment-info">
+                  <div className="qb-payment-info-icon">
+                    <i className="fas fa-info-circle"></i>
+                  </div>
+                  <div className="qb-payment-info-text">
+                    Your card will only be charged after your laundry manager sends the invoice. 
+                    No charges will be made now.
+                  </div>
+                </div>
+
                 <div className="qb-payment-actions">
                   <button 
                     className="qb-primary-btn qb-book-btn" 
@@ -3493,9 +3987,8 @@ export default function QuickBooking() {
                     <i className="fas fa-info-circle"></i>
                   </div>
                   <div className="qb-payment-info-text">
-                    {saveCardOption 
-                      ? "Your card details are encrypted and stored securely by Stripe. Booking will be confirmed after card setup."
-                      : "You'll receive an invoice after service completion. No card required for booking."}
+                    <strong>Payment Required:</strong> A valid card must be saved to confirm your booking. 
+                    No charges will be made now - your card will only be charged after service completion when the invoice is sent.
                   </div>
                 </div>
 
@@ -3510,15 +4003,10 @@ export default function QuickBooking() {
                         <div className="qb-btn-spinner"></div>
                         Processing...
                       </>
-                    ) : saveCardOption ? (
+                    ) : (
                       <>
                         <i className="fas fa-lock"></i>
                         Book Now & Save Card
-                      </>
-                    ) : (
-                      <>
-                        <i className="fas fa-calendar-check"></i>
-                        Book Now (Pay Later)
                       </>
                     )}
                   </button>

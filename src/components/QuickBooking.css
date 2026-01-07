@@ -1785,3 +1785,186 @@ button:focus:not(:focus-visible) {
     border-color: var(--qb-card-border);
   }
 }
+
+/* Add to QuickBooking.css */
+
+/* Phone number hint */
+.qb-phone-hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.qb-phone-hint i {
+  font-size: 11px;
+}
+
+/* Required badge */
+.qb-required-badge {
+  background-color: #ff4444;
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+/* Separate address section */
+.qb-address-section {
+  margin-top: 24px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.qb-address-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qb-address-section-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+/* Make the payment info more prominent */
+.qb-payment-info {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+}
+
+.qb-payment-info-text {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.qb-payment-info-text strong {
+  color: #ff4444;
+}
+
+/* Update toggle styling for better visibility */
+.qb-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.qb-toggle-label {
+  flex: 1;
+}
+
+.qb-toggle-title {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.qb-toggle-description {
+  display: block;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Enhanced card selection */
+.qb-card-option {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.qb-card-option:hover {
+  border-color: #007bff;
+  background-color: #f8f9ff;
+}
+
+.qb-card-option.selected {
+  border-color: #007bff;
+  background-color: #f0f7ff;
+}
+
+.qb-card-option-icon {
+  font-size: 24px;
+}
+
+.qb-card-option-details {
+  flex: 1;
+}
+
+.qb-card-brand {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.qb-card-number {
+  font-size: 14px;
+  color: #666;
+}
+
+.qb-card-default {
+  font-size: 12px;
+  color: #28a745;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.qb-card-selected {
+  color: #007bff;
+  font-size: 20px;
+}
+
+/* Loading state for cards */
+.qb-loading-cards {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.qb-loading-cards .qb-loading-spinner {
+  margin: 0 auto 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .qb-address-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .qb-toggle-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .qb-payment-info {
+    padding: 12px;
+  }
+}

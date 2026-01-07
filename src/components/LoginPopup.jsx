@@ -6,9 +6,12 @@ import { app } from "../firebaseConfig";
 import { useAuth } from "../context/AuthContext"; 
 import Google from "../images/google-logo.png";
 import apple from "../images/icons8-apple-logo-50.png";
-import { Eye, EyeOff, ArrowLeft, Mail, Phone, Lock, User } from "lucide-react";
+import { ArrowLeft, Mail, Phone, User } from "lucide-react";
 
 const API_BASE = "https://api.ironingboy.com";
+
+// Initialize Firebase auth
+const auth = getAuth(app);
 
 /**
  * Helper: safely parse JSON responses
@@ -31,7 +34,7 @@ function friendlyNetworkError(err) {
 }
 
 const LoginPopup = ({ close, onSuccess }) => {
-  const [step, setStep] = useState(1); // 1: Email/Phone, 2: Password, 3: Signup, 4: Forgot Password, 5: Reset Password
+  const [step, setStep] = useState(1); // 1: Login (Email & Phone), 2: Signup (Name, Email, Phone)
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -40,25 +43,16 @@ const LoginPopup = ({ close, onSuccess }) => {
   const { login } = useAuth();
 
   // Login states
-  const [identifier, setIdentifier] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPwd, setShowPwd] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPhone, setLoginPhone] = useState("");
 
   // Signup states
   const [fullName, setFullName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPhone, setSignupPhone] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
-
-  // Forgot password states
-  const [forgotIdentifier, setForgotIdentifier] = useState("");
-  const [resetPassword, setResetPassword] = useState("");
-  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
 
   // Persist session helper - minimal safe object
-  const saveSession = ({ token, user_id, identifier: id }) => {
+  const saveSession = ({ token, user_id, user }) => {
     // Clear any stale session to avoid mismatch
     try {
       localStorage.removeItem("ironboy_user");
@@ -69,15 +63,15 @@ const LoginPopup = ({ close, onSuccess }) => {
       /* ignore */
     }
 
-    // store the token and user id (for API calls) and a light ironboy_user object
+    // Store the token and user data
     if (token) localStorage.setItem("jwtToken", token);
     if (user_id) localStorage.setItem("user_id", user_id);
     localStorage.setItem("user_type", "customer");
 
     const safeObj = {
       user_id: user_id || null,
-      identifier: id || identifier || null,
       token: token || null,
+      user: user || null,
     };
     localStorage.setItem("ironboy_user", JSON.stringify(safeObj));
     
@@ -86,213 +80,137 @@ const LoginPopup = ({ close, onSuccess }) => {
   };
 
   // -------------------------------------------------------
-  // CHECK USER EXISTS
+  // VALIDATE PHONE NUMBER
   // -------------------------------------------------------
-  const checkUserExists = async () => {
-    setErrorMsg("");
-    setSuccessMsg("");
-    if (!identifier.trim()) {
-      setErrorMsg("Please enter Email or Phone");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/checkUserExists`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier }),
-      });
-      if (!res.ok) {
-        // non-2xx
-        const payload = await safeJson(res);
-        setErrorMsg(payload.message || "Server error while checking user");
-        setLoading(false);
-        return;
-      }
-      const data = await safeJson(res);
-
-      if (data.exists === true) {
-        // fetch display name (optional)
-        try {
-          const nameRes = await fetch(`${API_BASE}/getUserByIdentifier`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ identifier }),
-          });
-          if (nameRes.ok) {
-            const nameData = await safeJson(nameRes);
-            setUsername(nameData.name || "User");
-          } else {
-            setUsername("User");
-          }
-        } catch (e) {
-          setUsername("User");
-        }
-        setStep(2);
-      } else {
-        // pre-fill signup phone/email
-        if (/^\d+$/.test(identifier)) {
-          setSignupPhone(identifier);
-          setSignupEmail("");
-        } else {
-          setSignupEmail(identifier);
-          setSignupPhone("");
-        }
-        setStep(3);
-      }
-    } catch (err) {
-      setErrorMsg(friendlyNetworkError(err));
-    } finally {
-      setLoading(false);
-    }
+  const validatePhone = (phone) => {
+    // Basic phone validation - adjust based on your requirements
+    const phoneRegex = /^\d{10,15}$/;
+    return phoneRegex.test(phone);
   };
 
   // -------------------------------------------------------
-  // LOGIN USER
+  // VALIDATE EMAIL
+  // -------------------------------------------------------
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // -------------------------------------------------------
+  // CHECK USER EXISTS AND LOGIN
   // -------------------------------------------------------
   const handleLogin = async () => {
     setErrorMsg("");
     setSuccessMsg("");
-    if (!password.trim()) {
-      setErrorMsg("Please enter password");
+    
+    // Validate inputs
+    if (!loginEmail.trim() && !loginPhone.trim()) {
+      setErrorMsg("Please enter email or phone number");
       return;
     }
+    
+    if (loginEmail.trim() && !validateEmail(loginEmail)) {
+      setErrorMsg("Please enter a valid email address");
+      return;
+    }
+    
+    if (loginPhone.trim() && !validatePhone(loginPhone)) {
+      setErrorMsg("Please enter a valid 10-15 digit phone number");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, password }),
-      });
-
-      if (!res.ok) {
-        const payload = await safeJson(res);
-        setErrorMsg(payload.message || "Login failed");
+      // For login, we need to check if user exists first
+      // Try email first if provided
+      let existingUser = null;
+      let userIdentifier = "";
+      
+      if (loginEmail.trim()) {
+        const emailCheckRes = await fetch(`${API_BASE}/checkUserExists`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier: loginEmail }),
+        });
+        
+        if (emailCheckRes.ok) {
+          const emailData = await safeJson(emailCheckRes);
+          if (emailData.exists) {
+            existingUser = emailData;
+            userIdentifier = loginEmail;
+          }
+        }
+      }
+      
+      // If not found by email, try phone
+      if (!existingUser && loginPhone.trim()) {
+        const phoneCheckRes = await fetch(`${API_BASE}/checkUserExists`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier: loginPhone }),
+        });
+        
+        if (phoneCheckRes.ok) {
+          const phoneData = await safeJson(phoneCheckRes);
+          if (phoneData.exists) {
+            existingUser = phoneData;
+            userIdentifier = loginPhone;
+          }
+        }
+      }
+      
+      if (!existingUser) {
+        setErrorMsg("No account found with these details. Please sign up.");
         setLoading(false);
         return;
       }
+      
+      // Get user name for login
+      let userName = "User";
+      try {
+        const nameRes = await fetch(`${API_BASE}/getUserByIdentifier`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier: userIdentifier }),
+        });
+        
+        if (nameRes.ok) {
+          const nameData = await safeJson(nameRes);
+          userName = nameData.name || "User";
+        }
+      } catch (e) {
+        // Continue with default name if fetch fails
+      }
+      
+      // Call auth/access for login
+      const requestBody = {
+        name: userName,
+        email: loginEmail.trim(),
+        phone: loginPhone.trim(),
+        googleSignIn: false,
+        appleSignIn: false,
+      };
+
+      const res = await fetch(`${API_BASE}/auth/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
 
       const data = await safeJson(res);
 
-      if (data.success === true) {
-        // Save the minimal session and notify parent
-        saveSession({ token: data.token, user_id: data.user_id, identifier });
+      if (res.ok && data.success === true) {
+        // Save the session and notify parent
+        saveSession({ 
+          token: data.token, 
+          user_id: data.user?.id || data.user_id, 
+          user: data.user 
+        });
         onSuccess && onSuccess();
         close && close();
       } else {
-        setErrorMsg(data.message || "Invalid login details");
-      }
-    } catch (err) {
-      setErrorMsg(friendlyNetworkError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // -------------------------------------------------------
-  // FORGOT PASSWORD - STEP 1: Enter Email/Phone
-  // -------------------------------------------------------
-  const handleForgotPassword = () => {
-    setErrorMsg("");
-    setSuccessMsg("");
-    setForgotIdentifier(identifier); // Pre-fill with the identifier from step 1
-    setStep(4);
-  };
-
-  // -------------------------------------------------------
-  // FORGOT PASSWORD - STEP 2: Reset Password
-  // -------------------------------------------------------
-  const handleForgotPasswordSubmit = async () => {
-    setErrorMsg("");
-    setSuccessMsg("");
-    
-    if (!forgotIdentifier.trim()) {
-      setErrorMsg("Please enter your email or phone");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Check if user exists first
-      const checkRes = await fetch(`${API_BASE}/checkUserExists`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier: forgotIdentifier }),
-      });
-      
-      if (!checkRes.ok) {
-        const payload = await safeJson(checkRes);
-        setErrorMsg(payload.message || "User not found");
-        setLoading(false);
-        return;
-      }
-      
-      const checkData = await safeJson(checkRes);
-      if (!checkData.exists) {
-        setErrorMsg("No account found with this email or phone");
-        setLoading(false);
-        return;
-      }
-
-      // If user exists, proceed to reset password step
-      setStep(5);
-    } catch (err) {
-      setErrorMsg(friendlyNetworkError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // -------------------------------------------------------
-  // RESET PASSWORD - Final Step
-  // -------------------------------------------------------
-  const handleResetPassword = async () => {
-    setErrorMsg("");
-    setSuccessMsg("");
-    
-    if (!resetPassword.trim() || !resetConfirmPassword.trim()) {
-      setErrorMsg("Please enter and confirm your new password");
-      return;
-    }
-    
-    if (resetPassword !== resetConfirmPassword) {
-      setErrorMsg("Passwords do not match");
-      return;
-    }
-    
-    if (resetPassword.length < 6) {
-      setErrorMsg("Password must be at least 6 characters");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/customer/forgotpassword`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          identifier: forgotIdentifier,
-          newPassword: resetPassword,
-        }),
-      });
-
-      const data = await safeJson(res);
-
-      if (data.success === true) {
-        setSuccessMsg("Password reset successfully! You can now login.");
-        // Reset states and go back to login
-        setTimeout(() => {
-          setStep(1);
-          setForgotIdentifier("");
-          setResetPassword("");
-          setResetConfirmPassword("");
-          setErrorMsg("");
-          setSuccessMsg("");
-        }, 2000);
-      } else {
-        setErrorMsg(data.message || "Failed to reset password");
+        setErrorMsg(data.message || "Login failed. Please try again.");
       }
     } catch (err) {
       setErrorMsg(friendlyNetworkError(err));
@@ -307,39 +225,106 @@ const LoginPopup = ({ close, onSuccess }) => {
   const handleSignup = async () => {
     setErrorMsg("");
     setSuccessMsg("");
-    if (!fullName.trim()) return setErrorMsg("Full name required");
-    if (!signupEmail.trim() && !signupPhone.trim()) return setErrorMsg("Email or Phone required");
-    if (!signupPassword.trim() || !signupConfirmPassword.trim()) return setErrorMsg("Enter password");
-    if (signupPassword !== signupConfirmPassword) return setErrorMsg("Passwords do not match");
+    
+    // Validate inputs
+    if (!fullName.trim()) {
+      setErrorMsg("Full name is required");
+      return;
+    }
+    
+    if (!signupEmail.trim()) {
+      setErrorMsg("Email is required");
+      return;
+    }
+    
+    if (!signupPhone.trim()) {
+      setErrorMsg("Phone number is required");
+      return;
+    }
+    
+    if (!validateEmail(signupEmail)) {
+      setErrorMsg("Please enter a valid email address");
+      return;
+    }
+    
+    if (!validatePhone(signupPhone)) {
+      setErrorMsg("Please enter a valid 10-15 digit phone number");
+      return;
+    }
 
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: fullName,
-          email: signupEmail,
-          phone: signupPhone,
-          password: signupPassword,
-        }),
+      // Check if user already exists with email or phone
+      const checkPromises = [];
+      
+      if (signupEmail.trim()) {
+        checkPromises.push(
+          fetch(`${API_BASE}/checkUserExists`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ identifier: signupEmail }),
+          })
+        );
+      }
+      
+      if (signupPhone.trim()) {
+        checkPromises.push(
+          fetch(`${API_BASE}/checkUserExists`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ identifier: signupPhone }),
+          })
+        );
+      }
+      
+      const responses = await Promise.all(checkPromises);
+      const results = await Promise.all(responses.map(res => safeJson(res)));
+      
+      let userExists = false;
+      let existingIdentifier = "";
+      
+      results.forEach((result, index) => {
+        if (result.exists) {
+          userExists = true;
+          existingIdentifier = index === 0 ? signupEmail : signupPhone;
+        }
       });
-
-      if (!res.ok) {
-        const payload = await safeJson(res);
-        setErrorMsg(payload.message || "Signup failed");
+      
+      if (userExists) {
+        setErrorMsg(`An account already exists with ${existingIdentifier.includes('@') ? 'email' : 'phone'} ${existingIdentifier}. Please login.`);
         setLoading(false);
         return;
       }
+      
+      // Call auth/access for signup
+      const requestBody = {
+        name: fullName.trim(),
+        email: signupEmail.trim(),
+        phone: signupPhone.trim(),
+        googleSignIn: false,
+        appleSignIn: false,
+      };
+
+      const res = await fetch(`${API_BASE}/auth/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
 
       const data = await safeJson(res);
-      if (data.success === true) {
-        saveSession({ token: data.token, user_id: data.user_id, identifier: signupEmail || signupPhone });
+
+      if (res.ok && data.success === true) {
+        // Save the session and notify parent
+        saveSession({ 
+          token: data.token, 
+          user_id: data.user?.id || data.user_id, 
+          user: data.user 
+        });
         onSuccess && onSuccess();
         close && close();
       } else {
-        setErrorMsg(data.message || "Signup failed");
+        setErrorMsg(data.message || "Signup failed. Please try again.");
       }
     } catch (err) {
       setErrorMsg(friendlyNetworkError(err));
@@ -348,113 +333,74 @@ const LoginPopup = ({ close, onSuccess }) => {
     }
   };
 
-// -------------------------------------------------------
-// GOOGLE LOGIN (FINAL & LIVE SAFE)
-// -------------------------------------------------------
-const handleGoogleLogin = async () => {
-  setErrorMsg("");
-  setLoading(true);
-
-  try {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-
-    if (!user) throw new Error("No user returned");
-
-    // 🔐 MUST: Get Firebase ID Token
-    const idToken = await user.getIdToken(true);
-
-    const res = await fetch(`${API_BASE}/google-login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken }),
-    });
-
-    const data = await safeJson(res);
-
-    if (!res.ok || !data.success) {
-      throw new Error(data.message || "Google login failed");
-    }
-
-    saveSession({
-      token: data.token,
-      user_id: data.user_id,
-      identifier: data.email,
-    });
-
-    onSuccess && onSuccess();
-    close && close();
-
-  } catch (err) {
-    console.error("Google Login Error:", err);
-
-    if (err.code === "auth/unauthorized-domain") {
-      setErrorMsg("Domain not authorized. Contact support.");
-    } else if (err.code === "auth/popup-blocked") {
-      setErrorMsg("Popup blocked. Allow popups and try again.");
-    } else {
-      setErrorMsg("Google login failed. Try again.");
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
-
   // -------------------------------------------------------
-  // GOOGLE SIGNUP (Fallback when user doesn't exist)
+  // GOOGLE LOGIN/SIGNUP
   // -------------------------------------------------------
-  const handleGoogleSignup = async (user) => {
+  const handleGoogleLogin = async () => {
+    setErrorMsg("");
+    setLoading(true);
+
     try {
-      const res = await fetch(`${API_BASE}/signup`, {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      if (!user) throw new Error("No user returned from Google");
+
+      // Use Google user info for access
+      const requestBody = {
+        name: user.displayName || user.email.split('@')[0],
+        email: user.email || '',
+        phone: user.phoneNumber || '',
+        googleSignIn: true,
+        appleSignIn: false,
+      };
+
+      const res = await fetch(`${API_BASE}/auth/access`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          name: user.displayName || user.email.split('@')[0],
-          email: user.email,
-          phone: "", // Google doesn't provide phone
-          password: "", // No password for Google auth
-          googleSignIn: true,
-          photoURL: user.photoURL || null,
-          uid: user.uid
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
       });
 
-      if (!res.ok) {
-        const payload = await safeJson(res);
-        setErrorMsg(payload.message || "Failed to create account with Google");
-        return;
-      }
-
       const data = await safeJson(res);
-      if (data.success === true) {
+
+      if (res.ok && data.success === true) {
+        // Save the session and notify parent
         saveSession({ 
           token: data.token, 
-          user_id: data.user_id, 
-          identifier: user.email 
+          user_id: data.user?.id || data.user_id, 
+          user: data.user 
         });
         onSuccess && onSuccess();
         close && close();
       } else {
-        setErrorMsg(data.message || "Google signup failed");
+        setErrorMsg(data.message || "Google login failed. Please try again.");
       }
+
     } catch (err) {
-      console.error("Google signup error:", err);
-      setErrorMsg("Failed to create account with Google. Please try email signup.");
+      console.error("Google Login Error:", err);
+
+      if (err.code === "auth/unauthorized-domain") {
+        setErrorMsg("Domain not authorized. Contact support.");
+      } else if (err.code === "auth/popup-blocked") {
+        setErrorMsg("Popup blocked. Allow popups and try again.");
+      } else if (err.code === "auth/cancelled-popup-request") {
+        setErrorMsg("Login cancelled by user.");
+      } else {
+        setErrorMsg("Google login failed. Try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   // -------------------------------------------------------
-  // APPLE LOGIN (Placeholder - needs proper setup)
+  // APPLE LOGIN (Placeholder)
   // -------------------------------------------------------
   const handleAppleLogin = () => {
-    setErrorMsg("Apple login is currently unavailable. Please use Google or email.");
+    setErrorMsg("Apple login is currently unavailable. Please use Google or email/phone.");
   };
 
   // -------------------------------------------------------
@@ -463,12 +409,32 @@ const handleGoogleLogin = async () => {
   const handleBack = () => {
     setErrorMsg("");
     setSuccessMsg("");
-    if (step === 2 || step === 3) {
+    if (step === 2) {
       setStep(1);
-    } else if (step === 4) {
-      setStep(1);
-    } else if (step === 5) {
-      setStep(4);
+    }
+  };
+
+  // -------------------------------------------------------
+  // SWITCH TO SIGNUP
+  // -------------------------------------------------------
+  const switchToSignup = () => {
+    // Pre-fill signup form with login values if available
+    if (loginEmail.trim()) {
+      setSignupEmail(loginEmail);
+    }
+    if (loginPhone.trim()) {
+      setSignupPhone(loginPhone);
+    }
+    setStep(2);
+  };
+
+  // -------------------------------------------------------
+  // HANDLE ENTER KEY PRESS
+  // -------------------------------------------------------
+  const handleKeyPress = (e, action) => {
+    if (e.key === 'Enter' && !loading) {
+      e.preventDefault();
+      action();
     }
   };
 
@@ -478,44 +444,63 @@ const handleGoogleLogin = async () => {
   return (
     <div className="login-popup-overlay" role="dialog" aria-modal="true">
       <div className="login-popup" aria-live="polite">
-        {/* Header with back button for steps 2+ */}
+        {/* Header with back button for step 2 */}
         <div className="login-header">
-          {(step === 2 || step === 3 || step === 4 || step === 5) && (
-            <button className="login-back-btn" onClick={handleBack}>
+          {step === 2 && (
+            <button className="login-back-btn" onClick={handleBack} disabled={loading}>
               <ArrowLeft size={20} />
             </button>
           )}
           <h3>
             {step === 1 && "Welcome Back"}
-            {step === 2 && "Enter Password"}
-            {step === 3 && "Create Account"}
-            {step === 4 && "Forgot Password"}
-            {step === 5 && "Reset Password"}
+            {step === 2 && "Create Account"}
           </h3>
         </div>
 
         {successMsg && <p className="login-success">{successMsg}</p>}
         {errorMsg && <p className="login-error">{errorMsg}</p>}
 
-        {/* STEP 1: Email/Phone */}
+        {/* STEP 1: Login with Email & Phone */}
         {step === 1 && (
           <>
-            <p className="login-subtitle">Enter your email or phone number to continue</p>
+            <p className="login-subtitle">Enter your email and phone number to login</p>
+            
             <div className="input-with-icon">
               <Mail size={20} className="input-icon" />
               <input
-                type="text"
-                placeholder="Email or Phone Number"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && checkUserExists()}
+                type="email"
+                placeholder="Email Address"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                onKeyPress={(e) => handleKeyPress(e, handleLogin)}
+                disabled={loading}
               />
             </div>
-            <button className="login-btn" onClick={checkUserExists} disabled={loading}>
-              {loading ? "Checking..." : "Continue"}
+            
+            <div className="input-with-icon">
+              <Phone size={20} className="input-icon" />
+              <input
+                type="tel"
+                placeholder="Phone Number"
+                value={loginPhone}
+                onChange={(e) => setLoginPhone(e.target.value.replace(/\D/g, ''))}
+                onKeyPress={(e) => handleKeyPress(e, handleLogin)}
+                disabled={loading}
+                maxLength={15}
+              />
+            </div>
+            
+            <button 
+              className="login-btn" 
+              onClick={handleLogin} 
+              disabled={loading || (!loginEmail.trim() && !loginPhone.trim())}
+            >
+              {loading ? "Logging in..." : "Login"}
             </button>
             
-            <div className="login-divider"><span>Or continue with</span></div>
+            <div className="login-divider">
+              <span>Or continue with</span>
+            </div>
 
             <div className="login-social-row">
               <button 
@@ -538,54 +523,20 @@ const handleGoogleLogin = async () => {
           </>
         )}
 
-        {/* STEP 2: Password */}
+        {/* STEP 2: Signup */}
         {step === 2 && (
           <>
-            <p className="hello-text">Welcome back, <strong>{username}</strong></p>
-            <div className="input-with-icon">
-              <Lock size={20} className="input-icon" />
-              <input
-                type={showPwd ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-              />
-              <button 
-                className="password-toggle-btn"
-                onClick={() => setShowPwd(!showPwd)}
-                type="button"
-                aria-label={showPwd ? "Hide password" : "Show password"}
-              >
-                {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
+            <p className="login-subtitle">Enter your details to create an account</p>
             
-            <button className="login-btn" onClick={handleLogin} disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
-            </button>
-            
-            <button 
-              className="forgot-password-btn" 
-              onClick={handleForgotPassword}
-              disabled={loading}
-            >
-              Forgot Password?
-            </button>
-          </>
-        )}
-
-        {/* STEP 3: Signup */}
-        {step === 3 && (
-          <>
-            <p className="login-subtitle">Create your account to get started</p>
             <div className="input-with-icon">
               <User size={20} className="input-icon" />
               <input 
                 type="text" 
-                placeholder="Full Name" 
+                placeholder="Full Name *" 
                 value={fullName} 
                 onChange={(e) => setFullName(e.target.value)} 
+                disabled={loading}
+                onKeyPress={(e) => handleKeyPress(e, handleSignup)}
               />
             </div>
             
@@ -593,9 +544,11 @@ const handleGoogleLogin = async () => {
               <Mail size={20} className="input-icon" />
               <input 
                 type="email" 
-                placeholder="Email" 
+                placeholder="Email Address *" 
                 value={signupEmail} 
                 onChange={(e) => setSignupEmail(e.target.value)} 
+                disabled={loading}
+                onKeyPress={(e) => handleKeyPress(e, handleSignup)}
               />
             </div>
             
@@ -603,125 +556,40 @@ const handleGoogleLogin = async () => {
               <Phone size={20} className="input-icon" />
               <input 
                 type="tel" 
-                placeholder="Phone Number" 
+                placeholder="Phone Number *" 
                 value={signupPhone} 
-                onChange={(e) => setSignupPhone(e.target.value)} 
+                onChange={(e) => setSignupPhone(e.target.value.replace(/\D/g, ''))} 
+                disabled={loading}
+                onKeyPress={(e) => handleKeyPress(e, handleSignup)}
+                maxLength={15}
               />
             </div>
             
-            <div className="input-with-icon">
-              <Lock size={20} className="input-icon" />
-              <input 
-                type={showPwd ? "text" : "password"} 
-                placeholder="Create Password" 
-                value={signupPassword} 
-                onChange={(e) => setSignupPassword(e.target.value)} 
-              />
-              <button 
-                className="password-toggle-btn"
-                onClick={() => setShowPwd(!showPwd)}
-                type="button"
-                aria-label={showPwd ? "Hide password" : "Show password"}
-              >
-                {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            
-            <div className="input-with-icon">
-              <Lock size={20} className="input-icon" />
-              <input 
-                type="password" 
-                placeholder="Confirm Password" 
-                value={signupConfirmPassword} 
-                onChange={(e) => setSignupConfirmPassword(e.target.value)} 
-              />
-            </div>
-            
-            <button className="login-btn" onClick={handleSignup} disabled={loading}>
+            <button 
+              className="login-btn" 
+              onClick={handleSignup} 
+              disabled={loading || !fullName.trim() || !signupEmail.trim() || !signupPhone.trim()}
+            >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
+            
+            <p className="password-hint">* All fields are required</p>
           </>
         )}
 
-        {/* STEP 4: Forgot Password - Enter Email/Phone */}
-        {step === 4 && (
-          <>
-            <p className="login-subtitle">Enter your email or phone to reset your password</p>
-            <div className="input-with-icon">
-              <Mail size={20} className="input-icon" />
-              <input
-                type="text"
-                placeholder="Email or Phone Number"
-                value={forgotIdentifier}
-                onChange={(e) => setForgotIdentifier(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleForgotPasswordSubmit()}
-              />
-            </div>
-            <button className="login-btn" onClick={handleForgotPasswordSubmit} disabled={loading}>
-              {loading ? "Checking..." : "Continue"}
+        {/* Footer Links */}
+        <div className="login-footer">
+          <p className="login-footer-text">
+            {step === 1 ? "Don't have an account? " : "Already have an account? "}
+            <button 
+              className="login-footer-link" 
+              onClick={step === 1 ? switchToSignup : handleBack}
+              disabled={loading}
+            >
+              {step === 1 ? "Sign up" : "Login"}
             </button>
-          </>
-        )}
-
-        {/* STEP 5: Forgot Password - Reset Password */}
-        {step === 5 && (
-          <>
-            <p className="login-subtitle">Create a new password for your account</p>
-            <div className="input-with-icon">
-              <Lock size={20} className="input-icon" />
-              <input
-                type={showPwd ? "text" : "password"}
-                placeholder="New Password"
-                value={resetPassword}
-                onChange={(e) => setResetPassword(e.target.value)}
-              />
-              <button 
-                className="password-toggle-btn"
-                onClick={() => setShowPwd(!showPwd)}
-                type="button"
-                aria-label={showPwd ? "Hide password" : "Show password"}
-              >
-                {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            
-            <div className="input-with-icon">
-              <Lock size={20} className="input-icon" />
-              <input
-                type="password"
-                placeholder="Confirm New Password"
-                value={resetConfirmPassword}
-                onChange={(e) => setResetConfirmPassword(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleResetPassword()}
-              />
-            </div>
-            
-            <button className="login-btn" onClick={handleResetPassword} disabled={loading}>
-              {loading ? "Resetting..." : "Reset Password"}
-            </button>
-            
-            <p className="password-hint">Password must be at least 6 characters long</p>
-          </>
-        )}
-
-        {/* Footer Links for Step 1 */}
-        {step === 1 && (
-          <div className="login-footer">
-            <p className="login-footer-text">
-              Don't have an account?{" "}
-              <button 
-                className="login-footer-link" 
-                onClick={() => {
-                  setStep(3);
-                  setSignupEmail(identifier);
-                }}
-                disabled={loading}
-              >
-                Sign up
-              </button>
-            </p>
-          </div>
-        )}
+          </p>
+        </div>
 
         {/* Close Button */}
         <button className="login-close" onClick={close} disabled={loading}>

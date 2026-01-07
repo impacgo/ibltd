@@ -488,6 +488,10 @@
     padding: 2rem 1.5rem;
     margin: 1rem;
   }
+  .coming-soon-page{
+    padding-top: 50px;
+
+  }
   
   .coming-soon-header {
     flex-direction: column;
