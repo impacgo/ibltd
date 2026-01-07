@@ -1,26 +1,13 @@
 // src/components/Home.jsx
-import React, { useRef } from "react";
-import Hero from "./Hero";
-import ServiceAreas from "./ServiceAreas";
+import React from 'react';
 
 const Home = () => {
-  const serviceRef = useRef(null);
-
-  const scrollToServiceAreas = () => {
-    // safe check and smooth scroll to the actual DOM node
-    if (serviceRef.current) {
-      serviceRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
   return (
     <div className="home">
-      {/* pass scroll handler into Hero */}
-      <Hero onCheckService={scrollToServiceAreas} />
-
-      {/* other sections can remain as-is; keep id for backward compatibility */}
-      <section id="services" ref={serviceRef}>
-        <ServiceAreas />
+      <section className="hero">
+        <h1>Professional Ironing Services</h1>
+        <p>Get your clothes professionally cleaned and ironed with convenience</p>
+        <a href="#services" className="cta-button">View Our Services</a>
       </section>
       
       {/* Add other sections of your main page here */}

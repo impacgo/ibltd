@@ -1,642 +1,657 @@
-/* ===== HowItWorks Component Styles ===== */
+/* src/components/HowItWorks.css */
 
-:root {
-  --howitworks-bg: #0a0a0a;
-  --howitworks-card-bg: rgba(255, 255, 255, 0.03);
-  --howitworks-card-border: rgba(255, 255, 255, 0.08);
-  --howitworks-text-primary: #f1f5f9;
-  --howitworks-text-secondary: #cbd5e1;
-  --howitworks-text-light: #94a3b8;
-  --howitworks-accent: #FF6B00;
-  --howitworks-accent-light: #FF8C00;
-  --howitworks-accent-gradient: linear-gradient(135deg, #FF6B00, #FF8C00);
-  --howitworks-radius-sm: 8px;
-  --howitworks-radius-md: 12px;
-  --howitworks-radius-lg: 16px;
-  --howitworks-radius-xl: 20px;
-  --howitworks-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --howitworks-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.15);
-  --howitworks-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.25);
-  --howitworks-shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.35);
-}
-
-/* Main Section */
-.how-it-works-section {
-  background: var(--howitworks-bg);
-  padding: 80px 0;
+.how-it-works {
   position: relative;
+  padding: 70px 0;
+  background: rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 
-.how-it-works-section::before {
+/* Background with blur effect only for this section */
+.how-it-works::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 107, 0, 0.3) 50%, 
-    transparent 100%
-  );
-}
-
-.how-it-works-section::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 107, 0, 0.3) 50%, 
-    transparent 100%
-  );
-}
-
-/* Container */
-.howitworks-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  position: relative;
-  z-index: 2;
-}
-
-/* Header Section */
-.howitworks-header {
-  text-align: center;
-  margin-bottom: 60px;
-}
-
-.howitworks-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  background: rgba(255, 107, 0, 0.15);
-  border: 1px solid rgba(255, 107, 0, 0.3);
-  border-radius: 100px;
-  color: #ff8c00;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-
-.howitworks-badge i {
-  font-size: 0.9rem;
-}
-
-.howitworks-title {
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1.1;
-  color: var(--howitworks-text-primary);
-  margin: 0 0 16px 0;
-  text-align: center;
-}
-
-.howitworks-title .highlight {
-  background: var(--howitworks-accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  display: inline-block;
-  margin-left: 4px;
-}
-
-.howitworks-subtitle {
-  font-size: 1.1rem;
-  color: var(--howitworks-text-secondary);
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto;
-  opacity: 0.9;
-  text-align: center;
-}
-
-/* Steps Grid Container */
-.steps-grid-container {
-  position: relative;
-  margin-bottom: 80px;
-}
-
-.steps-background-accent {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  height: 2px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 107, 0, 0.1) 25%, 
-    rgba(255, 140, 0, 0.2) 50%, 
-    rgba(255, 107, 0, 0.1) 75%, 
-    transparent 100%
-  );
+  width: 100%;
+  height: 100%;
+  background-image: url('../images/leather.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  filter: blur(8px) brightness(0.8);
   z-index: 1;
 }
 
-/* Steps Grid */
-.steps-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  position: relative;
-  z-index: 2;
-}
-
-.step-card-wrapper {
-  position: relative;
-}
-
-.step-card {
-  background: var(--howitworks-card-bg);
-  border: 1px solid var(--howitworks-card-border);
-  border-radius: var(--howitworks-radius-xl);
-  padding: 32px 24px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.step-card::before {
+.how-it-works::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--howitworks-accent-gradient);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 2;
 }
 
-.step-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--howitworks-shadow-xl);
-  border-color: rgba(255, 107, 0, 0.4);
-}
-
-.step-card:hover::before {
-  opacity: 1;
-}
-
-.step-icon-wrapper {
+/* Content */
+.content-container {
   position: relative;
+  z-index: 3;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+}
+
+/* Header Styles */
+.section-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.section-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 8px 20px;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   margin-bottom: 20px;
 }
 
-.step-icon-circle {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
+.section-badge span {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.section-title {
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 15px;
+  text-shadow: 0 2px 28px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #ffffff 0%, #e8f4ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-description {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Pricing Highlight Section */
+.pricing-highlight {
+  margin-bottom: 50px;
+}
+
+.pricing-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.price-main {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 12px;
+  gap: 30px;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.price-badge {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #FF6B00, #FF8C00);
+  padding: 20px 25px;
+  border-radius: 15px;
+  color: white;
+  box-shadow: 0 8px 25px rgba(255, 107, 0, 0.4);
+  min-width: 120px;
+  justify-content: center;
+}
+
+.price-icon {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-right: 5px;
+}
+
+.price-amount {
+  font-size: 2.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.price-info h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.price-info p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.pricing-features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pricing-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
   transition: all 0.3s ease;
 }
 
-.step-card:hover .step-icon-circle {
-  transform: scale(1.1) rotate(5deg);
+.pricing-feature:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
-.step-icon-circle i {
-  font-size: 1.8rem;
+.pricing-feature i {
+  color: #FF8C00;
+  width: 16px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* Steps Grid - Updated spacing */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px;
+  margin-bottom: 50px;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .step-number {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 32px;
-  height: 32px;
-  background: var(--howitworks-accent-gradient);
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #FF6B00, #FF8C00);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 0.85rem;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+  margin-bottom: 20px;
+  box-shadow: 0 8px 25px rgba(255, 107, 0, 0.4);
+  z-index: 4;
 }
 
-.step-content {
-  flex: 1;
+.step-number span {
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.step-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 30px 20px;
+  transition: all 0.3s ease;
+  width: 100%;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+}
+
+.step-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.step-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.step-icon i {
+  font-size: 1.5rem;
+  color: #FF8C00;
 }
 
 .step-title {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  color: var(--howitworks-text-primary);
-  margin: 0 0 12px 0;
+  color: white;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .step-description {
   font-size: 0.95rem;
-  color: var(--howitworks-text-secondary);
+  color: rgba(255, 255, 255, 0.8);
   line-height: 1.5;
-  opacity: 0.9;
-  margin: 0;
-}
-
-.step-connector {
-  display: none; /* Hidden on desktop, shown only on mobile */
 }
 
 /* CTA Section */
-.howitworks-cta {
-  max-width: 800px;
-  margin: 0 auto;
+.cta-section {
+  text-align: center;
+  margin-top: 20px;
 }
 
 .cta-card {
-  background: linear-gradient(135deg, 
-    rgba(10, 10, 10, 0.9) 0%, 
-    rgba(15, 23, 42, 0.9) 100%
-  );
-  border: 1px solid rgba(255, 107, 0, 0.2);
-  border-radius: var(--howitworks-radius-xl);
-  padding: 48px;
-  text-align: center;
-  backdrop-filter: blur(20px);
-  box-shadow: var(--howitworks-shadow-xl);
-  position: relative;
-  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
-.cta-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(255, 107, 0, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 140, 0, 0.08) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-.cta-icon {
-  width: 64px;
-  height: 64px;
-  background: var(--howitworks-accent-gradient);
-  border-radius: var(--howitworks-radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 24px;
-  color: white;
-  font-size: 1.5rem;
-  box-shadow: 0 8px 24px rgba(255, 107, 0, 0.3);
-}
-
-.cta-content h2 {
+.cta-content h3 {
   font-size: 2rem;
-  font-weight: 800;
-  color: var(--howitworks-text-primary);
-  margin: 0 0 12px 0;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .cta-content p {
   font-size: 1.1rem;
-  color: var(--howitworks-text-secondary);
-  line-height: 1.6;
-  margin: 0 auto 32px;
-  max-width: 500px;
-  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 25px;
 }
 
-.pricing-info {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
+.pricing-reminder {
+  margin-bottom: 25px;
 }
 
-.pricing-item {
-  display: flex;
+.minimum-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--howitworks-radius-lg);
-  min-width: 200px;
-  transition: all 0.3s ease;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 10px 20px;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.pricing-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 107, 0, 0.3);
+.minimum-badge i {
+  color: #FF8C00;
 }
 
-.pricing-icon {
-  width: 48px;
-  height: 48px;
-  background: var(--howitworks-accent-gradient);
-  border-radius: var(--howitworks-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.2rem;
-}
-
-.pricing-details {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.pricing-label {
-  font-size: 0.85rem;
-  color: var(--howitworks-text-light);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.pricing-value {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--howitworks-text-primary);
-  background: var(--howitworks-accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.cta-action {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  align-items: center;
+.minimum-badge strong {
+  color: #FF8C00;
+  font-size: 1.1rem;
 }
 
 .cta-button {
-  padding: 18px 40px;
-  background: var(--howitworks-accent-gradient);
+  background: linear-gradient(135deg, #FF6B00, #FF8C00);
   color: white;
   border: none;
-  border-radius: var(--howitworks-radius-lg);
-  font-size: 1.1rem;
-  font-weight: 700;
+  padding: 15px 30px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 24px rgba(255, 107, 0, 0.3);
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto;
+  box-shadow: 0 8px 25px rgba(255, 107, 0, 0.4);
+  width: 100%;
+  max-width: 300px;
 }
 
 .cta-button:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(255, 107, 0, 0.4);
-}
-
-.cta-button:active {
   transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(255, 107, 0, 0.6);
+  background: linear-gradient(135deg, #FF8C00, #FF6B00);
 }
 
-.cta-button i {
-  font-size: 1.2rem;
-}
+/* ---------- RESPONSIVE DESIGN ---------- */
 
-.cta-assurance {
-  display: flex;
-  gap: 32px;
-  align-items: center;
-}
-
-.assurance-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  color: var(--howitworks-text-light);
-  font-weight: 500;
-}
-
-.assurance-item i {
-  color: #ff8c00;
-  font-size: 0.95rem;
-}
-
-/* ===== RESPONSIVE DESIGN ===== */
-
+/* Tablet: 2 cards per row */
 @media (max-width: 1024px) {
-  .howitworks-title {
-    font-size: 2.5rem;
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+  }
+  
+  .section-title {
+    font-size: 2.8rem;
+  }
+  
+  .step-card {
+    min-height: 190px;
+    padding: 25px 20px;
+  }
+  
+  .pricing-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .price-main {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+}
+
+/* Mobile: 2 cards per row with adjusted spacing */
+@media (max-width: 768px) {
+  .how-it-works {
+    padding: 50px 0;
+  }
+  
+  .content-container {
+    padding: 0 15px;
+  }
+  
+  .section-header {
+    margin-bottom: 40px;
+  }
+  
+  .section-title {
+    font-size: 2.3rem;
+    margin-bottom: 12px;
+  }
+  
+  .section-description {
+    font-size: 1.1rem;
+    padding: 0 10px;
+  }
+  
+  .pricing-card {
+    padding: 25px 20px;
+  }
+  
+  .price-badge {
+    padding: 15px 20px;
+    min-width: 100px;
+  }
+  
+  .price-amount {
+    font-size: 2.2rem;
+  }
+  
+  .price-info h3 {
+    font-size: 1.5rem;
+  }
+  
+  .price-info p {
+    font-size: 1rem;
+  }
+  
+  .pricing-features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
   
   .steps-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-  }
-  
-  .steps-background-accent {
-    display: none;
-  }
-  
-  .step-card {
-    padding: 28px 20px;
-  }
-  
-  .cta-card {
-    padding: 40px 32px;
-  }
-}
-
-@media (max-width: 768px) {
-  .how-it-works-section {
-    padding: 60px 0;
-  }
-  
-  .howitworks-header {
+    gap: 20px;
     margin-bottom: 40px;
   }
   
-  .howitworks-title {
-    font-size: 2rem;
-  }
-  
-  .howitworks-subtitle {
-    font-size: 1rem;
-    padding: 0 16px;
-  }
-  
-  .steps-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
   .step-card {
-    padding: 24px 20px;
+    min-height: 180px;
+    padding: 25px 15px;
   }
   
-  .step-icon-circle {
-    width: 60px;
-    height: 60px;
+  .step-number {
+    width: 45px;
+    height: 45px;
+    margin-bottom: 15px;
   }
   
-  .step-icon-circle i {
-    font-size: 1.5rem;
+  .step-number span {
+    font-size: 15px;
   }
   
-  /* Show connectors on mobile */
-  .step-connector {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 20px 0;
+  .step-icon {
+    width: 55px;
+    height: 55px;
+    margin-bottom: 12px;
   }
   
-  .connector-line {
-    flex: 1;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.1);
-  }
-  
-  .connector-arrow {
-    width: 32px;
-    height: 32px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 12px;
-  }
-  
-  .step-card:last-child .step-connector {
-    display: none;
-  }
-  
-  .cta-card {
-    padding: 32px 24px;
-  }
-  
-  .cta-content h2 {
-    font-size: 1.75rem;
-  }
-  
-  .pricing-info {
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  .pricing-item {
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .cta-assurance {
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .cta-button {
-    padding: 16px 32px;
-    font-size: 1rem;
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .how-it-works-section {
-    padding: 48px 0;
-  }
-  
-  .howitworks-title {
-    font-size: 1.75rem;
-  }
-  
-  .howitworks-badge {
-    font-size: 0.75rem;
-    padding: 6px 16px;
-  }
-  
-  .steps-grid {
-    gap: 16px;
-  }
-  
-  .step-card {
-    padding: 20px 16px;
+  .step-icon i {
+    font-size: 1.4rem;
   }
   
   .step-title {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
   }
   
   .step-description {
     font-size: 0.9rem;
   }
   
-  .cta-card {
-    padding: 24px 20px;
+  .cta-section {
+    margin-top: 15px;
   }
   
-  .cta-content h2 {
+  .cta-card {
+    padding: 30px 25px;
+  }
+  
+  .cta-content h3 {
+    font-size: 1.7rem;
+  }
+  
+  .cta-content p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+  
+  .minimum-badge {
+    padding: 8px 16px;
+    font-size: 0.95rem;
+  }
+  
+  .cta-button {
+    padding: 14px 25px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Small Mobile: 2 cards per row with compact design */
+@media (max-width: 480px) {
+  .how-it-works {
+    padding: 40px 0;
+  }
+  
+  .section-header {
+    margin-bottom: 35px;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .section-badge {
+    margin-bottom: 15px;
+  }
+  
+  .section-description {
+    font-size: 1rem;
+    padding: 0;
+  }
+  
+  .pricing-card {
+    padding: 20px 15px;
+  }
+  
+  .price-badge {
+    padding: 12px 18px;
+    min-width: 90px;
+  }
+  
+  .price-amount {
+    font-size: 2rem;
+  }
+  
+  .price-icon {
+    font-size: 1.5rem;
+  }
+  
+  .price-info h3 {
+    font-size: 1.3rem;
+  }
+  
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 35px;
+  }
+  
+  .step-card {
+    min-height: 170px;
+    padding: 20px 12px;
+    border-radius: 15px;
+  }
+  
+  .step-number {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+  
+  .step-number span {
+    font-size: 14px;
+  }
+  
+  .step-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
+  }
+  
+  .step-icon i {
+    font-size: 1.3rem;
+  }
+  
+  .step-title {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+  
+  .step-description {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  .cta-card {
+    padding: 25px 20px;
+  }
+  
+  .cta-content h3 {
     font-size: 1.5rem;
   }
   
   .cta-content p {
     font-size: 0.95rem;
+    margin-bottom: 18px;
   }
   
-  .pricing-item {
-    padding: 16px 20px;
+  .minimum-badge {
+    padding: 8px 14px;
+    font-size: 0.9rem;
   }
   
-  .pricing-value {
-    font-size: 1.25rem;
+  .cta-button {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    border-radius: 20px;
   }
 }
 
-/* Animation for step cards */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+/* Extra Small Mobile: Keep 2 cards but adjust further */
+@media (max-width: 360px) {
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .step-card {
+    min-height: 160px;
+    padding: 18px 10px;
   }
-}
-
-.step-card {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-.step-card:nth-child(1) { animation-delay: 0.1s; }
-.step-card:nth-child(2) { animation-delay: 0.2s; }
-.step-card:nth-child(3) { animation-delay: 0.3s; }
-.step-card:nth-child(4) { animation-delay: 0.4s; }
-
-/* Hover effects for pricing items */
-.pricing-item:hover .pricing-icon {
-  transform: rotate(5deg) scale(1.1);
-  transition: transform 0.3s ease;
+  
+  .step-number {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .step-icon {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .step-title {
+    font-size: 1rem;
+  }
+  
+  .step-description {
+    font-size: 0.8rem;
+  }
+  
+  .cta-card {
+    padding: 20px 15px;
+  }
+  
+  .cta-content h3 {
+    font-size: 1.4rem;
+  }
+  
+  .cta-button {
+    padding: 12px 18px;
+    font-size: 0.9rem;
+  }
 }
