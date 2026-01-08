@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useLocation, useNavigate,useParams } from "react-router-dom";
-import "./ServicePricing.css";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import "./ServicePricing.css"; // Changed from "./servicePricing.css"
 
 const API_BASE = "https://api.ironingboy.com";
 
