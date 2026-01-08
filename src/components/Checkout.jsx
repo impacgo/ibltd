@@ -2493,7 +2493,6 @@ export default function Checkout() {
   );
 }
 
-src/components/Checkout.jsx
 
 
 
