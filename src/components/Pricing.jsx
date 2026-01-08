@@ -16,7 +16,7 @@ const pricingData = [
       { name: "Underwear: Press Only - Folded", price: "£0.95" },
       { name: "Face Mask: Wash & Press", price: "£1.90" },
       { name: "Child's Dress Shirt", price: "£3.21", code: "CI008" },
-      { name: "BraL Wash & Press - Folded", price: "£2.45" },
+      { name: "Bra Wash & Press - Folded", price: "£2.45" },
     ],
   },
   {
@@ -240,4 +240,5 @@ export default function Pricing() {
       </div>
     </section>
   );
+
 }
