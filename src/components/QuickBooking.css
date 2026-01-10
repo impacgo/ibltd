@@ -1757,32 +1757,84 @@ button:focus:not(:focus-visible) {
     --qb-text-muted: #9ca3af;
   }
   
-  .qb-page {
-    background: #111827;
-  }
-  
   .qb-form-input,
   .qb-form-textarea,
-  .qb-notes-input,
-  .qb-date-input {
-    background: #374151;
-    color: var(--qb-text-primary);
+  .qb-date-input,
+  .qb-notes-input {
+    background-color: #1f2937 !important;
+    color: #f9fafb !important;
+    border-color: #374151 !important;
+  }
+
+  /* Hover */
+  .qb-form-input:hover,
+  .qb-form-textarea:hover,
+  .qb-date-input:hover {
+    background-color: #1f2937;
     border-color: #4b5563;
   }
-  
+
+  /* Focus */
+  .qb-form-input:focus,
+  .qb-form-textarea:focus,
+  .qb-date-input:focus {
+    background-color: #1f2937 !important;
+    color: #f9fafb !important;
+    border-color: var(--qb-accent) !important;
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.25);
+  }
+
+  /* -------- Placeholder Text -------- */
   .qb-form-input::placeholder,
   .qb-form-textarea::placeholder,
   .qb-notes-input::placeholder {
-    color: var(--qb-text-muted);
+    color: #9ca3af !important;
+    opacity: 1;
   }
-  
-  .qb-address-option,
-  .qb-card-option,
-  .qb-payment-option,
+
+  /* -------- Labels -------- */
+  .qb-form-label,
+  .qb-date-label,
+  .qb-time-label {
+    color: #e5e7eb;
+  }
+
+  /* -------- Cards -------- */
+  .qb-card,
   .qb-schedule-section,
-  .qb-notes-container {
-    background: var(--qb-bg-lighter);
-    border-color: var(--qb-card-border);
+  .qb-notes-container,
+  .qb-payment-option,
+  .qb-address-option {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+
+  /* -------- Address Text -------- */
+  .qb-address-text,
+  .qb-address-postcode,
+  .qb-card-number,
+  .qb-payment-description {
+    color: #d1d5db;
+  }
+
+  /* -------- Disabled Inputs -------- */
+  .qb-form-input:disabled,
+  .qb-date-input:disabled {
+    background-color: #111827;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  /* -------- Summary Bar -------- */
+  .qb-summary-section {
+    background: #020617;
+    border-top: 1px solid #374151;
+  }
+
+  /* -------- Stripe Elements Wrapper -------- */
+  .stripe-element-container {
+    background: #1f2937;
+    border-color: #374151;
   }
 }
 
