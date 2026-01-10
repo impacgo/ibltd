@@ -1126,7 +1126,6 @@ const Reviews = () => {
     const navigate = useNavigate();
   return (<>
   <style>{ReviewPagesCss}</style>
-    <style>{servicePricingCSS}</style>
     <div className="reviews-page">
      <button
   className="reviews-back-btn"
