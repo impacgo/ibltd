@@ -1838,7 +1838,7 @@
 // }
 
 // src/components/QuickBooking.jsx
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback,useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./QuickBooking.css";
@@ -2031,6 +2031,7 @@ export default function QuickBooking() {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [showPickupAddressForm, setShowPickupAddressForm] = useState(false);
   const [pendingBookingData, setPendingBookingData] = useState(null);
+const phoneCheckTimeoutRef = useRef(null);
 
   // Payment option - ALWAYS require card for ALL users
   const [saveCardOption, setSaveCardOption] = useState(true);
@@ -2161,54 +2162,7 @@ export default function QuickBooking() {
   /* ---------------------------- Data Fetching ----------------------------- */
   
   // NEW: Check if phone number exists and auto-fill user info
-  const checkPhoneNumberExists = useCallback(async (phone) => {
-    if (!phone || phone.trim().length < 5) return;
-    
-    try {
-      const response = await fetch(`${API_BASE}/check-phone`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone: phone.trim() }),
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.exists && data.user) {
-          // Auto-fill user info
-          setUserInfo(prev => ({
-            ...prev,
-            name: data.user.name || prev.name,
-            email: data.user.email || prev.email,
-            phone: data.user.phone || prev.phone,
-          }));
-          
-          showToast("Welcome back! Your details have been auto-filled.", "success");
-          
-          // If user is found but not logged in, log them in
-          if (data.token && !userToken) {
-            localStorage.setItem("jwtToken", data.token);
-            setUserToken(data.token);
-            login({
-              id: data.user.id,
-              name: data.user.name,
-              email: data.user.email,
-              phone: data.user.phone,
-            });
-            
-            // Fetch their saved data
-            fetchUserProfile();
-            fetchAddresses();
-            fetchSavedCards();
-            ensureStripeCustomer();
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error checking phone number:", error);
-    }
-  }, [showToast, userToken, login]);
 
   const fetchUserProfile = useCallback(async () => {
     if (!userToken) return;
@@ -2313,6 +2267,63 @@ export default function QuickBooking() {
       console.error("Error creating Stripe customer:", error);
     }
   }, [userToken]);
+
+  const checkPhoneNumberExists = useCallback(async (phone) => {
+  if (!phone || phone.trim().length < 5) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/check-phone`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ phone: phone.trim() }),
+    });
+
+    if (response.status === 404) return;
+    if (!response.ok) return;
+
+    const data = await response.json();
+
+    if (data.exists && data.user) {
+      setUserInfo(prev => ({
+        ...prev,
+        name: data.user.name || prev.name,
+        email: data.user.email || prev.email,
+        phone: data.user.phone || prev.phone,
+      }));
+
+      showToast("Welcome back! Your details have been auto-filled.", "success");
+
+      if (data.token && !userToken) {
+        localStorage.setItem("jwtToken", data.token);
+        setUserToken(data.token);
+
+        login({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          phone: data.user.phone,
+        });
+
+        fetchUserProfile();
+        fetchAddresses();
+        fetchSavedCards();
+        ensureStripeCustomer();
+      }
+    }
+  } catch {
+    /* silent */
+  }
+}, [
+  showToast,
+  userToken,
+  login,
+  fetchUserProfile,
+  fetchAddresses,
+  fetchSavedCards,
+  ensureStripeCustomer,
+]);
 
   const createSetupIntent = useCallback(async (token) => {
     try {
@@ -2971,20 +2982,26 @@ export default function QuickBooking() {
   
   // NEW: Handle phone number change with auto-fill
   const handlePhoneChange = (e) => {
-    const newPhone = e.target.value;
-    setUserInfo(prev => ({
-      ...prev,
-      phone: newPhone
-    }));
-    
-    // Check if phone exists after user stops typing
-    if (newPhone && newPhone.trim().length >= 5) {
-      const timer = setTimeout(() => {
-        checkPhoneNumberExists(newPhone);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  };
+  const newPhone = e.target.value;
+
+  setUserInfo(prev => ({
+    ...prev,
+    phone: newPhone
+  }));
+
+  // Clear previous debounce
+  if (phoneCheckTimeoutRef.current) {
+    clearTimeout(phoneCheckTimeoutRef.current);
+  }
+
+  // Debounce API call
+  if (newPhone && newPhone.trim().length >= 5) {
+    phoneCheckTimeoutRef.current = setTimeout(() => {
+      checkPhoneNumberExists(newPhone);
+    }, 1000);
+  }
+};
+
 
   const handleCollectDateChange = (e) => {
     const newDate = e.target.value;
@@ -3244,7 +3261,7 @@ export default function QuickBooking() {
           <div className="qb-address-form-section">
             <div className="qb-form-grid">
               <div className="qb-form-group">
-                <label className="qb-form-label">
+                {/* <label className="qb-form-label">
                   <i className="fas fa-home"></i>
                   House/Flat Number
                   <input
@@ -3254,13 +3271,13 @@ export default function QuickBooking() {
                     onChange={handlePickupAddressFormChange("house_number")}
                     placeholder="123"
                   />
-                </label>
+                </label> */}
               </div>
 
               <div className="qb-form-group full-width">
                 <label className="qb-form-label">
                   <i className="fas fa-road"></i>
-                  Street Address *
+                  Full Address *
                   <input
                     type="text"
                     className="qb-form-input"
@@ -3287,7 +3304,7 @@ export default function QuickBooking() {
                 </label>
               </div>
 
-              <div className="qb-form-group">
+              {/* <div className="qb-form-group">
                 <label className="qb-form-label">
                   <i className="fas fa-city"></i>
                   City/Town
@@ -3299,9 +3316,9 @@ export default function QuickBooking() {
                     placeholder="London"
                   />
                 </label>
-              </div>
+              </div> */}
 
-              <div className="qb-form-group full-width">
+              {/* <div className="qb-form-group full-width">
                 <label className="qb-form-label">
                   <i className="fas fa-info-circle"></i>
                   Additional Details (Optional)
@@ -3313,7 +3330,7 @@ export default function QuickBooking() {
                     rows="2"
                   />
                 </label>
-              </div>
+              </div> */}
             </div>
 
             {userToken && pickupAddresses.length > 0 && showPickupAddressForm && (
@@ -3340,22 +3357,37 @@ export default function QuickBooking() {
       <div className="qb-container">
 
         {/* Title Section */}
-        <div className="qb-title-section">
-          <h1 className="qb-title">
-            <i className="fas fa-calendar-check qb-title-icon"></i>
-            Book Laundry Service
-          </h1>
-          <p className="qb-subtitle">
-            Fill in your details, choose pickup & delivery times, and we'll handle the rest
-          </p>
-          
-          {userToken && (
-            <div className="qb-user-info">
-              <i className="fas fa-user-check"></i>
-              <span>Welcome back, {userInfo.name || user?.email}! Your info is pre-filled.</span>
-            </div>
-          )}
-        </div>
+        {/* Title Section */}
+<div className="qb-title-section">
+
+  {/* Back Button */}
+  <button
+    className="qb-back-btn"
+    onClick={() => navigate(-1)}
+    aria-label="Go back"
+  >
+    <i className="fas fa-arrow-left"></i>
+  </button>
+
+  <h1 className="qb-title">
+    <i className="fas fa-calendar-check qb-title-icon"></i>
+    Book Laundry Service
+  </h1>
+
+  <p className="qb-subtitle">
+    Fill in your details, choose pickup & delivery times, and we'll handle the rest
+  </p>
+
+  {userToken && (
+    <div className="qb-user-info">
+      <i className="fas fa-user-check"></i>
+      <span>
+        Welcome back, {userInfo.name || user?.email}! Your info is pre-filled.
+      </span>
+    </div>
+  )}
+</div>
+
 
         {/* Personal Information Card */}
         <div className="qb-card">
@@ -3412,10 +3444,10 @@ export default function QuickBooking() {
                   placeholder="+44 20 1234 5678"
                   required
                 />
-                <div className="qb-phone-hint">
+                {/* <div className="qb-phone-hint">
                   <i className="fas fa-info-circle"></i>
                   Enter phone number to check for existing account
-                </div>
+                </div> */}
               </label>
             </div>
           </div>
@@ -3508,7 +3540,7 @@ export default function QuickBooking() {
           ) : (
             <div className="qb-address-form-section">
               <div className="qb-form-grid">
-                <div className="qb-form-group">
+                {/* <div className="qb-form-group">
                   <label className="qb-form-label">
                     <i className="fas fa-home"></i>
                     House/Flat Number
@@ -3520,12 +3552,12 @@ export default function QuickBooking() {
                       placeholder="123"
                     />
                   </label>
-                </div>
+                </div> */}
 
                 <div className="qb-form-group full-width">
                   <label className="qb-form-label">
                     <i className="fas fa-road"></i>
-                    Street Address *
+                    Full Address *
                     <input
                       type="text"
                       className="qb-form-input"
@@ -3552,7 +3584,7 @@ export default function QuickBooking() {
                   </label>
                 </div>
 
-                <div className="qb-form-group">
+                {/* <div className="qb-form-group">
                   <label className="qb-form-label">
                     <i className="fas fa-city"></i>
                     City/Town
@@ -3564,9 +3596,9 @@ export default function QuickBooking() {
                       placeholder="London"
                     />
                   </label>
-                </div>
+                </div> */}
 
-                <div className="qb-form-group full-width">
+                {/* <div className="qb-form-group full-width">
                   <label className="qb-form-label">
                     <i className="fas fa-info-circle"></i>
                     Additional Details (Optional)
@@ -3578,7 +3610,7 @@ export default function QuickBooking() {
                       rows="2"
                     />
                   </label>
-                </div>
+                </div> */}
               </div>
 
               {userToken && addresses.length > 0 && showAddressForm && (

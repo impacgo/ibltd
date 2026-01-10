@@ -1,5 +1,6 @@
 // src/components/Testimonials.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Testimonials.css';
 
 const testimonials = [
@@ -70,6 +71,7 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -315,6 +317,36 @@ const Testimonials = () => {
           <i className="fas fa-arrows-left-right"></i>
           <span>Swipe left or right to navigate</span>
         </div>
+
+{/* Update the CTA section in Testimonials.jsx */}
+<div className="reviews-cta">
+  <div className="cta-content">
+    <div className="cta-text">
+      <h3 style={{color:"#111827"}}>Share Your Experience</h3>
+      <p style={{color:"#6b7280"}}>Your feedback helps others and helps us improve our services</p>
+    </div>
+    <div className="cta-buttons">
+      <button 
+        className="cta-button primary"
+        onClick={() => navigate('/reviews#submit-review')}
+      >
+        <i className="fas fa-star"></i> Write a Review
+      </button>
+      <button 
+        className="cta-button secondary"
+        onClick={() => navigate('/reviews')}
+      >
+        <i className="fas fa-comments"></i> Read All Reviews
+      </button>
+    </div>
+    {/* Add this trust badge for extra credibility */}
+    <div className="trust-badge">
+      <i className="fas fa-shield-alt"></i>
+      <span>All reviews are verified & secure</span>
+    </div>
+  </div>
+</div>
+
       </div>
     </section>
   );

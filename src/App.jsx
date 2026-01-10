@@ -7,10 +7,10 @@ import { AuthProvider } from './context/AuthContext';
 import LoadingSpinner from './components/LoadingSpinner';
 import ScrollToTop from './components/ScrollToTop';
 import ServicePricing from './components/ServicePricing';
+import Reviews from './components/Reviews';
 
 // Define API_BASE constant for backward compatibility component
 const API_BASE = "https://api.ironingboy.com";
-
 // Lazy load components
 const Hero = lazy(() => import('./components/Hero'));
 const Services = lazy(() => import('./components/Services'));
@@ -106,9 +106,20 @@ function App() {
           <Route path="/faq" element={<PageWrapper component={FAQPage} />} />
           <Route path="/contact" element={<PageWrapper component={ContactPage} />} />
           <Route path="/areas" element={<PageWrapper component={AreasPage} />} />
-          <Route path="/quick-booking" element={<PageWrapper component={QuickBookingPage} />} />
+          <Route
+  path="/quick-booking"
+  element={
+    <MainLayout hideHeaderFooter>
+      <Suspense fallback={<LoadingSpinner />}>
+        <QuickBooking />
+      </Suspense>
+    </MainLayout>
+  }
+/>
+
           <Route path="/service-pricing" element={<ServicePricing />} />
           <Route path="/Checkout" element={<Checkout/>}/>
+          <Route path="/reviews" element={<Reviews />} />
           {/* Dynamic routes */}
           
           {/* Area details - e.g., /areas/paddington */}

@@ -1418,13 +1418,571 @@ input:focus:not(:focus-visible) {
 }
 
 /* Mobile (768px and below) */
+/* ==================== MOBILE RESPONSIVE DESIGN ==================== */
+
+/* Mobile (768px and below) */
 @media (max-width: 768px) {
-  .footer-links {
-    grid-template-columns: 1fr;
-    gap: 0;
+  .footer {
+    padding: 60px 0 20px;
   }
   
-  /* ... existing mobile styles ... */
+  .footer-container {
+    padding: 0 16px;
+  }
+  
+  .app-download-section {
+    padding: 32px 24px;
+    margin-bottom: 40px;
+  }
+  
+  .app-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 32px;
+  }
+  
+  .app-text h3 {
+    font-size: 2rem;
+  }
+  
+  .app-text p {
+    font-size: 1rem;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .app-buttons {
+    justify-content: center;
+    gap: 16px;
+  }
+  
+  .app-btn {
+    min-width: 200px;
+    justify-content: center;
+  }
+  
+  /* Hide phone illustration on mobile */
+  .app-illustration.desktop-only {
+    display: none;
+  }
+  
+  /* Show accordion toggle on mobile */
+  .accordion-toggle {
+    display: block;
+  }
+  
+  /* Accordion functionality - VERTICAL STACK */
+  .footer-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 32px;
+  }
+  
+  .footer-brand {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .brand-title {
+    font-size: 1.75rem;
+  }
+  
+  .brand-tagline {
+    font-size: 1rem;
+  }
+  
+  .brand-description {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+  
+  .social-links {
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .social-links a {
+    width: 40px;
+    height: 40px;
+  }
+  
+  /* FOOTER LINKS - VERTICAL STACK */
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+  }
+  
+  /* Each accordion section */
+  .footer-column {
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .footer-column:last-child {
+    border-bottom: none;
+  }
+  
+  /* Accordion header */
+  .footer-column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    padding: 18px 0;
+    margin: 0;
+    width: 100%;
+  }
+  
+  .footer-column-header h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--footer-text-primary);
+    text-align: left;
+    padding: 0;
+  }
+  
+  .footer-column-header h4::after {
+    display: none;
+  }
+  
+  .accordion-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--footer-accent);
+    transition: transform 0.3s ease;
+  }
+  
+  .accordion-toggle i {
+    font-size: 0.9rem;
+  }
+  
+  /* Accordion content */
+  .footer-column-content {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
+    transition: all 0.3s ease-out;
+    width: 100%;
+  }
+  
+  .footer-column-content.active {
+    max-height: 500px;
+    padding-bottom: 20px;
+  }
+  
+  /* Services Section */
+  .services-column {
+    order: 1; /* First in the stack */
+  }
+  
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 20px;
+    margin-top: 15px;
+    text-align: left;
+  }
+  
+  .services-column-left,
+  .services-column-right {
+    width: 100%;
+    display: contents; /* Use grid instead of separate columns */
+  }
+  
+  .services-list {
+    display: contents; /* Let items flow in grid */
+  }
+  
+  .services-list li {
+    margin: 0;
+    width: 100%;
+  }
+  
+  .category-link {
+    background: none;
+    border: none;
+    color: var(--footer-text-secondary);
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 8px 0;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    display: block;
+    opacity: 0.9;
+  }
+  
+  .category-link:hover {
+    color: var(--footer-text-primary);
+    transform: translateX(8px);
+    opacity: 1;
+  }
+  
+  /* Quick Links Section */
+  .quick-links-column {
+    order: 2; /* Second in the stack */
+  }
+  
+  .quick-links-list {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+  }
+  
+  .quick-links-list li {
+    margin: 0;
+  }
+  
+  .footer-link {
+    background: none;
+    border: none;
+    color: var(--footer-text-secondary);
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 8px 0;
+    font-family: inherit;
+    text-align: left;
+    display: block;
+    opacity: 0.9;
+    width: 100%;
+  }
+  
+  .footer-link:hover {
+    color: var(--footer-text-primary);
+    transform: translateX(8px);
+    opacity: 1;
+  }
+  
+  /* Contact Info Section */
+  .contact-column {
+    order: 3; /* Third in the stack */
+  }
+  
+  .contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 15px;
+    text-align: left;
+  }
+  
+  .contact-info li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--footer-text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    opacity: 0.9;
+  }
+  
+  .contact-info i {
+    min-width: 16px;
+    color: var(--footer-accent);
+    font-size: 1rem;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  
+  .contact-info span {
+    flex: 1;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  
+  /* Newsletter Section */
+  .newsletter-column {
+    order: 4; /* Fourth in the stack */
+    border-bottom: none;
+  }
+  
+  .newsletter-text {
+    color: var(--footer-text-secondary);
+    font-size: 0.95rem;
+    margin: 15px 0 16px 0;
+    line-height: 1.5;
+    opacity: 0.9;
+    text-align: left;
+  }
+  
+  .newsletter-form {
+    margin-bottom: 0;
+    width: 100%;
+  }
+  
+  .newsletter-group {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--footer-radius-md);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--footer-shadow-sm);
+    width: 100%;
+  }
+  
+  .newsletter-group:focus-within {
+    border-color: var(--footer-accent);
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+  }
+  
+  .newsletter-group input {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    color: var(--footer-text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    width: 100%;
+  }
+  
+  .newsletter-group input::placeholder {
+    color: var(--footer-text-muted);
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+  
+  .send-button {
+    padding: 0 18px;
+    background: var(--footer-accent-gradient);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    flex-shrink: 0;
+  }
+  
+  .send-button:hover {
+    background: var(--footer-accent);
+    transform: scale(1.05);
+  }
+  
+  /* Footer Bottom on Mobile */
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .payment-section {
+    flex-direction: column;
+    gap: 12px;
+    order: 2;
+  }
+  
+  .copyright {
+    text-align: center;
+    order: 1;
+    width: 100%;
+  }
+  
+  .legal-links {
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  
+  .legal-link {
+    justify-content: center;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+}
+
+/* Small Mobile (480px and below) */
+@media (max-width: 480px) {
+  .footer {
+    padding: 48px 0 16px;
+  }
+  
+  .footer-container {
+    padding: 0 12px;
+  }
+  
+  .app-download-section {
+    padding: 24px 20px;
+    border-radius: var(--footer-radius-lg);
+  }
+  
+  .app-text h3 {
+    font-size: 1.75rem;
+  }
+  
+  .app-text p {
+    font-size: 0.95rem;
+  }
+  
+  .app-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .app-btn {
+    width: 100%;
+    max-width: 280px;
+    padding: 14px 20px;
+  }
+  
+  .brand-title {
+    font-size: 1.5rem;
+  }
+  
+  .brand-tagline {
+    font-size: 0.95rem;
+  }
+  
+  .brand-description {
+    font-size: 0.85rem;
+  }
+  
+  .footer-column-header {
+    padding: 16px 0;
+  }
+  
+  .footer-column-header h4 {
+    font-size: 1rem;
+  }
+  
+  /* Services grid on very small screens */
+  .services-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  /* Quick Links on Small Mobile */
+  .quick-links-list {
+    gap: 8px;
+  }
+  
+  .quick-links-list .footer-link {
+    font-size: 0.95rem;
+    padding: 8px 0;
+  }
+  
+  .category-link {
+    font-size: 0.9rem;
+    padding: 8px 0;
+  }
+  
+  .contact-info li {
+    font-size: 0.85rem;
+    gap: 8px;
+  }
+  
+  .contact-info i {
+    font-size: 0.9rem;
+  }
+  
+  .newsletter-text {
+    font-size: 0.9rem;
+  }
+  
+  .newsletter-group input {
+    font-size: 0.85rem;
+    padding: 10px 14px;
+  }
+  
+  .payment-label {
+    font-size: 0.8rem;
+  }
+  
+  .payment-methods {
+    gap: 10px;
+  }
+  
+  .payment-methods i {
+    font-size: 1.25rem;
+  }
+  
+  .copyright p {
+    font-size: 0.8rem;
+  }
+  
+  .legal-links {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .legal-link {
+    font-size: 0.8rem;
+    width: 100%;
+    justify-content: center;
+    padding: 8px;
+  }
+}
+
+/* Extra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .app-btn {
+    min-width: auto;
+    padding: 12px 16px;
+  }
+  
+  .btn-text .store-name {
+    font-size: 1rem;
+  }
+  
+  .app-buttons {
+    gap: 12px;
+  }
+  
+  .quick-links-list .footer-link {
+    font-size: 0.9rem;
+  }
+  
+  .legal-links {
+    gap: 8px;
+  }
+  
+  .legal-link {
+    font-size: 0.75rem;
+    padding: 6px;
+  }
+}
+
+/* Ensure proper ordering of accordion sections */
+@media (max-width: 768px) {
+  .footer-column.services-column {
+    order: 1;
+  }
+  
+  .footer-column.quick-links-column {
+    order: 2;
+  }
+  
+  .footer-column.contact-column {
+    order: 3;
+  }
+  
+  .footer-column.newsletter-column {
+    order: 4;
+  }
 }
 
 /* Additional improvement for all newsletter sections */

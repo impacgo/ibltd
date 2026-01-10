@@ -292,13 +292,13 @@ const API_BASE = "https://api.ironingboy.com";
 const serviceData = [
   {
     id: 1,
-    name: "Laundry",
+    name: "Wash & Iron",
     icon: "fa-tshirt",
     description: "Professional washing, drying & folding service",
     color: "#3B82F6",
     gradient: "linear-gradient(135deg, #3B82F6, #1D4ED8)",
     features: ["Eco-friendly detergents", "Same-day service", "Free pickup"],
-    filterType: "Laundry",
+    filterType: "Wash & Iron",
     searchTerms: ["Laundry", "Wash", "Cleaning"],
     category: "laundry",
     items: [
@@ -413,22 +413,15 @@ const Services = () => {
     loadCategories();
   }, []);
 
-const handleBookNow = (service = null) => {
-  if (service) {
-    // Navigate to ServicePricing page with the selected service
-navigate("/service-pricing", {
-  state: {
-    service: service.name,
-    serviceCategory: service.category,
-    serviceData: service
-  }
-});
-
-  } else {
-    // Navigate to ServicePricing page without specific service
-    navigate("/service-pricing");
-  }
+const handleBookNow = (service) => {
+  navigate("/service-pricing", {
+    state: {
+      serviceCategory: service.category, // 🔑 important
+      serviceName: service.name
+    }
+  });
 };
+
 
 const handleViewPricing = (service) => {
   navigate("/service-pricing", { 
@@ -545,12 +538,12 @@ const handleViewPricing = (service) => {
               <i className="fas fa-crown"></i>
               <span>Premium Service Guarantee</span>
             </div>
-            
-            <h2 className="cta-title" style={{color:"#1a1a1a"}}>
+
+            <h2 className="cta-title" style={{ color: "#1e293b" }}>
               Ready for <span className="cta-highlight">Professional Care?</span>
             </h2>
             
-            <p className="cta-subtitle" style={{color:"#4a5568"}}>
+            <p className="cta-subtitle" style={{color:"#475569"}}>
               Schedule a pickup in just 2 minutes. We handle everything with 
               premium care and attention to detail.
             </p>
@@ -563,7 +556,7 @@ const handleViewPricing = (service) => {
                   </div>
                   <div className="feature-content">
                     <h4>Free Pickup & Delivery</h4>
-                    <p style={{color:"#4a5568"}}>At your doorstep, anytime that suits you</p>
+                    <p style={{color:"#475569"}}>At your doorstep, anytime that suits you</p>
                   </div>
                 </div>
                 
@@ -573,7 +566,7 @@ const handleViewPricing = (service) => {
                   </div>
                   <div className="feature-content">
                     <h4>Quality Assured</h4>
-                    <p style={{color:"#4a5568"}}>100% satisfaction guarantee on all services</p>
+                    <p style={{color:"#475569"}}>100% satisfaction guarantee on all services</p>
                   </div>
                 </div>
                 
@@ -583,7 +576,7 @@ const handleViewPricing = (service) => {
                   </div>
                   <div className="feature-content">
                     <h4>Eco-Friendly</h4>
-                    <p style={{color:"#4a5568"}}>Green cleaning solutions for a better planet</p>
+                    <p style={{color:"#475569"}}>Green cleaning solutions for a better planet</p>
                   </div>
                 </div>
               </div>

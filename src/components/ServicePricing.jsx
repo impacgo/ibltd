@@ -6,6 +6,20 @@ const API_BASE = "https://api.ironingboy.com";
   const servicePricingCSS = `
 /* SERVICE PRICING - CLEAN WHITE DESIGN */
 
+/* 🔒 FORCE PAGE TO START AT TOP */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+.service-pricing-container {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  position: relative;
+  top: 0;
+}
+
+
 .service-pricing-container {
   min-height: 100vh;
   background: #ffffff;
@@ -1206,13 +1220,95 @@ const API_BASE = "https://api.ironingboy.com";
 .todo-item {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* ==================== MOBILE OPTIMIZATION ==================== */
+@media (max-width: 640px) {
+
+  /* 🔒 Hide Service Type & Sort By on mobile */
+  .todo-filters .filter-group:nth-child(2),
+  .todo-filters .filter-group:nth-child(3) {
+    display: none;
+  }
+
+  /* Reduce filter card padding */
+  .todo-filters {
+    padding: 12px;
+    margin: 16px 0 20px;
+  }
+
+  /* ==================== PRODUCT ROW LAYOUT ==================== */
+  .todo-item {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  /* Force price + add button inline */
+  .todo-item-right {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* ==================== PRICE STYLING ==================== */
+  .todo-price-single {
+    font-size: 1rem;        /* smaller */
+    font-weight: 600;      /* reduced weight */
+  }
+
+  /* ==================== ADD BUTTON ==================== */
+  .todo-add-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+
+  /* Quantity controls compact */
+  .todo-quantity-control {
+    padding: 4px;
+    min-width: 88px;
+  }
+
+  .todo-qty-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+  }
+
+  .todo-qty-display {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  /* ==================== PRODUCT TITLE ==================== */
+  .todo-content h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  /* Meta tags smaller */
+  .todo-service-type,
+  .todo-gender {
+    font-size: 0.7rem;
+  }
+}
 `;
+
+const SERVICE_TYPE_MAP = {
+  laundry: "wash_iron",
+  dry_cleaning: "dry_clean",
+  ironing: "iron",
+  service_wash: "service_wash",
+  repair: "repair",
+  shoe_cleaning: "shoe_clean"
+};
+
 
 const ServicePricing = () => {
   const services = useMemo(() => [
     {
       id: "laundry",
-      name: "Laundry",
+      name: "Wash & Iron",
       icon: "fa-tshirt",
       emoji: "🧺",
       color: "#3B82F6",
@@ -1220,7 +1316,7 @@ const ServicePricing = () => {
       needsFilters: true,
       items: [
         { id: "shirts", name: "Shirts", emoji: "👔", keywords: ["shirt", "formal shirt", "dress shirt", "shirts", "men shirt", "women shirt"], gender: ["men", "women", "children"], category: "clothing" },
-        { id: "t_shirts", name: "T-Shirts", emoji: "👕", keywords: ["t-shirt", "tee", "t shirt", "tshirt", "cotton shirt", "t-shirts", "t shirts"], gender: ["men", "women", "children"], category: "clothing" },
+        // { id: "t_shirts", name: "T-Shirts", emoji: "👕", keywords: ["t-shirt", "tee", "t shirt", "tshirt", "cotton shirt", "t-shirts", "t shirts"], gender: ["men", "women", "children"], category: "clothing" },
         { id: "blouses", name: "Blouses", emoji: "👚", keywords: ["blouse", "top", "women top", "blouses"], gender: ["women"], category: "clothing" },
         { id: "pants", name: "Pants", emoji: "👖", keywords: ["pant", "trouser", "jeans", "pants", "trousers"], gender: ["men", "women", "children"], category: "clothing" },
         { id: "suits", name: "Suits", emoji: "🤵", keywords: ["suit", "2 piece", "3 piece", "suits", "men suit", "women suit"], gender: ["men", "women"], category: "formal" },
@@ -1273,7 +1369,7 @@ const ServicePricing = () => {
       needsFilters: true,
       items: [
         { id: "clothing_bundle", name: "Clothing Bundle", emoji: "👚", keywords: ["clothing bundle", "bundle", "service wash"], gender: ["men", "women", "children"], category: "bundle" },
-        { id: "mixed_bundle", name: "Mixed Bundle", emoji: "📦", keywords: ["mixed bundle", "mixed wash", "service wash"], gender: ["unisex"], category: "bundle" },
+        // { id: "mixed_bundle", name: "Mixed Bundle", emoji: "📦", keywords: ["mixed bundle", "mixed wash", "service wash"], gender: ["unisex"], category: "bundle" },
       ]
     },
     {
@@ -1288,7 +1384,7 @@ const ServicePricing = () => {
         { id: "alterations", name: "Alterations", emoji: "✂️", keywords: ["alteration", "resize", "alter", "adjust", "alterations"], gender: ["men", "women", "children"], category: "repair" },
         { id: "repairs", name: "Repairs", emoji: "🪡", keywords: ["repair", "mend", "fix", "repairs", "mending", "stitching"], gender: ["men", "women", "children"], category: "repair" },
         { id: "zippers", name: "Zippers", emoji: "🤐", keywords: ["zipper", "zip repair", "zip", "zippers"], gender: ["men", "women", "children"], category: "repair" },
-        { id: "buttons", name: "Buttons", emoji: "🔘", keywords: ["button", "button replacement", "buttons", "sew button"], gender: ["men", "women", "children"], category: "repair" },
+        // { id: "buttons", name: "Buttons", emoji: "🔘", keywords: ["button", "button replacement", "buttons", "sew button"], gender: ["men", "women", "children"], category: "repair" },
       ]
     },
     {
@@ -1300,7 +1396,7 @@ const ServicePricing = () => {
       gradient: "linear-gradient(135deg, #6366F1, #4F46E5)",
       needsFilters: true,
       items: [
-        { id: "formal_shoes", name: "Formal Shoes", emoji: "👞", keywords: ["formal shoe", "dress shoe", "leather shoe", "formal shoes"], gender: ["men", "women"], category: "footwear" },
+        // { id: "formal_shoes", name: "Formal Shoes", emoji: "👞", keywords: ["formal shoe", "dress shoe", "leather shoe", "formal shoes"], gender: ["men", "women"], category: "footwear" },
         { id: "sneakers", name: "Sneakers", emoji: "👟", keywords: ["sneaker", "trainer", "sports shoe", "sneakers"], gender: ["men", "women", "children"], category: "footwear" },
         { id: "boots", name: "Boots", emoji: "🥾", keywords: ["boot", "hiking boot", "leather boot", "boots"], gender: ["men", "women", "children"], category: "footwear" },
       ]
@@ -1371,87 +1467,83 @@ const ServicePricing = () => {
     return "unisex";
   }, [cleanText]);
 
-  const getServiceType = useCallback((productName) => {
-    const cleanName = cleanText(productName);
-    
-    if (cleanName.includes("shoe") || cleanName.includes("sneaker") || cleanName.includes("boot")) {
-      return "shoe_clean";
-    }
-    
-    if (cleanName.includes("repair") || cleanName.includes("alter") || cleanName.includes("mend") || 
-        cleanName.includes("stitch") || cleanName.includes("zip") || cleanName.includes("button")) {
-      return "repair";
-    }
-    
-    if (cleanName.includes("bundle") || cleanName.includes("service wash")) {
-      return "service_wash";
-    }
-    
-    if ((cleanName.includes("wash") || cleanName.includes("laundry")) && 
-        (cleanName.includes("iron") || cleanName.includes("press"))) {
-      return "wash_iron";
-    }
-    
-    if (cleanName.includes("dry clean") || cleanName.includes("dryclean") || cleanName.includes("dry")) {
-      return "dry_clean";
-    }
-    
-    if (cleanName.includes("wash") || cleanName.includes("laundry")) {
-      return "wash";
-    }
-    
-    if (cleanName.includes("iron") || cleanName.includes("press")) {
-      return "iron";
-    }
-    
-    return "other";
-  }, [cleanText]);
+const getServiceType = useCallback((serviceCategory) => {
+  return SERVICE_TYPE_MAP[serviceCategory] || "other";
+}, []);
+
+
 
   const categorizeProduct = useCallback((product) => {
-    const cleanName = cleanText(product.name);
-    const gender = getProductGender(product.name);
-    const serviceType = getServiceType(product.name);
-    
-    let serviceCategory = null;
-    let itemCategory = null;
-    
-    for (const service of services) {
-      for (const item of service.items) {
-        const hasKeywordMatch = item.keywords.some(keyword => {
-          const cleanKeyword = cleanText(keyword);
-          if (cleanName.includes(cleanKeyword)) {
-            return true;
-          }
-          const words = cleanName.split(' ');
-          const keywordWords = cleanKeyword.split(' ');
-          return keywordWords.every(kw => words.includes(kw) || cleanName.includes(kw));
-        });
-        
-        if (hasKeywordMatch) {
-          serviceCategory = service.id;
-          itemCategory = item.id;
-          break;
-        }
+  const cleanName = cleanText(product.name);
+  const gender = getProductGender(product.name);
+
+  let serviceCategory = null;
+  let itemCategory = null;
+
+  for (const service of services) {
+    const serviceType = SERVICE_TYPE_MAP[service.id];
+
+    const matchesService = {
+      wash_iron:
+        cleanName.includes("wash") ||
+        cleanName.includes("laundry"),
+
+      iron:
+        cleanName.includes("iron") ||
+        cleanName.includes("ironing") ||
+        cleanName.includes("press"),
+
+      dry_clean:
+        cleanName.includes("dry"),
+
+      service_wash:
+        cleanName.includes("service") ||
+        cleanName.includes("bundle"),
+
+      repair:
+        cleanName.includes("repair") ||
+        cleanName.includes("alter") ||
+        cleanName.includes("zip") ||
+        cleanName.includes("button"),
+
+      shoe_clean:
+        cleanName.includes("shoe")
+    }[serviceType];
+
+    if (!matchesService) continue;
+
+    for (const item of service.items) {
+      if (item.keywords.some(k => cleanName.includes(cleanText(k)))) {
+        serviceCategory = service.id;
+        itemCategory = item.id;
+        break;
       }
-      if (serviceCategory) break;
     }
-    
-    return {
-      id: product.id,
-      name: product.name,
-      emoji: product.emoji || "👕",
-      price: product.standard_price || product.price || product.offer_price || 0,
-      standard_price: product.standard_price || product.price || 0,
-      offer_price: product.offer_price || null,
-      hasOffer: !!product.offer_price && product.offer_price < product.standard_price,
-      cleanName: cleanName,
-      gender: gender,
-      serviceType: serviceType,
-      serviceCategory: serviceCategory,
-      itemCategory: itemCategory,
-      originalData: product
-    };
-  }, [cleanText, getProductGender, getServiceType, services]);
+
+    if (serviceCategory) break;
+  }
+
+  return {
+    id: product.id,
+    name: product.name,
+    emoji: product.emoji || "👕",
+    price: product.standard_price || product.price || product.offer_price || 0,
+    standard_price: product.standard_price || product.price || 0,
+    offer_price: product.offer_price || null,
+    hasOffer:
+      !!product.offer_price &&
+      product.offer_price < (product.standard_price || product.price || 0),
+    cleanName,
+    gender,
+    serviceCategory,
+    itemCategory,
+    serviceType: SERVICE_TYPE_MAP[serviceCategory],
+    originalData: product
+  };
+}, [services, cleanText, getProductGender]);
+
+
+
 
   useEffect(() => {
     const savedCart = localStorage.getItem('laundryCart');
@@ -1465,20 +1557,20 @@ const ServicePricing = () => {
   }, [cart]);
 
   useEffect(() => {
-    if (location.state) {
-      const { service, serviceCategory } = location.state;
-      if (service) {
-        const foundService = services.find(s => 
-          cleanText(s.name).includes(cleanText(service)) ||
-          service.toLowerCase().includes(cleanText(s.name)) ||
-          s.id === serviceCategory
-        );
-        if (foundService) {
-          setSelectedService(foundService);
-        }
-      }
-    }
-  }, [location.state, services, cleanText]);
+  if (!location.state?.serviceCategory) return;
+
+  const foundService = services.find(
+    s => s.id === location.state.serviceCategory
+  );
+
+  if (foundService) {
+    setSelectedService(foundService);
+
+    // 🔒 lock service type immediately
+    setServiceTypeFilter(SERVICE_TYPE_MAP[foundService.id]);
+  }
+}, [location.state, services]);
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -1558,38 +1650,22 @@ const ServicePricing = () => {
   useEffect(() => {
     let result = [...products];
     
-    if (selectedService) {
-      if (selectedItem) {
-        const keywordPatterns = selectedItem.keywords.map(keyword => 
-          new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
-        );
-        
-        result = result.filter(product => {
-          const matchesKeyword = keywordPatterns.some(pattern => 
-            pattern.test(product.name) || pattern.test(product.cleanName)
-          );
-          
-          const matchesCategory = product.itemCategory === selectedItem.id;
-          
-          return matchesKeyword || matchesCategory;
-        });
-      } else {
-        const allKeywords = selectedService.items.flatMap(item => item.keywords);
-        const keywordPatterns = allKeywords.map(keyword => 
-          new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
-        );
-        
-        result = result.filter(product => {
-          const matchesKeyword = keywordPatterns.some(pattern => 
-            pattern.test(product.name) || pattern.test(product.cleanName)
-          );
-          
-          const matchesCategory = product.serviceCategory === selectedService.id;
-          
-          return matchesKeyword || matchesCategory;
-        });
-      }
-    }
+   if (selectedService) {
+  const requiredServiceType = SERVICE_TYPE_MAP[selectedService.id];
+
+  result = result.filter(product =>
+    product.serviceType === requiredServiceType
+  );
+
+  if (selectedItem) {
+    result = result.filter(
+      product => product.itemCategory === selectedItem.id
+    );
+  }
+}
+
+
+
     
     if (searchTerm.trim()) {
       const cleanSearch = cleanText(searchTerm);
@@ -1627,37 +1703,12 @@ const ServicePricing = () => {
       });
     }
     
-    if (serviceTypeFilter !== "all") {
-      result = result.filter(product => {
-        if (serviceTypeFilter === "wash_iron") {
-          return product.serviceType === "wash_iron" ||
-                 (product.cleanName.includes("wash") && 
-                  product.cleanName.includes("iron"));
-        }
-        
-        if (serviceTypeFilter === "service_wash") {
-          return product.serviceType === "service_wash" ||
-                 product.cleanName.includes("bundle") ||
-                 product.cleanName.includes("service wash");
-        }
-        
-        if (serviceTypeFilter === "repair") {
-          return product.serviceType === "repair" ||
-                 product.cleanName.includes("repair") ||
-                 product.cleanName.includes("alter") ||
-                 product.cleanName.includes("mend");
-        }
-        
-        if (serviceTypeFilter === "shoe_clean") {
-          return product.serviceType === "shoe_clean" ||
-                 product.cleanName.includes("shoe") ||
-                 product.cleanName.includes("sneaker") ||
-                 product.cleanName.includes("boot");
-        }
-        
-        return product.serviceType === serviceTypeFilter;
-      });
-    }
+    if (!selectedService && serviceTypeFilter !== "all") {
+  result = result.filter(product => {
+    return product.serviceType === serviceTypeFilter;
+  });
+}
+
     
     if (activeFilter === "low") {
       result.sort((a, b) => a.price - b.price);
@@ -1684,19 +1735,30 @@ const ServicePricing = () => {
   }, [products, selectedService, selectedItem, searchTerm, activeFilter, genderFilter, serviceTypeFilter, cleanText]);
 
   const handleServiceSelect = (service) => {
-    setSelectedService(service);
-    setSelectedItem(null);
-    setSearchTerm("");
-    setGenderFilter("all");
-    setServiceTypeFilter("all");
-  };
+  setSelectedService(service);
+  setSelectedItem(null);
+  setSearchTerm("");
+  setGenderFilter("all");
+
+  // 🔒 Lock service type automatically
+  setServiceTypeFilter(
+    service.id === "laundry" ? "wash_iron" :
+    service.id === "dry_cleaning" ? "dry_clean" :
+    service.id === "ironing" ? "iron" :
+    service.id === "service_wash" ? "service_wash" :
+    service.id === "repair" ? "repair" :
+    service.id === "shoe_cleaning" ? "shoe_clean" :
+    "all"
+  );
+};
+
 
   const handleItemSelect = (item) => {
-    setSelectedItem(item);
-    setSearchTerm("");
-    setGenderFilter("all");
-    setServiceTypeFilter("all");
-  };
+  setSelectedItem(item);
+  setSearchTerm("");
+  setGenderFilter("all");
+};
+
 
   const clearFilters = () => {
     setSelectedService(null);
@@ -1850,12 +1912,12 @@ const getServiceTypeDisplay = (serviceType, productName) => {
     <div className="service-pricing-container">
       
       {/* Header */}
-      <div className="service-pricing-header">
+      <div className="service-pricing-header" >
         <button 
           className="back-to-home"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(-1)} style={{marginTop:"16px"}}
         >
-          <i className="fas fa-arrow-left"></i> Back
+          <i className="fas fa-arrow-left" ></i> Back
         </button>
         <div className="header-main">
           <div className="header-badge">
@@ -1867,7 +1929,7 @@ const getServiceTypeDisplay = (serviceType, productName) => {
             Clear, upfront pricing for all our premium laundry services
           </p>
         </div>
-        <div className="search-container">
+        {/* <div className="search-container">
           <input
             type="text"
             placeholder="Search services..."
@@ -1876,7 +1938,7 @@ const getServiceTypeDisplay = (serviceType, productName) => {
             className="search-input"
           />
           <i className="fas fa-search"></i>
-        </div>
+        </div> */}
       </div>
 
       {/* Breadcrumb */}
@@ -2007,11 +2069,13 @@ const getServiceTypeDisplay = (serviceType, productName) => {
               
               <div className="filter-group" style={{color:"#1a1a1a"}}>
                 <label style={{color:"#4a5568"}}>Service Type:</label>
-                <select 
-                  value={serviceTypeFilter}
-                  onChange={(e) => setServiceTypeFilter(e.target.value)}
-                  className="filter-select" style={{color:"#1a1a1a"}}
-                >
+                <select
+  value={serviceTypeFilter}
+  onChange={(e) => setServiceTypeFilter(e.target.value)}
+  className="filter-select"
+  disabled={!!selectedService}
+>
+
                   {serviceTypes.map(type => (
                     <option key={type.id} value={type.id} style={{color:"#1a1a1a"}}>
                       {type.emoji} {type.name}

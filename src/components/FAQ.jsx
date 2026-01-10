@@ -26,7 +26,7 @@ const FAQ = () => {
       id: 3,
       category: 'Booking & Scheduling',
       question: 'What are your operating hours?',
-      answer: 'We operate from 7:00 AM to 7:00 PM, 7 days a week for pickups and deliveries. Our processing facility operates 24/7.'
+      answer: 'We operate pickups 7 days a week. In London, services are available Monday to Friday from 7 AM to 8 PM, Saturday from 8 AM to 7 PM, and Sunday from 11 AM to 5 PM. In Oxford, pickups are available Monday to Saturday from 1 PM to 9 PM. Our processing facility operates 24/7.'
     },
     {
       id: 4,

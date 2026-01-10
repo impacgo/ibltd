@@ -1968,3 +1968,377 @@ button:focus:not(:focus-visible) {
     padding: 12px;
   }
 }
+
+/* =====================================================
+   QUICKBOOKING → CHECKOUT STYLE ALIGNMENT
+   (SAFE OVERRIDES – NO FUNCTIONAL CHANGES)
+   ===================================================== */
+
+/* ---------- GLOBAL FIXES ---------- */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.qb-page {
+  padding-top: 0;
+  margin-top: 0;
+  overflow-x: hidden;
+}
+
+/* ---------- CONTAINER ---------- */
+.qb-container {
+  max-width: 1200px;
+  padding: 0 16px;
+}
+
+/* ---------- HEADER (MATCH CHECKOUT) ---------- */
+.qb-title-section {
+  margin-bottom: 16px;
+  padding: 16px 0;
+  box-shadow: none;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+}
+
+.qb-title {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.qb-subtitle,
+.qb-user-info {
+  display: none;
+}
+
+/* ---------- CARDS ---------- */
+.qb-card {
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid #e0e0e0;
+  margin-bottom: 16px;
+}
+
+.qb-card:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* ---------- CARD HEADER ---------- */
+.qb-card-header {
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.qb-section-icon {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}
+
+.qb-section-subtitle {
+  display: none;
+}
+
+/* ---------- FORM ---------- */
+.qb-form-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.qb-form-input,
+.qb-form-textarea,
+.qb-date-input {
+  padding: 12px 14px;
+  font-size: 15px;
+}
+
+/* ---------- ADDRESS ---------- */
+.qb-address-option {
+  padding: 14px;
+}
+
+.qb-address-text {
+  font-size: 13px;
+}
+
+/* ---------- TIME SLOTS ---------- */
+.qb-time-slot {
+  padding: 10px 6px;
+  font-size: 14px;
+}
+
+/* ---------- SUMMARY BAR ---------- */
+.qb-summary-section {
+  padding: 16px;
+}
+
+.qb-summary-content {
+  max-width: 1200px;
+  padding: 0 16px;
+}
+
+/* =====================================================
+   MOBILE UX – MATCH CHECKOUT MOBILE
+   ===================================================== */
+@media (max-width: 768px) {
+
+  /* ---- PAGE ---- */
+  .qb-page {
+    padding: 12px 12px 160px;
+  }
+
+  /* ---- HEADER ---- */
+  .qb-title {
+    font-size: 20px;
+  }
+
+  /* ---- CARDS ---- */
+  .qb-card {
+    padding: 16px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+
+  /* ---- CARD HEADER ---- */
+  .qb-section-icon {
+    display: none;
+  }
+
+  .qb-section-title {
+    font-size: 16px;
+  }
+
+  /* ---- FORM ---- */
+  .qb-form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .qb-form-input,
+  .qb-form-textarea {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  /* ---- ADDRESS ---- */
+  .qb-address-selection-title {
+    display: none;
+  }
+
+  .qb-address-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qb-address-text {
+    font-size: 12px;
+  }
+
+  /* ---- SCHEDULE ---- */
+  .qb-schedule-container {
+    gap: 12px;
+  }
+
+  .qb-schedule-title {
+    font-size: 15px;
+  }
+
+  .qb-time-slots-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .qb-time-slot {
+    font-size: 12px;
+    padding: 8px 4px;
+  }
+
+  /* ---- NOTES ---- */
+  .qb-notes-container {
+    padding: 12px;
+  }
+
+  /* ---- PAYMENT ---- */
+  .qb-payment-info,
+  .qb-saved-cards-subtitle {
+    display: none;
+  }
+
+  .qb-card-option {
+    padding: 10px;
+  }
+
+  .qb-card-brand {
+    font-size: 13px;
+  }
+
+  .qb-card-number {
+    font-size: 12px;
+  }
+
+  /* ---- FIX LEFT/RIGHT PADDING ISSUE ---- */
+  .qb-container,
+  .qb-card,
+  .qb-summary-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* ---- SUMMARY BAR ---- */
+  .qb-summary-section {
+    padding: 12px 16px;
+  }
+
+  .qb-confirm-btn {
+    width: 100%;
+    font-size: 15px;
+    padding: 14px;
+  }
+}
+
+/* ---------- EXTRA SMALL ---------- */
+@media (max-width: 480px) {
+  .qb-time-slots-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* =====================================================
+   QUICKBOOKING – HEADER & TOP SPACING FIX
+   ===================================================== */
+
+/* ---------- REMOVE PAGE TOP GAP ---------- */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+.qb-page {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* ---------- REMOVE CARD STYLE FROM TITLE ---------- */
+.qb-title-section {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  padding: 24px 16px 12px !important;
+  margin: 0 auto 16px !important;
+
+  text-align: center;
+}
+
+/* ---------- TITLE STYLE (NORMAL PAGE HEADING) ---------- */
+.qb-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+/* subtitle */
+.qb-subtitle {
+  font-size: 15px;
+  color: #64748b;
+  max-width: 640px;
+  margin: 0 auto 12px;
+}
+
+/* ---------- WELCOME BADGE (FLOATING CHIP, NOT CARD) ---------- */
+.qb-user-info {
+  background: linear-gradient(135deg, #FF6B00, #FF8C00);
+  box-shadow: none !important;
+  border-radius: 999px;
+
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-top: 8px;
+}
+
+/* =====================================================
+   MOBILE FIX
+   ===================================================== */
+@media (max-width: 768px) {
+
+  .qb-title-section {
+    padding: 16px 12px 8px !important;
+  }
+
+  .qb-title {
+    font-size: 22px;
+  }
+
+  .qb-subtitle {
+    font-size: 13px;
+    padding: 0 12px;
+  }
+
+  .qb-user-info {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+}
+
+/* ===============================
+   BACK BUTTON (TOP LEFT)
+================================ */
+
+.qb-title-section {
+  position: relative;
+}
+
+/* Back button */
+.qb-back-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+
+  color: #ff6b00;
+  font-size: 16px;
+
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+
+  transition: all 0.2s ease;
+}
+
+.qb-back-btn:hover {
+  background: #fff3e8;
+  transform: translateX(-2px);
+}
+
+.qb-back-btn:active {
+  transform: scale(0.95);
+}
+
+/* Mobile spacing fix */
+@media (max-width: 768px) {
+  .qb-back-btn {
+    top: 6px;
+    left: 6px;
+  }
+}
