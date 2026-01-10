@@ -606,10 +606,10 @@ const handleViewPricing = (service) => {
                 
 <button 
   className="cta-book-btn" 
-  onClick={() => navigate("/services/pricing")}
+  onClick={() => navigate("/quick-booking")}
 >
   <i className="fas fa-calendar-check"></i>
-  <span>Browse All Services</span>
+  <span>Book now</span>
   <i className="fas fa-arrow-right"></i>
 </button>
                 
