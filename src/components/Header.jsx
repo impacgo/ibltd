@@ -277,9 +277,62 @@ const Header = () => {
 
   return (
     <>
+    {/* ===== HEADER DISCOUNT BAR ===== */}
+<div className="header-discount-bar">
+  <div className="header-discount-wrapper">
+    <div className="header-discount-label">
+      <i className="fas fa-tag"></i>
+      <span>Special Offers</span>
+    </div>
+
+    <div className="header-discount-marquee">
+      <div className="header-discount-track">
+        {[
+          "🎉 First Booking: 50% OFF (Min order £50)",
+          "🔁 Second Booking: 35% OFF (Min order £45)",
+          "🔁 Third Booking: 30% OFF (Min order £40)",
+          "💷 Orders £80 - £150: Flat 10% OFF",
+          "💎 Orders above £150: Flat 15% OFF",
+          "🎓 Students get EXTRA 5% OFF on all offers"
+        ].map((item, idx) => (
+          <span key={`h1-${idx}`} className="header-discount-item">
+            <i className="fas fa-gift"></i>
+            <span
+              dangerouslySetInnerHTML={{
+                __html: item.replace("Students", "<strong>Students</strong>")
+              }}
+            />
+          </span>
+        ))}
+
+        {/* duplicate for seamless loop */}
+        {[
+          "🎉 First Booking: 50% OFF (Min order £50)",
+          "🔁 Second Booking: 35% OFF (Min order £45)",
+          "🔁 Third Booking: 30% OFF (Min order £40)",
+          "💷 Orders £80 - £150: Flat 10% OFF",
+          "💎 Orders above £150: Flat 15% OFF",
+          "🎓 Students get EXTRA 5% OFF on all offers"
+        ].map((item, idx) => (
+          <span key={`h2-${idx}`} className="header-discount-item">
+            <i className="fas fa-gift"></i>
+            <span
+              dangerouslySetInnerHTML={{
+                __html: item.replace("Students", "<strong>Students</strong>")
+              }}
+            />
+          </span>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
       <header className={`header ${isScrolled ? "scrolled" : ""} ${hideHeader ? "hide-header" : ""}`}>
+         
         <div className="header-container">
           <div className="header-content">
+           
+
             {/* Left Section: Logo only */}
             <div className="header-left">
               <Link to="/" className="logo" onClick={closeMenu} aria-label="Ironing Boy Home">

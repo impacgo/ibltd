@@ -22,19 +22,6 @@ const Hero = () => {
     };
   }, []);
 
-  const discountItems = useMemo(
-    () => [
-      "Students get 25% OFF on any booking!",
-      "Minimum top up - £20",
-      "If booking amount is £30 - £49 then 10% discount",
-      "If booking amount is £50 - £99 then 15% discount",
-      "If booking amount is £100 - £299 then 20% discount",
-      "If booking amount is more than £300 then 22% discount",
-      "Applicable on each customer's first 3 orders"
-    ],
-    []
-  );
-
   const handleQuickBook = () => {
     navigate("/quick-booking");
   };
@@ -364,32 +351,6 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* Discount Section - Fixed at bottom */}
-      <div className="hero-discount-section">
-        <div className="hero-discount-wrapper">
-          <div className="hero-discount-label">
-            <i className="fas fa-tag"></i>
-            <span>Special Offers</span>
-          </div>
-          
-          <div className="hero-discount-marquee">
-            <div className="discount-track">
-              {discountItems.map((item, idx) => (
-                <span key={`d1-${idx}`} className="discount-item">
-                  <i className="fas fa-gift"></i>
-                  {item}
-                </span>
-              ))}
-              {discountItems.map((item, idx) => (
-                <span key={`d2-${idx}`} className="discount-item">
-                  <i className="fas fa-gift"></i>
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
   );
 };
