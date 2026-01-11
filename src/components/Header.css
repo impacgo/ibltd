@@ -71,7 +71,7 @@
   top: 44px; /* exactly below discount bar */
   left: 0;
   right: 0;
-  z-index: 1100;
+  z-index: 110;
   background: var(--dark-bg);
 }
 
@@ -183,7 +183,7 @@
   position: relative;
   padding: 0;
   margin: 0;
-  z-index: 10;
+  z-index: 11000;
 }
 
 .mobile-menu-btn:hover {
@@ -215,7 +215,7 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-right: 1px solid var(--glass-border);
-  z-index: 1001;
+  z-index: 10001;
   transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
@@ -1594,7 +1594,7 @@ body {
   left: 0;
   right: 0;
   height: 44px;
-  z-index: 1200;
+  z-index: 1;
   background: linear-gradient(90deg, #0a0a0a, #1a1a1a);
   border-bottom: 1px solid rgba(255,255,255,0.08);
   overflow: hidden; /* 🔑 prevents text bleed */
@@ -1689,13 +1689,22 @@ body {
     height: 52px;
   }
 }
-.header-discount-item i {
-  color: var(--primary-orange);
-  font-size: 0.85rem;
+
+@media (max-width: 1023px) {
+  .nav.mobile {
+  
+    z-index: 1300 !important;
+  }
+
+  /* Backdrop must also respect discount bar */
+  .mobile-menu-backdrop {
+    z-index: 1250 !important;
+  }
 }
 
-/* Optional: slightly brighter on hover */
-.header-discount-item:hover i {
-  color: #FF8C00;
+/* Close button safety */
+.mobile-close {
+  z-index: 1350 !important;
 }
+
 
