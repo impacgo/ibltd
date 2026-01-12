@@ -501,18 +501,18 @@ const handleViewPricing = (service) => {
 
                 {/* Service Items Preview */}
                 <div className="service-items-preview">
-                  <div className="preview-label">
+                  {/* <div className="preview-label">
                     <i className="fas fa-list"></i>
                     <span>Includes:</span>
-                  </div>
-                  <div className="preview-items">
+                  </div> */}
+                  {/* <div className="preview-items">
                     {service.items.slice(0, 3).map((item, idx) => (
                       <span key={idx} className="preview-item">{item}</span>
                     ))}
                     {service.items.length > 3 && (
                       <span className="preview-more">+{service.items.length - 3} more</span>
                     )}
-                  </div>
+                  </div> */}
                 </div>
               </div>
               
@@ -615,7 +615,7 @@ const handleViewPricing = (service) => {
                 
                 <div className="cta-note">
                   <i className="fas fa-clock"></i>
-                  <span>Same-day service available for orders before 12 PM</span>
+                  <span>Same-day service available for orders before 11 AM</span>
                 </div>
               </div>
             </div>

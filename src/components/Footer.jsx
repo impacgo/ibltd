@@ -52,17 +52,28 @@ const Footer = () => {
   };
 
   // Handle app download buttons
-  const handleGetApp = () => {
-    window.scrollTo(0, 0);
-    navigate('/coming-soon', {
-      state: {
-        title: "Mobile App Coming Soon",
-        description: "Our mobile app is under development. Get ready for an amazing on-the-go laundry experience!",
-        featureName: "Mobile Application",
-        expectedTime: "Q2 2025"
-      }
-    });
-  };
+  // Handle Android App download (LIVE)
+const handleAndroidApp = () => {
+  window.open(
+    "https://play.google.com/store/apps/details?id=com.impacgo.ironingboy",
+    "_blank",
+    "noopener,noreferrer"
+  );
+};
+
+// Handle Apple App (Coming Soon)
+const handleAppleApp = () => {
+  window.scrollTo(0, 0);
+  navigate('/coming-soon', {
+    state: {
+      title: "iOS App Coming Soon",
+      description: "Our iOS app is under development. Stay tuned for the App Store launch!",
+      featureName: "iOS Application",
+      expectedTime: "Q2 2025"
+    }
+  });
+};
+
 
   // Toggle mobile accordion
   const toggleAccordion = (section) => {
@@ -89,14 +100,14 @@ const Footer = () => {
               <h3>Get the Ironing Boy App</h3>
               <p>Download our app for faster booking, order tracking, and exclusive offers</p>
               <div className="app-buttons">
-                <button className="app-btn android-btn" onClick={handleGetApp}>
+                <button className="app-btn android-btn" onClick={handleAndroidApp}>
                   <i className="fab fa-google-play"></i>
                   <div className="btn-text">
                     <span className="get-on">GET IT ON</span>
                     <span className="store-name">Google Play</span>
                   </div>
                 </button>
-                <button className="app-btn apple-btn" onClick={handleGetApp}>
+                <button className="app-btn apple-btn" onClick={handleAppleApp}>
                   <i className="fab fa-apple"></i>
                   <div className="btn-text">
                     <span className="download-on">Download on the</span>

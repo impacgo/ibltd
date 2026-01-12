@@ -803,6 +803,9 @@
     align-items: center;
     gap: 16px;
   }
+  .cta-features{
+    display: none;
+  }
 }
 
 /* Small Mobile */

@@ -68,7 +68,7 @@
 /* ===== HEADER BASE FIX ===== */
 .header {
   position: fixed;
-  top: 44px; /* exactly below discount bar */
+  top: 48px; /* exactly below discount bar */
   left: 0;
   right: 0;
   z-index: 110;
@@ -84,9 +84,24 @@
   box-shadow: var(--shadow-md);
 }
 
-.header.hide-header {
-  transform: translateY(-100%);
+/* ===== HEADER HIDE LOGIC ===== */
+/* ===== HEADER VISIBILITY CONTROL ===== */
+
+/* Desktop behavior: slide away fully */
+@media (min-width: 1024px) {
+  .header.hide-header {
+    transform: translateY(-100%);
+  }
 }
+
+/* Mobile behavior: fade + disable interaction ONLY */
+@media (max-width: 1023px) {
+  .header.hide-header {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
 
 /* ===== CONTAINER ===== */
 .header-container {
@@ -102,6 +117,7 @@
   height: var(--header-height-mobile);
   gap: var(--spacing-md);
 }
+
 
 /* ===== LOGO ===== */
 .header-left {
@@ -319,6 +335,22 @@
   height: 20px;
   stroke-width: 2;
 }
+/* ===== MOBILE MENU CLOSE ICON FIX ===== */
+.mobile-close {
+  color: #ffffff !important;           /* icon color */
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.mobile-close svg {
+  stroke: #ffffff !important;          /* ensure ❌ is white */
+  opacity: 1 !important;
+}
+.mobile-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: rotate(90deg);
+}
+
 
 /* Mobile Menu Content */
 .mobile-menu-content {
@@ -1587,18 +1619,25 @@ body {
     border-radius: 8px !important;
   }
 }
-/* ===== HEADER DISCOUNT BAR (FINAL FIX) ===== */
+/* ===== HEADER DISCOUNT BAR – PREMIUM ATTENTION VERSION ===== */
 .header-discount-bar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 44px;
-  z-index: 1;
-  background: linear-gradient(90deg, #0a0a0a, #1a1a1a);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  overflow: hidden; /* 🔑 prevents text bleed */
+  height: 48px;
+  z-index: 1200;
+  background: linear-gradient(
+    90deg,
+    #120800,
+    #2a1200,
+    #120800
+  );
+  border-bottom: 1px solid rgba(255, 140, 0, 0.35);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.25);
+  overflow: hidden;
 }
+
 
 .header-discount-wrapper {
   height: 100%;
@@ -1609,15 +1648,24 @@ body {
 }
 
 .header-discount-label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
+  gap: 4px;                 /* tighter spacing */
+  padding: 4px 8px;         /* smaller pill */
+  font-size: 0.7rem;        /* reduced size */
   font-weight: 700;
-  color: #ff8c00;
+  color: #ff9f1c;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
   white-space: nowrap;
+  border-radius: 999px;
+  background: rgba(255, 140, 0, 0.12);
   flex-shrink: 0;
 }
+.header-discount-label i {
+  font-size: 0.7rem;
+}
+
 
 .header-discount-marquee {
   flex: 1;
@@ -1630,16 +1678,27 @@ body {
   align-items: center;
   gap: 32px;
   white-space: nowrap;
-  animation: marquee-scroll 25s linear infinite;
+  animation: marquee-scroll 40s linear infinite;
 }
 
 .header-discount-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  color: #e5e7eb;
+  gap: 8px;
+  font-size: 0.85rem;         
+  font-weight: 700;           
+  color: #ffffff;             
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 6px rgba(255, 140, 0, 0.35);
 }
+
+.header-discount-item i {
+  color: var(--primary-orange);
+  font-size: 0.9rem;
+  filter: drop-shadow(0 0 6px rgba(255, 107, 0, 0.5));
+}
+
+
 
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
@@ -1664,47 +1723,181 @@ body {
 }
 @media (max-width: 1023px) {
   .header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: var(--header-height-mobile);
-    padding: 0 16px;
+    display: flex !important;
+    align-items: center !important;   /* ✅ vertical centering */
+    justify-content: space-between !important;
+    height: var(--header-height-mobile) !important;
+    padding: 0 16px !important;
   }
 
-  .logo-name {
-    font-size: 1.35rem;
-    max-width: 180px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .logo-tagline {
-    font-size: 0.65rem;
-    max-width: 180px;
-  }
-
+  .header-left,
   .mobile-menu-btn {
-    width: 52px;
-    height: 52px;
+    display: flex;
+    align-items: center;              /* ✅ perfect vertical align */
+  }
+
+  .logo {
+    min-height: 48px;                 /* UI standard */
+    align-items: center;
   }
 }
 
+
+/* ===== FORCE MOBILE MENU ABOVE DISCOUNT BAR ===== */
 @media (max-width: 1023px) {
   .nav.mobile {
-  
-    z-index: 1300 !important;
+    z-index: 2000 !important;
   }
 
-  /* Backdrop must also respect discount bar */
   .mobile-menu-backdrop {
-    z-index: 1250 !important;
+    z-index: 1900 !important;
+  }
+
+  .header-discount-bar {
+    z-index: 1000 !important;
   }
 }
+
 
 /* Close button safety */
 .mobile-close {
   z-index: 1350 !important;
 }
 
+@media (max-width: 480px) {
+  .header-discount-label span {
+    display: none; /* icon-only on very small screens */
+  }
+}
 
+/* ===== MOBILE MENU TOUCH OPTIMIZATION ===== */
+.mobile-menu-item {
+  padding: 12px 14px;        /* ↓ reduced */
+  min-height: 48px;          /* UI standard */
+  font-size: 0.95rem;
+}
+
+.menu-item-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.menu-item-icon i {
+  font-size: 1rem;
+}
+
+/* ================= Z-INDEX MASTER FIX ================= */
+@media (max-width: 1023px) {
+
+  /* Discount bar always lowest */
+  .header-discount-bar {
+    z-index: 900 !important;
+  }
+
+  /* Header stays above discount */
+  .header {
+    z-index: 1000 !important;
+  }
+
+  /* Backdrop below menu */
+  .mobile-menu-backdrop {
+    z-index: 1990 !important;
+  }
+
+  /* Mobile menu ALWAYS on top */
+  .nav.mobile {
+    z-index: 2000 !important;
+    isolation: isolate; /* 🔥 prevents overlap bugs */
+  }
+
+  /* Close button always clickable */
+  .mobile-close {
+    z-index: 2100 !important;
+  }
+}
+/* ===== DISCOUNT BAR ALWAYS VISIBLE ===== */
+.header-discount-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  z-index: 900;
+  pointer-events: auto;
+}
+
+@media (max-width: 1023px) {
+
+  /* Discount bar */
+  .header-discount-bar {
+    z-index: 900 !important;
+  }
+
+  /* Header */
+  .header {
+    z-index: 1000 !important;
+  }
+
+  /* Backdrop */
+  .mobile-menu-backdrop {
+    z-index: 1990 !important;
+  }
+
+  /* Mobile menu ALWAYS above everything */
+  .nav.mobile {
+    z-index: 2000 !important;
+    isolation: isolate;
+  }
+
+  /* Close button always clickable */
+  .mobile-close {
+    z-index: 2100 !important;
+  }
+}
+body {
+  padding-top: calc(48px + var(--header-height-mobile));
+}
+
+@media (min-width: 768px) {
+  body {
+    padding-top: calc(48px + var(--header-height-tablet));
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    padding-top: calc(48px + var(--header-height-desktop));
+  }
+}
+/* ===== BODY OFFSET (FINAL & ONLY ONE) ===== */
+body {
+  padding-top: calc(48px + var(--header-height-mobile));
+}
+
+@media (min-width: 768px) {
+  body {
+    padding-top: calc(48px + var(--header-height-tablet));
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    padding-top: calc(48px + var(--header-height-desktop));
+  }
+}
+
+@media (max-width: 1023px) {
+  .header { z-index: 1000; }
+  .header-discount-bar { z-index: 900; }
+
+  .mobile-menu-backdrop { z-index: 1990; }
+
+  .nav.mobile {
+    z-index: 2000;
+    isolation: isolate;
+  }
+
+  .mobile-close {
+    z-index: 2100;
+  }
+}

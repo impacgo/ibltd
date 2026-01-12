@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ServiceAreas.css";
 
+
+
 const AREAS = [
   { name: "Paddington", slug: "paddington", postcodes: ["W2"], position: { top: "42%", left: "48%" }, icon: "fas fa-train" },
   { name: "Notting Hill", slug: "notting-hill", postcodes: ["W11"], position: { top: "45%", left: "44%" }, icon: "fas fa-home" },
@@ -18,6 +20,7 @@ const AREAS = [
 export default function ServiceAreas() {
   const [hoverIndex, setHoverIndex] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
   const openAreaPage = (slug) => {
@@ -37,15 +40,30 @@ export default function ServiceAreas() {
     navigate("/", { state: { openServiceCheck: true } });
   };
 
-  const filteredAreas = AREAS.filter(area => {
-    if (activeFilter === "london") {
-      return !area.name.toLowerCase().includes("oxford");
-    }
-    if (activeFilter === "oxford") {
-      return area.name.toLowerCase().includes("oxford");
-    }
-    return true;
-  });
+const filteredAreas = AREAS.filter(area => {
+  // Region filter
+  if (activeFilter === "london" && area.name.toLowerCase().includes("oxford")) {
+    return false;
+  }
+  if (activeFilter === "oxford" && !area.name.toLowerCase().includes("oxford")) {
+    return false;
+  }
+
+  // Search filter
+  if (searchTerm.trim()) {
+    const query = searchTerm.toLowerCase();
+
+    const matchesName = area.name.toLowerCase().includes(query);
+    const matchesPostcode = area.postcodes.some(pc =>
+      pc.toLowerCase().includes(query)
+    );
+
+    return matchesName || matchesPostcode;
+  }
+
+  return true;
+});
+
 
   return (
     <div className="areas-page">
@@ -218,11 +236,14 @@ export default function ServiceAreas() {
                   <div className="list-controls">
                     <div className="search-box">
                       <i className="fas fa-search"></i>
-                      <input 
-                        type="text" 
-                        placeholder="Search areas..." 
-                        className="search-input"
-                      />
+                      <input
+  type="text"
+  placeholder="Search areas or postcodes (e.g. Fulham, SW6)"
+  className="search-input"
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+/>
+
                     </div>
                   </div>
                 </div>

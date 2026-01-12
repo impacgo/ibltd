@@ -28,75 +28,75 @@ const AREAS = [
   { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"] },
 ];
 
-// Define the 6 main services from Services.jsx
 const MAIN_SERVICES = [
-  { 
+  {
     id: 1,
     slug: "laundry",
-    title: "Laundry", 
+    title: "Wash & Iron",
     icon: "fa-tshirt",
     description: "Professional washing, drying & folding service",
-    color: "#3B82F6",
-    gradient: "linear-gradient(135deg, #3B82F6, #1D4ED8)",
     features: ["Eco-friendly detergents", "Same-day service", "Free pickup"],
-    fullDescription: "Complete laundry service including washing, drying, and professional folding with eco-friendly detergents."
+    category: "laundry",
+    filterType: "Wash & Iron",
+    searchTerms: ["Laundry", "Wash", "Cleaning"],
   },
-  { 
+  {
     id: 2,
-    slug: "dry-cleaning", 
-    title: "Dry Cleaning", 
+    slug: "dry-cleaning",
+    title: "Dry Cleaning",
     icon: "fa-snowflake",
     description: "Gentle care for delicate & special fabrics",
-    color: "#8B5CF6",
-    gradient: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
     features: ["Delicate fabrics", "Stain removal", "Premium care"],
-    fullDescription: "Expert dry cleaning for delicate fabrics, suits, dresses, and special occasion wear."
+    category: "dry_cleaning",
+    filterType: "Dry Clean",
+    searchTerms: ["Dry Clean", "Delicate"],
   },
-  { 
+  {
     id: 3,
-    slug: "ironing-pressing", 
-    title: "Ironing/Pressing", 
+    slug: "ironing-pressing",
+    title: "Ironing / Pressing",
     icon: "fa-fire",
     description: "Crisp, wrinkle-free finish for all garments",
-    color: "#EC4899",
-    gradient: "linear-gradient(135deg, #EC4899, #DB2777)",
-    features: ["Professional press", "Steam finishing", "Fold or hang"],
-    fullDescription: "Professional ironing and pressing service for crisp, wrinkle-free results."
+    features: ["Professional press", "Steam finishing"],
+    category: "ironing",
+    filterType: "Ironing",
+    searchTerms: ["Ironing", "Pressing"],
   },
-  { 
+  {
     id: 4,
-    slug: "service-wash", 
-    title: "Service Wash", 
+    slug: "service-wash",
+    title: "Service Wash",
     icon: "fa-soap",
     description: "Complete laundry with premium detergents",
-    color: "#10B981",
-    gradient: "linear-gradient(135deg, #10B981, #059669)",
-    features: ["Premium detergents", "Full service", "Quality check"],
-    fullDescription: "Full-service laundry including pickup, washing, drying, folding, and delivery."
+    features: ["Premium detergents", "Quality check"],
+    category: "service_wash",
+    filterType: "Service Wash",
+    searchTerms: ["Service Wash"],
   },
-  { 
+  {
     id: 5,
-    slug: "repair-alteration", 
-    title: "Repair & Alteration", 
+    slug: "repair-alteration",
+    title: "Repair & Alteration",
     icon: "fa-scissors",
     description: "Expert tailoring & perfect fit adjustments",
-    color: "#F59E0B",
-    gradient: "linear-gradient(135deg, #F59E0B, #D97706)",
-    features: ["Expert tailors", "Quick turnaround", "Perfect fit"],
-    fullDescription: "Professional clothing repair, alterations, and tailoring services."
+    features: ["Expert tailors", "Quick turnaround"],
+    category: "repair",
+    filterType: "Repair & Alteration",
+    searchTerms: ["Repair", "Alteration"],
   },
-  { 
+  {
     id: 6,
-    slug: "shoe-cleaning", 
-    title: "Shoe Cleaning", 
+    slug: "shoe-cleaning",
+    title: "Shoe Cleaning",
     icon: "fa-shoe-prints",
     description: "Deep cleaning & conditioning for footwear",
-    color: "#6366F1",
-    gradient: "linear-gradient(135deg, #6366F1, #4F46E5)",
-    features: ["Deep clean", "Conditioning", "Waterproofing"],
-    fullDescription: "Professional cleaning, conditioning, and waterproofing for all types of shoes."
+    features: ["Deep clean", "Conditioning"],
+    category: "shoe_cleaning",
+    filterType: "Shoe Cleaning",
+    searchTerms: ["Shoe", "Footwear"],
   },
 ];
+
 
 // Image mapping for services
 const serviceImages = {
@@ -148,14 +148,18 @@ export default function AreaDetails() {
   };
 
   // Navigate to QuickBooking with service preselected
-  const handleBookService = (serviceSlug, serviceTitle) => {
-    navigate("/quick-booking", { 
-      state: { 
-        service: serviceTitle,
-        area: area.name
-      } 
-    });
-  };
+const handleBookService = (service) => {
+  navigate("/service-pricing", {
+    state: {
+      serviceCategory: service.category,
+      serviceName: service.title,
+      filterType: service.filterType,
+      searchTerms: service.searchTerms,
+      area: area.name,
+    },
+  });
+};
+
 
   // Function to get image for service
   const getImageForService = (service) => {
@@ -232,37 +236,41 @@ export default function AreaDetails() {
                 
                 return (
                   <div
-                    key={service.id}
-                    className="service-card"
-                    onClick={() => handleBookService(service.slug, service.title)}
-                  >
-                    <div
-                      className="service-card-img"
-                      style={{ backgroundImage: `url(${serviceImage})` }}
-                    />
-                    <div className="service-card-info">
-                      
-                      <h3>{service.title}</h3>
-                      <p>{service.description}</p>
-                      <div className="service-features-list">
-                        {service.features && service.features.slice(0, 2).map((feature, idx) => (
-                          <span key={idx} className="service-feature">
-                            <i className="fas fa-check-circle"></i> {feature}
-                          </span>
-                        ))}
-                      </div>
-                      <button 
-                        className="service-book-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleBookService(service.slug, service.title);
-                        }}
-                      >
-                        <span>Book Now</span>
-                        <i className="fas fa-arrow-right"></i>
-                      </button>
-                    </div>
-                  </div>
+  key={service.id}
+  className="service-card icon-card"
+  onClick={() => handleBookService(service)}
+>
+  <div className="service-icon-wrapper">
+    <div className="service-icon">
+      <i className={`fas ${service.icon}`}></i>
+    </div>
+  </div>
+
+  <div className="service-card-info">
+    <h3>{service.title}</h3>
+    <p>{service.description}</p>
+
+    <div className="service-features-list">
+      {service.features.slice(0, 2).map((feature, idx) => (
+        <span key={idx} className="service-feature">
+          <i className="fas fa-check-circle"></i> {feature}
+        </span>
+      ))}
+    </div>
+
+    <button
+      className="service-book-btn"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleBookService(service);
+      }}
+    >
+      <span>View Pricing</span>
+      <i className="fas fa-arrow-right"></i>
+    </button>
+  </div>
+</div>
+
                 );
               })}
             </div>

@@ -145,7 +145,12 @@ const Header = () => {
         window.requestAnimationFrame(() => {
           const y = window.scrollY;
           setIsScrolled(y > 20);
-          setHideHeader(y > lastY && y > 80);
+          if (y > lastY && y > 120) {
+  setHideHeader(true);   // scrolling down
+} else {
+  setHideHeader(false);  // scrolling up
+}
+
           setLastY(y);
           ticking = false;
         });
@@ -233,7 +238,7 @@ const Header = () => {
   const handlePlayStoreClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    window.open("https://play.google.com", "_blank", "noopener,noreferrer");
+    window.open("https://play.google.com/store/apps/details?id=com.impacgo.ironingboy", "_blank", "noopener,noreferrer");
   };
 
   // Handle profile icon click
@@ -516,7 +521,7 @@ const Header = () => {
                   onClick={closeMenu}
                 >
                   <span className="menu-item-icon">
-                    <i className="fas fa-sparkles"></i>
+                    <i className="fas fa-soap"></i>
                   </span>
                   <span className="menu-item-text">Services</span>
                 </Link>

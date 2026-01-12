@@ -5,6 +5,31 @@ import "./Hero.css";
 
 const API_BASE = "https://api.ironingboy.com";
 
+const normalizePostcode = (input) => {
+  if (!input) return "";
+
+  const cleaned = input
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, ""); // remove spaces & symbols
+
+  /**
+   * Extract:
+   *  - 1 or 2 letters
+   *  - followed by ONLY the FIRST digit
+   *
+   * SW6 1AG  -> SW6
+   * SW66BW  -> SW6
+   * W120AA  -> W12
+   * E1 7AA  -> E1
+   */
+  const match = cleaned.match(/^([A-Z]{1,2}\d)/);
+
+  return match ? match[1] : "";
+};
+
+
+
+
 const Hero = () => {
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,61 +55,65 @@ const Hero = () => {
     navigate("/services");
   };
 
-  const checkServiceAvailability = async () => {
-    if (!location.trim()) {
-      showErrorPopup("Input Required", "Please enter your address or postal code.");
-      return;
-    }
+ const checkServiceAvailability = async () => {
+  if (!location.trim()) {
+    showErrorPopup("Postcode Required", "Please enter your postcode.");
+    return;
+  }
 
-    setLoading(true);
-    
-    try {
-      const response = await fetch(`${API_BASE}/postcode-check`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: location.trim()
-        }),
-      });
+  const outwardCode = normalizePostcode(location);
 
-      if (!response.ok) {
-        throw new Error("Service check failed");
-      }
+  if (!outwardCode) {
+    showErrorPopup(
+      "Invalid Postcode",
+      "Please enter a valid UK postcode (e.g. SW6 or W12 0AA)."
+    );
+    return;
+  }
 
-      const data = await response.json();
+  setLoading(true);
 
-      if (data.success) {
-        localStorage.setItem("available_branches", JSON.stringify(data.branches));
-        localStorage.setItem("search_query", location.trim());
-        
-        showSuccessPopup(
-          "Service Available!",
-          `We found ${data.branches.length} branch(es) serving your area.`,
-          data.branches
-        );
-        
-        setTimeout(() => {
-          if (showPopup) return;
-          handleQuickBook();
-        }, 2000);
-      } else {
-        showErrorPopup(
-          "Service Not Available",
-          data.message || `Sorry, we don't currently serve "${location.trim()}".`
-        );
-      }
-    } catch (error) {
-      console.error("Error checking service:", error);
-      showErrorPopup(
-        "Connection Error",
-        "Unable to check service availability. Please try again later."
+  try {
+    const response = await fetch(`${API_BASE}/postcode-check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: outwardCode, // ✅ only SW6 / W12
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      localStorage.setItem("available_branches", JSON.stringify(data.branches));
+      localStorage.setItem("search_query", outwardCode);
+
+      showSuccessPopup(
+        "Service Available 🎉",
+        `Great news! We serve your area (${outwardCode}).`,
+        data.branches
       );
-    } finally {
-      setLoading(false);
+
+      setTimeout(() => {
+        handleQuickBook();
+      }, 1200);
+    } else {
+      showErrorPopup(
+        "Service Not Available",
+        `Sorry, we don’t currently serve ${outwardCode}.`
+      );
     }
-  };
+  } catch (err) {
+    showErrorPopup(
+      "Network Error",
+      "Unable to check service right now. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const showSuccessPopup = (title, message, branchesData) => {
     setPopupTitle(title);
@@ -147,30 +176,19 @@ const Hero = () => {
             <div className="popup-body">
               <p>{popupMessage}</p>
               
-              {popupType === "success" && branches.length > 0 && (
-                <div className="available-branches">
-                  <h4>
-                    <i className="fas fa-store"></i>
-                    Available Branches:
-                  </h4>
-                  <div className="branches-list">
-                    {branches.slice(0, 2).map((branch, index) => (
-                      <div key={branch.id || index} className="branch-card">
-                        <div className="branch-icon">
-                          <i className="fas fa-building"></i>
-                        </div>
-                        <div className="branch-info">
-                          <div className="branch-name">{branch.name}</div>
-                          <div className="branch-distance">
-                            <i className="fas fa-location-dot"></i>
-                            {branch.distance ? `${branch.distance} miles away` : "Nearby"}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {popupType === "success" && (
+  <div className="availability-success">
+    <div className="success-badge">
+      <i className="fas fa-map-marker-alt"></i>
+      Serving your area
+    </div>
+
+    <p className="success-text">
+      We provide full laundry services in <strong>{popupMessage.match(/\((.*?)\)/)?.[1]}</strong>
+    </p>
+  </div>
+)}
+
               
               {popupType === "error" && (
                 <div className="suggestions">
@@ -305,49 +323,59 @@ const Hero = () => {
 
           {/* Location Check Section */}
           <div className="location-section">
-            <div className="location-header">
-              <h2 className="location-title">Check Service Availability</h2>
-              <p className="location-subtitle">Enter your postcode to see if we serve your area</p>
-            </div>
-            
-            <div className="location-check-wrapper">
-              <div className="location-input-wrapper">
-                {/* <div className="input-icon">
-                  <i className="fas fa-map-marker-alt"></i>
-                </div> */}
-                <input
-                  type="text"
-                  className="location-input"
-                  placeholder="Enter your postcode or address"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  disabled={loading}
-                />
-                <button
-                  className={`location-check-btn ${location.trim() ? 'active' : ''} ${loading ? 'loading' : ''}`}
-                  onClick={handleGetStarted}
-                  disabled={loading || !location.trim()}
-                >
-                  {loading ? (
-                    <>
-                      <span className="loading-spinner"></span>
-                      Checking...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-search"></i>
-                      Check Availability
-                    </>
-                  )}
-                </button>
-              </div>
-              <div className="location-hint">
-                <i className="fas fa-info-circle"></i>
-                <span>Try entering just your postcode for faster results</span>
-              </div>
-            </div>
-          </div>
+  <div className="location-check-card">
+
+    <div className="location-header">
+      <h2 className="location-title">Check Service Availability</h2>
+      <p className="location-subtitle">
+        Enter your postcode to see if we serve your area
+      </p>
+    </div>
+
+    <div className="location-input-group">
+      <div className="input-wrapper">
+
+        <input
+          type="text"
+          className="location-input-field"
+          placeholder="e.g. SW6 or SW6 6BW"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={loading}
+        />
+
+        <button
+          className={`location-check-button ${
+            location.trim() ? "active" : ""
+          } ${loading ? "loading" : ""}`}
+          onClick={handleGetStarted}
+          disabled={loading || !location.trim()}
+        >
+          {loading ? (
+            <>
+              <span className="loading-spinner-small"></span>
+              Checking
+            </>
+          ) : (
+            <>
+              <i className="fas fa-search"></i>
+              Check
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="location-input-hint">
+  <i className="fas fa-info-circle"></i>
+  We accept partial postcodes like <strong>SW6</strong> or <strong>W12</strong>
+</div>
+
+    </div>
+
+  </div>
+</div>
+
         </div>
       </div>
       
