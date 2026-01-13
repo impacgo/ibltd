@@ -1744,99 +1744,6 @@ button:focus:not(:focus-visible) {
 }
 
 /* ===== DARK MODE SUPPORT ===== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --qb-bg: #111827;
-    --qb-bg-light: #1f2937;
-    --qb-bg-lighter: #374151;
-    --qb-card-bg: #1f2937;
-    --qb-card-border: #374151;
-    --qb-text-primary: #f9fafb;
-    --qb-text-secondary: #e5e7eb;
-    --qb-text-light: #d1d5db;
-    --qb-text-muted: #9ca3af;
-  }
-  
-  .qb-form-input,
-  .qb-form-textarea,
-  .qb-date-input,
-  .qb-notes-input {
-    background-color: #1f2937 !important;
-    color: #f9fafb !important;
-    border-color: #374151 !important;
-  }
-
-  /* Hover */
-  .qb-form-input:hover,
-  .qb-form-textarea:hover,
-  .qb-date-input:hover {
-    background-color: #1f2937;
-    border-color: #4b5563;
-  }
-
-  /* Focus */
-  .qb-form-input:focus,
-  .qb-form-textarea:focus,
-  .qb-date-input:focus {
-    background-color: #1f2937 !important;
-    color: #f9fafb !important;
-    border-color: var(--qb-accent) !important;
-    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.25);
-  }
-
-  /* -------- Placeholder Text -------- */
-  .qb-form-input::placeholder,
-  .qb-form-textarea::placeholder,
-  .qb-notes-input::placeholder {
-    color: #9ca3af !important;
-    opacity: 1;
-  }
-
-  /* -------- Labels -------- */
-  .qb-form-label,
-  .qb-date-label,
-  .qb-time-label {
-    color: #e5e7eb;
-  }
-
-  /* -------- Cards -------- */
-  .qb-card,
-  .qb-schedule-section,
-  .qb-notes-container,
-  .qb-payment-option,
-  .qb-address-option {
-    background-color: #1f2937;
-    border-color: #374151;
-  }
-
-  /* -------- Address Text -------- */
-  .qb-address-text,
-  .qb-address-postcode,
-  .qb-card-number,
-  .qb-payment-description {
-    color: #d1d5db;
-  }
-
-  /* -------- Disabled Inputs -------- */
-  .qb-form-input:disabled,
-  .qb-date-input:disabled {
-    background-color: #111827;
-    color: #9ca3af;
-    cursor: not-allowed;
-  }
-
-  /* -------- Summary Bar -------- */
-  .qb-summary-section {
-    background: #020617;
-    border-top: 1px solid #374151;
-  }
-
-  /* -------- Stripe Elements Wrapper -------- */
-  .stripe-element-container {
-    background: #1f2937;
-    border-color: #374151;
-  }
-}
 
 /* Add to QuickBooking.css */
 
@@ -2393,4 +2300,233 @@ html, body {
     top: 6px;
     left: 6px;
   }
+}
+/* =====================================================
+   FORCE LIGHT THEME – QUICKBOOKING
+   ===================================================== */
+
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  background: #f8fafc !important;
+}
+
+.qb-page {
+  background: #f8fafc !important;
+}
+
+.qb-card,
+.qb-summary-section,
+.qb-schedule-section,
+.qb-notes-container,
+.stripe-modal-content {
+  background: #ffffff !important;
+}
+
+/* =====================================================
+   QUICKBOOKING – MOBILE UI (MATCH CHECKOUT)
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+  /* PAGE */
+  .qb-page {
+    padding: 12px 12px 160px !important;
+  }
+
+  /* HEADER */
+  .qb-title {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .qb-subtitle,
+  .qb-user-info {
+    display: none !important;
+  }
+
+  /* CARDS */
+  .qb-card {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+
+  /* CARD HEADER */
+  .qb-card-header {
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+
+  .qb-section-icon {
+    display: none;
+  }
+
+  .qb-section-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  /* FORM */
+  .qb-form-input,
+  .qb-form-textarea,
+  .qb-date-input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  /* ADDRESS */
+  .qb-address-option {
+    padding: 12px;
+  }
+
+  .qb-address-text {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  /* TIME SLOTS */
+  .qb-time-slots-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .qb-time-slot {
+    font-size: 12px;
+    padding: 8px 4px;
+    border-radius: 8px;
+  }
+
+  /* NOTES */
+  .qb-notes-container {
+    padding: 12px;
+  }
+
+  /* PAYMENT */
+  .qb-card-option {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .qb-card-brand {
+    font-size: 13px;
+  }
+
+  .qb-card-number {
+    font-size: 12px;
+  }
+
+  /* SUMMARY BAR */
+  .qb-summary-section {
+    padding: 12px 16px;
+  }
+
+  .qb-confirm-btn {
+    width: 100%;
+    font-size: 15px;
+    padding: 14px;
+    border-radius: 10px;
+  }
+}
+/* =====================================================
+   FORCE LIGHT THEME – DESKTOP + MOBILE (GLOBAL)
+   ===================================================== */
+
+/* Tell browser we only support light */
+:root {
+  color-scheme: light;
+}
+
+/* Force base background */
+html,
+body {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+}
+
+/* Main page */
+.qb-page {
+  background-color: #f8fafc !important;
+}
+
+/* Cards & sections */
+.qb-card,
+.qb-summary-section,
+.qb-schedule-section,
+.qb-notes-container,
+.qb-payment-option,
+.qb-address-option,
+.qb-address-section,
+.stripe-modal-content {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+/* Text colors */
+.qb-title,
+.qb-section-title,
+.qb-form-label,
+.qb-toggle-title,
+.qb-payment-title,
+.qb-address-section-title {
+  color: #1e293b !important;
+}
+
+.qb-subtitle,
+.qb-section-subtitle,
+.qb-toggle-description,
+.qb-address-text,
+.qb-address-postcode,
+.qb-payment-description,
+.qb-card-number,
+.qb-notes-hint {
+  color: #475569 !important;
+}
+
+/* Inputs */
+.qb-form-input,
+.qb-form-textarea,
+.qb-date-input,
+.qb-notes-input {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Disabled inputs */
+.qb-form-input:disabled,
+.qb-date-input:disabled {
+  background-color: #f1f5f9 !important;
+  color: #94a3b8 !important;
+}
+
+/* Time slots */
+.qb-time-slot {
+  background-color: #ffffff !important;
+  color: #475569 !important;
+}
+
+.qb-time-slot.selected {
+  color: #ffffff !important;
+}
+
+/* Summary bar (desktop + mobile) */
+.qb-summary-section {
+  background-color: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* Stripe elements wrapper */
+.stripe-element-container {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Toasts */
+.qb-toast {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
 }

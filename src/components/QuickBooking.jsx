@@ -3687,7 +3687,7 @@ const phoneCheckTimeoutRef = useRef(null);
                     onChange={handleCollectDateChange}
                     min={today}
                   />
-                  <i className="fas fa-calendar-alt qb-date-icon"></i>
+                  {/* <i className="fas fa-calendar-alt qb-date-icon"></i> */}
                 </div>
                 {collectDate && (
                   <p className="qb-date-display">
@@ -3776,7 +3776,7 @@ const phoneCheckTimeoutRef = useRef(null);
                     min={minDeliveryDate}
                     disabled={!collectDate}
                   />
-                  <i className="fas fa-calendar-alt qb-date-icon"></i>
+                  {/* <i className="fas fa-calendar-alt qb-date-icon"></i> */}
                 </div>
                 {!collectDate && (
                   <p className="qb-date-hint">
@@ -4064,7 +4064,7 @@ const phoneCheckTimeoutRef = useRef(null);
           <div className="qb-summary-content">
             <div className="qb-summary-info">
               <div className="qb-summary-item">
-                <i className="fas fa-calendar"></i>
+                { <i className="fas fa-calendar"></i> }
                 <span>Pickup: {selectedCollectSlot ? formatDateDDMMYYYY(collectDate) : "Not selected"}</span>
               </div>
               <div className="qb-summary-item">
