@@ -983,3 +983,182 @@
     scroll-behavior: auto;
   }
 }
+
+/* ===================================================
+   CLEAN & SIMPLE MOBILE PRICING UI
+   =================================================== */
+@media (max-width: 768px) {
+
+  /* ---------- SECTION ---------- */
+  .pricing-section {
+    padding: 48px 0;
+  }
+
+  .pricing-header {
+    margin-bottom: 28px;
+  }
+
+  .pricing-title {
+    font-size: 1.9rem;
+    line-height: 1.25;
+  }
+
+  .pricing-subtitle {
+    font-size: 0.95rem;
+    padding: 0 12px;
+  }
+
+  /* ---------- INFO BOX (SINGLE LINE) ---------- */
+  .pricing-info-box {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0;
+    padding: 16px 14px;
+    margin-bottom: 32px;
+  }
+
+  .info-item {
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .info-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
+
+  .info-content {
+    align-items: flex-start;
+  }
+
+  .info-label {
+    font-size: 0.65rem;
+    margin-bottom: 2px;
+  }
+
+  .info-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .info-divider {
+    display: none;
+  }
+
+  /* ---------- HORIZONTAL SCROLL ---------- */
+  .pricing-cards-wrapper {
+    padding: 0 20px;
+    margin-bottom: 40px;
+  }
+
+  .mobile-scroll-btn {
+    display: none; /* Swipe only = cleaner */
+  }
+
+  .pricing-cards-container {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .pricing-cards-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pricing-cards-grid {
+    display: flex;
+    gap: 16px;
+    width: max-content;
+    margin-bottom: 0;
+  }
+
+  /* ---------- CARD ---------- */
+  .pricing-card {
+    flex: 0 0 85vw;
+    max-width: 85vw;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    animation: none;
+    scroll-snap-align: start;
+  }
+
+  .pricing-card:hover {
+    transform: none;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  }
+
+  .card-header {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .category-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .category-title {
+    font-size: 1.1rem;
+  }
+
+  /* ---------- TABLE ---------- */
+  .pricing-table-wrapper {
+    max-height: 300px;
+    padding: 0;
+  }
+
+  .service-info {
+    padding: 12px 14px;
+  }
+
+  .service-name {
+    font-size: 0.9rem;
+    line-height: 1.35;
+  }
+
+  .service-price {
+    padding: 12px 14px;
+  }
+
+  .price-value {
+    font-size: 0.95rem;
+  }
+
+  /* ---------- CTA ---------- */
+  .pricing-cta {
+    padding: 24px 18px;
+    margin-top: 40px;
+  }
+
+  .cta-content h3 {
+    font-size: 1.4rem;
+  }
+
+  .cta-content p {
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+
+  .cta-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .primary-cta-btn,
+  .secondary-cta-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 0.95rem;
+  }
+
+  .cta-note {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+}

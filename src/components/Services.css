@@ -1064,3 +1064,38 @@
   position: relative;
   z-index: 2;
 }
+/* ===============================
+   MOBILE TRUST BADGES – SINGLE LINE
+   =============================== */
+@media (max-width: 768px) {
+  .trust-badges {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding-top: 24px;
+  }
+
+  .trust-item {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .trust-item i {
+    font-size: 0.95rem;
+  }
+}
+@media (max-width: 480px) {
+  .trust-badges {
+    gap: 8px;
+  }
+
+  .trust-item {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+}

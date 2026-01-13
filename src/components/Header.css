@@ -1678,19 +1678,25 @@ body {
   align-items: center;
   gap: 32px;
   white-space: nowrap;
-  animation: marquee-scroll 40s linear infinite;
+  animation: marquee-scroll 60s linear infinite;
 }
 
 .header-discount-item {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;         
-  font-weight: 700;           
-  color: #ffffff;             
-  letter-spacing: 0.3px;
-  text-shadow: 0 0 6px rgba(255, 140, 0, 0.35);
+
+  font-size: 1rem;
+  font-weight: 820;
+  color: #f8fafc;
+
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+
+  /* clean premium look */
+  opacity: 0.95;
 }
+
 
 .header-discount-item i {
   color: var(--primary-orange);
@@ -1901,3 +1907,155 @@ body {
     z-index: 2100;
   }
 }
+@media (max-width: 480px) {
+  .header-discount-item {
+    font-size: 1.01rem;
+  }
+
+  .header-discount-item strong {
+    font-size: 1.05rem;
+  }
+}
+/* ===== MOBILE HEADER PERFECT VERTICAL CENTER FIX ===== */
+@media (max-width: 1023px) {
+
+  .header-content {
+    display: flex !important;
+    align-items: center !important;        /* main vertical centering */
+    justify-content: space-between !important;
+    height: var(--header-height-mobile) !important;
+  }
+
+  /* Logo container */
+  .header-left {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+  }
+
+  /* Logo link */
+  .logo {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+  }
+
+  /* Logo text block */
+  .logo-text {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;   /* 🔥 KEY FIX */
+    height: 100% !important;
+  }
+
+  /* Menu button container */
+  .mobile-menu-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+  }
+}
+/* @media (max-width: 1023px) {
+  .logo-text {
+    transform: translateY(1px);
+  }
+} */
+
+/* ===== FINAL MOBILE HEADER TRUE VERTICAL CENTER FIX ===== */
+@media (max-width: 1023px) {
+
+  /* Header row */
+  .header-content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: var(--header-height-mobile) !important;
+    padding: 0 16px !important;
+  }
+
+  /* Logo wrapper */
+  .header-left {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+  }
+
+  /* Logo link */
+  .logo {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+  }
+
+  /* 🔥 ACTUAL FIX: Center text vertically */
+  .logo-text {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    height: 100% !important;
+    line-height: 1.05 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .logo-name,
+  .logo-tagline {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Menu button */
+  .mobile-menu-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: var(--header-height-mobile) !important;
+  }
+}
+/* ===== REMOVE ORANGE BORDER FROM MOBILE MENU ICON ===== */
+@media (max-width: 1023px) {
+  .mobile-menu-btn {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .mobile-menu-btn:hover,
+  .mobile-menu-btn:active {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
+@media (max-width: 1023px) {
+  .mobile-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .mobile-menu-btn:active {
+    background: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+/* ===== MOBILE HEADER OPTICAL POLISH (PROFESSIONAL FIX) ===== */
+@media (max-width: 1023px) {
+
+  /* Slightly lift logo text */
+  .logo-text {
+    transform: translateY(-11px);
+  }
+
+  /* Slightly lift menu icon */
+  .mobile-menu-btn {
+    transform: translateY(-11px);
+  }
+
+  /* Prevent hover from breaking alignment */
+  .mobile-menu-btn:hover,
+  .mobile-menu-btn:active {
+    transform: translateY(-11px);
+  }
+}
+
+

@@ -293,13 +293,15 @@ const Header = () => {
     <div className="header-discount-marquee">
       <div className="header-discount-track">
         {[
-          "🎉 First Booking: 50% OFF (Min order £50)",
-          "🔁 Second Booking: 35% OFF (Min order £45)",
-          "🔁 Third Booking: 30% OFF (Min order £40)",
-          "💷 Orders £80 - £150: Flat 10% OFF",
-          "💎 Orders above £150: Flat 15% OFF",
-          "🎓 Students get EXTRA 5% OFF on all offers"
-        ].map((item, idx) => (
+  "🎉 <strong>First Booking</strong> – <strong>50% OFF</strong> on orders above £50",
+  "🔁 <strong>Second Booking</strong> – <strong>35% OFF</strong> on orders above £45",
+  "🔁 <strong>Third Booking</strong> – <strong>30% OFF</strong> on orders above £40",
+  "💷 <strong>Flat 10% OFF</strong> on orders between £80 – £150",
+  "💎 <strong>Flat 15% OFF</strong> on orders above £150",
+  "🎓 <strong>Students</strong>: <strong>50% OFF</strong> on first booking + <strong>EXTRA 5% OFF</strong> on all other offers"
+]
+
+.map((item, idx) => (
           <span key={`h1-${idx}`} className="header-discount-item">
             <i className="fas fa-gift"></i>
             <span
@@ -312,13 +314,14 @@ const Header = () => {
 
         {/* duplicate for seamless loop */}
         {[
-          "🎉 First Booking: 50% OFF (Min order £50)",
-          "🔁 Second Booking: 35% OFF (Min order £45)",
-          "🔁 Third Booking: 30% OFF (Min order £40)",
-          "💷 Orders £80 - £150: Flat 10% OFF",
-          "💎 Orders above £150: Flat 15% OFF",
-          "🎓 Students get EXTRA 5% OFF on all offers"
-        ].map((item, idx) => (
+  "🎉 <strong>First Booking</strong> – <strong>50% OFF</strong> on orders above £50",
+  "🔁 <strong>Second Booking</strong> – <strong>35% OFF</strong> on orders above £45",
+  "🔁 <strong>Third Booking</strong> – <strong>30% OFF</strong> on orders above £40",
+  "💷 <strong>Flat 10% OFF</strong> on orders between £80 – £150",
+  "💎 <strong>Flat 15% OFF</strong> on orders above £150",
+  "🎓 <strong>Students</strong>: <strong>50% OFF</strong> on first booking + <strong>EXTRA 5% OFF</strong> on all other offers"
+]
+.map((item, idx) => (
           <span key={`h2-${idx}`} className="header-discount-item">
             <i className="fas fa-gift"></i>
             <span

@@ -640,3 +640,68 @@
   transform: rotate(5deg) scale(1.1);
   transition: transform 0.3s ease;
 }
+
+/* ===== MOBILE CTA PRICING – CLEAN HORIZONTAL LAYOUT ===== */
+@media (max-width: 768px) {
+
+  /* Pricing container → row */
+  .pricing-info {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-bottom: 28px;
+  }
+
+  /* Each pricing card */
+  .pricing-item {
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 14px 12px !important;
+    gap: 10px !important;
+    border-radius: 14px !important;
+    justify-content: center !important;
+  }
+
+  /* Icon smaller & cleaner */
+  .pricing-icon {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 0.95rem !important;
+    border-radius: 10px !important;
+  }
+
+  /* Text block */
+  .pricing-details {
+    align-items: flex-start !important;
+  }
+
+  .pricing-label {
+    font-size: 0.7rem !important;
+    margin-bottom: 2px !important;
+    letter-spacing: 0.4px;
+  }
+
+  .pricing-value {
+    font-size: 1.1rem !important;
+    font-weight: 800;
+  }
+}
+/* ===== MOBILE PRICING TEXT – SINGLE LINE FIX ===== */
+@media (max-width: 768px) {
+
+  .pricing-label {
+    font-size: 0.68rem !important;   /* slightly smaller */
+    white-space: nowrap !important;  /* 🔥 force single line */
+    line-height: 1 !important;
+    letter-spacing: 0.4px;
+  }
+
+  .pricing-details {
+    min-width: 0;
+  }
+
+  .pricing-item {
+    padding: 14px 10px !important;   /* compact */
+  }
+}

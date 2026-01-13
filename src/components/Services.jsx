@@ -622,7 +622,7 @@ const handleViewPricing = (service) => {
             
             <div className="trust-badges">
               <div className="trust-item">
-                <i className="fas fa-shield-check"></i>
+                <i className="fas fa-lock"></i>
                 <span>Secure Payment</span>
               </div>
               <div className="trust-item">

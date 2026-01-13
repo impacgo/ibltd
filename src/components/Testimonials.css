@@ -643,9 +643,6 @@
     min-height: 480px;
     padding: 28px;
     margin: 0;
-    transform: none !important;
-    opacity: 1 !important;
-    display: none;
     pointer-events: all;
     box-shadow: var(--testimonials-shadow-md);
   }
@@ -1265,5 +1262,190 @@
   .cta-button.secondary:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.15);
+  }
+}
+/* ===================================================
+   MOBILE-FIRST CLEAN TESTIMONIALS UI
+   =================================================== */
+
+@media (max-width: 768px) {
+
+  /* Section padding */
+  .testimonials-section {
+    padding: 48px 0;
+  }
+
+  /* Header cleanup */
+  .testimonials-header {
+    margin-bottom: 24px;
+  }
+
+  .testimonials-title {
+    font-size: 1.7rem;
+    line-height: 1.25;
+  }
+
+  .testimonials-subtitle {
+    font-size: 0.95rem;
+    padding: 0 10px;
+  }
+
+  /* Wrapper cleanup */
+  .testimonials-wrapper {
+    padding: 0 14px;
+    min-height: auto;
+    height: auto;
+  }
+
+  /* Card simplification */
+  .testimonial-card {
+    min-height: unset;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transform: translateX(100%);
+    transition: transform 0.45s ease, opacity 0.45s ease;
+    display: block;
+    pointer-events: none;
+  }
+
+  .card-content {
+    min-height: unset;
+  }
+
+  /* Service tag smaller */
+  .service-tag {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+    margin-bottom: 14px;
+  }
+
+  /* Rating stars compact */
+  .rating-stars {
+    margin-bottom: 14px;
+  }
+
+  .rating-number {
+    font-size: 0.8rem;
+  }
+
+  /* Title + text */
+  .testimonial-title {
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+  }
+
+  .testimonial-text {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .testimonial-text-wrapper {
+    margin-bottom: 20px;
+  }
+
+  /* Customer info cleaner */
+  .customer-info {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding-top: 16px;
+  }
+
+  .customer-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 0.95rem;
+  }
+
+  .customer-name {
+    font-size: 0.95rem;
+  }
+
+  .customer-location {
+    font-size: 0.75rem;
+  }
+
+  .verified-customer {
+    font-size: 0.75rem;
+  }
+
+  /* Pagination dots smaller */
+  .pagination-dots {
+    margin-top: 24px;
+    margin-bottom: 10px;
+  }
+
+  .dot {
+    width: 9px;
+    height: 9px;
+  }
+
+  /* Swipe hint minimal */
+  .mobile-swipe-hint {
+    font-size: 0.75rem;
+    padding: 8px 14px;
+  }
+
+  /* Hide unnecessary elements on mobile */
+  .autoplay-indicator,
+  .mobile-nav-buttons {
+    display: none !important;
+  }
+
+  /* ================= CTA CLEANUP ================= */
+
+  .reviews-cta {
+    margin-top: 40px;
+    padding: 22px 18px;
+    border-radius: 16px;
+    animation: none;
+  }
+
+  .cta-text h3 {
+    font-size: 1.25rem;
+  }
+
+  .cta-text p {
+    font-size: 0.9rem;
+  }
+
+  .cta-buttons {
+    gap: 12px;
+  }
+
+  .cta-button {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 20px;
+    font-size: 0.95rem;
+    border-radius: 12px;
+  }
+
+  .trust-badge {
+    font-size: 0.75rem;
+    padding: 6px 14px;
+  }
+  .testimonial-card.prev {
+    opacity: 0;
+    transform: translateX(-100%);
+    z-index: 1;
+  }
+
+  .testimonial-card.next {
+    opacity: 0;
+    transform: translateX(100%);
+    z-index: 1;
+  }
+
+  .testimonial-card.hidden {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+
+  /* Wrapper height auto-adjust */
+  .testimonials-wrapper {
+    min-height: auto;
+    height: auto;
   }
 }

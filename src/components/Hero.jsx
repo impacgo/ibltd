@@ -10,19 +10,20 @@ const normalizePostcode = (input) => {
 
   const cleaned = input
     .toUpperCase()
-    .replace(/[^A-Z0-9]/g, ""); // remove spaces & symbols
+    .replace(/[^A-Z0-9]/g, "");
 
   /**
-   * Extract:
-   *  - 1 or 2 letters
-   *  - followed by ONLY the FIRST digit
+   * UK outward code rules:
+   * - 1–2 letters
+   * - followed by 1–2 digits
    *
+   * Examples:
    * SW6 1AG  -> SW6
    * SW66BW  -> SW6
    * W120AA  -> W12
-   * E1 7AA  -> E1
+   * E17AA   -> E1
    */
-  const match = cleaned.match(/^([A-Z]{1,2}\d)/);
+  const match = cleaned.match(/^([A-Z]{1,2}\d{1,2})/);
 
   return match ? match[1] : "";
 };
@@ -30,8 +31,9 @@ const normalizePostcode = (input) => {
 
 
 
+
 const Hero = () => {
-  const [location, setLocation] = useState("");
+  const [postcode, setPostcode] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupTitle, setPopupTitle] = useState("");
@@ -56,17 +58,18 @@ const Hero = () => {
   };
 
  const checkServiceAvailability = async () => {
-  if (!location.trim()) {
+  if (!postcode.trim()) {
     showErrorPopup("Postcode Required", "Please enter your postcode.");
     return;
   }
 
-  const outwardCode = normalizePostcode(location);
+  const rawInput = postcode.trim().toUpperCase();
+  const outwardCode = normalizePostcode(rawInput);
 
   if (!outwardCode) {
     showErrorPopup(
       "Invalid Postcode",
-      "Please enter a valid UK postcode (e.g. SW6 or W12 0AA)."
+      "Please enter a valid UK postcode (e.g. SW6 or W12)."
     );
     return;
   }
@@ -77,14 +80,12 @@ const Hero = () => {
     const response = await fetch(`${API_BASE}/postcode-check`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: outwardCode, // ✅ only SW6 / W12
-      }),
+      body: JSON.stringify({ query: outwardCode }),
     });
 
     const data = await response.json();
 
-    if (data.success) {
+    if (data.success && data.branches?.length > 0) {
       localStorage.setItem("available_branches", JSON.stringify(data.branches));
       localStorage.setItem("search_query", outwardCode);
 
@@ -94,13 +95,11 @@ const Hero = () => {
         data.branches
       );
 
-      setTimeout(() => {
-        handleQuickBook();
-      }, 1200);
+      setTimeout(() => handleQuickBook(), 1200);
     } else {
       showErrorPopup(
         "Service Not Available",
-        `Sorry, we don’t currently serve ${outwardCode}.`
+        `Sorry, we don’t currently serve ${rawInput}.`
       );
     }
   } catch (err) {
@@ -112,6 +111,10 @@ const Hero = () => {
     setLoading(false);
   }
 };
+
+
+
+
 
 
 
@@ -336,22 +339,23 @@ const Hero = () => {
       <div className="input-wrapper">
 
         <input
-          type="text"
-          className="location-input-field"
-          placeholder="e.g. SW6 or SW6 6BW"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={loading}
-        />
+  type="text"
+  className="location-input-field"
+  placeholder="e.g. SW6 or SW6 6BW"
+  value={postcode}
+  onChange={(e) => setPostcode(e.target.value)}
+  onKeyDown={handleKeyDown}
+  disabled={loading}
+/>
 
-        <button
-          className={`location-check-button ${
-            location.trim() ? "active" : ""
-          } ${loading ? "loading" : ""}`}
-          onClick={handleGetStarted}
-          disabled={loading || !location.trim()}
-        >
+<button
+  className={`location-check-button ${
+    postcode.trim() ? "active" : ""
+  } ${loading ? "loading" : ""}`}
+  onClick={handleGetStarted}
+  disabled={loading || !postcode.trim()}
+>
+
           {loading ? (
             <>
               <span className="loading-spinner-small"></span>

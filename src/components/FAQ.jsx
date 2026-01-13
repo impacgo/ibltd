@@ -219,7 +219,7 @@ const FAQ = () => {
         <div className="faq-search-section">
           <div className="search-container">
             <div className="search-wrapper">
-              <i className="fas fa-search search-icon"></i>
+              {/* <i className="fas fa-search search-icon"></i> */}
               <input
                 type="text"
                 placeholder="What would you like to know? Search for pricing, delivery, scheduling..."
@@ -243,7 +243,7 @@ const FAQ = () => {
                 disabled={!searchTerm.trim()}
                 aria-label="Search"
               >
-                <i className="fas fa-arrow-right"></i>
+                {/* <i className="fas fa-arrow-right"></i> */}
               </button>
             </div>
             

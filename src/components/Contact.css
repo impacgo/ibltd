@@ -861,3 +861,223 @@ button:focus:not(:focus-visible) {
     display: none !important;
   }
 }
+/* =====================================================
+   FINAL MOBILE CONTACT UI — SIMPLE & USER FRIENDLY
+   ===================================================== */
+@media (max-width: 768px) {
+
+  /* ================= SECTION ================= */
+  .contact-section {
+    padding: 44px 14px;
+    background: #f8fafc;
+  }
+
+  /* ================= HEADER ================= */
+  .contact-header {
+    margin-bottom: 28px;
+  }
+
+  .contact-badge {
+    padding: 6px 14px;
+    font-size: 0.7rem;
+  }
+
+  .contact-title {
+    font-size: 1.8rem;
+    line-height: 1.25;
+  }
+
+  .contact-subtitle {
+    font-size: 0.95rem;
+    padding: 0 6px;
+    opacity: 0.85;
+  }
+
+  /* ================= REMOVE STATS (TOO HEAVY) ================= */
+  .contact-stats {
+    display: none;
+  }
+
+  /* ================= LAYOUT ================= */
+  .contact-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  /* ================= FORM CARD ================= */
+  .form-card {
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: none;
+  }
+
+  .form-header {
+    gap: 12px;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+  }
+
+  .form-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+
+  .form-title-section h3 {
+    font-size: 1.2rem;
+  }
+
+  .form-title-section p {
+    font-size: 0.9rem;
+  }
+
+  /* ================= INPUTS ================= */
+  .form-group label {
+    font-size: 0.85rem;
+  }
+
+  .input-wrapper input,
+  .textarea-wrapper textarea {
+    padding: 12px 12px 12px 40px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+
+  .input-wrapper i,
+  .textarea-wrapper i {
+    left: 12px;
+    font-size: 0.9rem;
+  }
+
+  .textarea-wrapper textarea {
+    min-height: 100px;
+  }
+
+  /* REMOVE HEAVY GLOW */
+  .input-wrapper input:focus,
+  .textarea-wrapper textarea:focus {
+    box-shadow: none;
+    border-color: var(--contact-accent);
+  }
+
+  /* ================= ERROR / SUCCESS ================= */
+  .success-message,
+  .error-message {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .message-content h4 {
+    font-size: 0.95rem;
+  }
+
+  .message-content p {
+    font-size: 0.85rem;
+  }
+
+  /* ================= SUBMIT BUTTON ================= */
+  .submit-button {
+    padding: 14px;
+    font-size: 0.95rem;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .form-note {
+    font-size: 0.8rem;
+    margin-top: 10px;
+  }
+
+  /* ================= CONTACT INFO ================= */
+  .info-card {
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: none;
+  }
+
+  .info-header {
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+  }
+
+  .info-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .info-header p {
+    font-size: 0.9rem;
+  }
+
+  /* ================= CONTACT METHODS ================= */
+  .contact-method {
+    padding: 14px;
+    gap: 12px;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .contact-method:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .icon-circle {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .method-content h4 {
+    font-size: 0.95rem;
+  }
+
+  .method-detail {
+    font-size: 0.9rem;
+  }
+
+  .method-note {
+    font-size: 0.8rem;
+  }
+
+  /* ================= QUICK TIPS ================= */
+  .quick-tips {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .quick-tips h4 {
+    font-size: 0.95rem;
+  }
+
+  .quick-tips li {
+    font-size: 0.85rem;
+  }
+
+  /* ================= ACCESSIBILITY ================= */
+  input:focus,
+  textarea:focus,
+  button:focus {
+    outline: none;
+  }
+  /* INPUT ICON — PERFECT CENTER */
+  .input-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.95rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  /* TEXTAREA ICON — ALIGN TO FIRST LINE */
+  .textarea-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    transform: none;
+    font-size: 0.95rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+}
