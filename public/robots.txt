@@ -1,3 +1,33 @@
 User-agent: *
 
+# =========================================
+# AI Search Crawlers (AEO / SGE / Chat SEO)
+# =========================================
+
+# OpenAI GPTBot (ChatGPT)
+User-agent: GPTBot
+Allow: /
+
+# Google AI (Bard / Gemini / SGE)
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+
+# Anthropic Claude AI
+User-agent: ClaudeBot
+Allow: /
+
+# You.com AI Crawler
+User-agent: YouBot
+Allow: /
+
+# Common ChatGPT User Agents
+User-agent: ChatGPT
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+
 Sitemap: https://www.ironingboy.com/sitemap.xml
