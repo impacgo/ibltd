@@ -150,10 +150,10 @@ const handleAppleApp = () => {
               <a href="https://www.instagram.com/ironingboy/" aria-label="Instagram">
                 <i className="fab fa-instagram"></i>
               </a>
-              <a href="#" aria-label="Twitter">
+              <a href="https://x.com/ironingboyltd?s=11" aria-label="Twitter">
                 <i className="fab fa-twitter"></i>
               </a>
-              <a href="#" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/company/110988962/admin/page-posts/published/" aria-label="LinkedIn">
                 <i className="fab fa-linkedin-in"></i>
               </a>
             </div>
