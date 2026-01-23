@@ -63,15 +63,11 @@ const handleAndroidApp = () => {
 
 // Handle Apple App (Coming Soon)
 const handleAppleApp = () => {
-  window.scrollTo(0, 0);
-  navigate('/coming-soon', {
-    state: {
-      title: "iOS App Coming Soon",
-      description: "Our iOS app is under development. Stay tuned for the App Store launch!",
-      featureName: "iOS Application",
-      expectedTime: "Q2 2025"
-    }
-  });
+  window.open(
+    "https://apps.apple.com/app/ironingboy/id6755144154",
+    "_blank",
+    "noopener,noreferrer"
+  );
 };
 
 

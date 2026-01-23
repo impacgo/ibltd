@@ -232,7 +232,7 @@ const Header = () => {
   const handleAppStoreClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    window.open("https://apps.apple.com", "_blank", "noopener,noreferrer");
+    window.open("https://apps.apple.com/app/ironingboy/id6755144154", "_blank", "noopener,noreferrer");
   };
 
   const handlePlayStoreClick = (e) => {
