@@ -355,4 +355,62 @@
     padding-top: 70px;
   }
 }
+/* =========================================
+   CTA – IMPROVED VISUAL HIERARCHY
+========================================= */
+
+.area-cta-section {
+  margin-top: 56px;
+  background: linear-gradient(
+    135deg,
+    rgba(249,115,22,0.08),
+    rgba(249,115,22,0.03)
+  );
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 40px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Headline */
+.area-cta-section h3 {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+/* Subtext */
+.area-cta-section p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+
+/* Buttons container */
+.cta-buttons {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Secondary CTA FIX */
+.area-cta-section .btn-secondary {
+  background: white;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.area-cta-section .btn-secondary:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
 
