@@ -300,52 +300,90 @@ const MetaManager = () => {
   let description =
     "Ironing Boy provides professional laundry and ironing services with doorstep pickup and delivery. Enjoy fast turnaround, premium garment care, and affordable pricing.";
 
+  let keywords = "laundry services, ironing services, ironing boy";
+
+  /* ---------- Static Pages ---------- */
   if (pathname === "/") {
     title = "Premium Ironing and Laundry Services | 50% OFF on First Order";
     description =
       "Book professional ironing and laundry services with Ironing Boy. Get 50% OFF on your first order, doorstep pickup and delivery, and premium garment care.";
+    keywords = "Premium Laundry Services";
+
   } else if (pathname === "/services") {
     title = "Laundry and Ironing Services | 50% OFF First Order";
     description =
       "Explore professional laundry and ironing services by Ironing Boy. Doorstep pickup and delivery, expert garment care, and up to 50% OFF on your first order.";
-  } else if (pathname === "/pricing") {
-    title = "Laundry Services Price List | Transparent & Affordable";
-    description =
-      "View Ironing Boy’s laundry and ironing price list. Transparent pricing, premium garment care, doorstep pickup, and special discounts for first-time customers.";
+    keywords = "laundry and ironing services";
+
   } else if (pathname === "/areas") {
     title = "Laundry & Ironing Services Near You | Service Areas";
     description =
       "Find Ironing Boy laundry and ironing services near you. We cover multiple service areas with fast pickup, expert cleaning, and reliable doorstep delivery.";
+    keywords = "ironing and laundry services near me";
+
+  } else if (pathname === "/pricing") {
+    title = "Laundry Services Price List | Transparent & Affordable";
+    description =
+      "View Ironing Boy’s laundry and ironing price list. Transparent pricing, premium garment care, doorstep pickup, and special discounts for first-time customers.";
+    keywords = "laundry services price list";
+
   } else if (pathname === "/how-it-works") {
     title = "How It Works | Laundry & Ironing Service Explained";
     description =
       "Learn how Ironing Boy works. Book online, schedule pickup, enjoy professional laundry and ironing, and receive clean clothes delivered to your door.";
+    keywords = "Laundry Service Works";
+
   } else if (pathname === "/faq") {
     title = "FAQs | Laundry & Ironing Services by Ironing Boy";
     description =
       "Get answers to common questions about Ironing Boy laundry and ironing services, pricing, pickup and delivery process, and garment care.";
+    keywords = "FAQs";
+
   } else if (pathname === "/quick-booking") {
     title = "Quick Booking | Laundry & Ironing Services Online";
     description =
       "Quickly book laundry and ironing services online with Ironing Boy. Fast scheduling, doorstep pickup, secure payment, and exclusive first-order discounts.";
+    keywords = "Book Ironing and Laundry Service Now";
+
   } else if (pathname === "/reviews") {
     title = "Customer Reviews | Trusted Laundry & Ironing Service";
     description =
       "Read genuine customer reviews of Ironing Boy laundry and ironing services. See why customers trust us for premium garment care and fast delivery.";
-  } else if (pathname.startsWith("/areas/")) {
-    const area = pathname
-      .split("/")[2]
+    keywords = "Ironing & Laundry Service Reviews";
+  }
+
+  /* ---------- Area Pages (Dynamic) ---------- */
+  else if (pathname.startsWith("/areas/")) {
+    const areaSlug = pathname.split("/")[2];
+    const area = areaSlug
       ?.replace(/-/g, " ")
       ?.replace(/\b\w/g, (l) => l.toUpperCase());
 
     title = `Laundry & Dry Cleaning Services in ${area} | Ironing Boy`;
     description = `Professional laundry, ironing, and dry cleaning services in ${area}. Fast doorstep pickup, expert garment care, and affordable pricing by Ironing Boy.`;
+
+    const areaKeywordsMap = {
+      "paddington": "laundry and dry cleaning services in Paddington",
+      "notting-hill": "Laundry & Dry Cleaning in Notting Hill",
+      "kensington": "Laundry & Dry Cleaning in Kensington",
+      "earls-court": "Laundry & Dry Cleaning in Earls Court",
+      "chelsea": "best ironing & laundry service in Chelsea",
+      "fulham": "Laundry & Dry Cleaning Services in Fulham",
+      "hammersmith": "Laundry and Dry Cleaning Services in Hammersmith",
+      "shepherds-bush": "best ironing & laundry service in Shepherds Bush",
+      "oxford": "Best Laundry and Dry Cleaning Services in Oxford",
+    };
+
+    keywords =
+      areaKeywordsMap[areaSlug] ||
+      `Laundry & Dry Cleaning Services in ${area}`;
   }
 
   return (
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
+      <meta name="keywords" content={keywords} />
       <meta name="robots" content="index, follow" />
 
       <link rel="canonical" href={`https://www.ironingboy.com${pathname}`} />
@@ -363,6 +401,7 @@ const MetaManager = () => {
     </Helmet>
   );
 };
+
 
 /* -------------------- PAGE COMPOSITIONS -------------------- */
 const HomePage = () => (
