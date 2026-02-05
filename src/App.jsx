@@ -239,6 +239,7 @@ import {
 } from "react-router-dom";
 
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import FloatingCallButton from "./components/FloatingCallButton";
 
 import Header from "./components/Header";
 import "./App.css";
@@ -271,6 +272,7 @@ const OrderHistory = lazy(() => import("./components/OrderHistory"));
 const ServiceDetail = lazy(() => import("./components/ServiceDetail"));
 const TermsPage = lazy(() => import("./components/TermsLink"));
 const ThankYouPage = lazy(() => import("./components/ThankYouPage"));
+const CorporateServices = lazy(() => import("./components/CorporateServices"));
 const NotFound = lazy(() => import("./components/NotFound"));
 
 /* -------------------- MAIN LAYOUT -------------------- */
@@ -460,6 +462,8 @@ function App() {
             <Route path="/orders" element={<PageWrapper component={OrderHistory} />} />
             <Route path="/terms" element={<PageWrapper component={TermsPage} />} />
             <Route path="/search" element={<PageWrapper component={SearchResults} />} />
+            <Route path="/corporate-services" element={<PageWrapper component={CorporateServices} />}/>
+
 
             <Route
               path="/areas/:slug"
@@ -482,6 +486,7 @@ function App() {
             <Route path="/coming-soon" element={<ComingSoon />} />
             <Route path="*" element={<PageWrapper component={NotFound} />} />
           </Routes>
+          <FloatingCallButton />
         </Router>
       </HelmetProvider>
     </AuthProvider>
