@@ -377,6 +377,15 @@ const Header = () => {
                 </li>
 
                 <li><Link className={`nav-link ${isActive("/areas")}`} to="/areas">Areas</Link></li>
+                <li>
+  <Link
+    className={`nav-link ${isActive("/corporate-services")}`}
+    to="/corporate-services"
+  >
+    Corporate
+  </Link>
+</li>
+
                 <li><Link className={`nav-link ${isActive("/pricing")}`} to="/pricing">Pricing</Link></li>
                 <li><Link className={`nav-link ${isActive("/how-it-works")}`} to="/how-it-works">How It Works</Link></li>
                 <li><Link className={`nav-link ${isActive("/faq")}`} to="/faq">FAQ</Link></li>
@@ -385,6 +394,7 @@ const Header = () => {
 
             {/* Desktop Actions - Professional App Store Buttons */}
             <div className="header-actions desktop-only">
+              
               <div className="app-store-buttons">
                 <button 
                   className="store-btn-desktop apple-btn"
@@ -548,6 +558,19 @@ const Header = () => {
                   <span className="menu-item-text">Areas</span>
                 </Link>
               </li>
+              <li>
+  <Link
+    className="mobile-menu-item"
+    to="/corporate-services"
+    onClick={closeMenu}
+  >
+    <span className="menu-item-icon">
+      <i className="fas fa-building"></i>
+    </span>
+    <span className="menu-item-text">Corporate Services</span>
+  </Link>
+</li>
+
               <li>
                 <Link className="mobile-menu-item" to="/pricing" onClick={closeMenu}>
                   <span className="menu-item-icon">

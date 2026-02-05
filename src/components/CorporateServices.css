@@ -1,0 +1,212 @@
+/* ===============================
+   CORPORATE SERVICES – MOBILE FIRST
+================================ */
+
+/* ===== SECTION ===== */
+.corporate-section {
+  background: #f8fafc;
+  padding: 72px 0;
+}
+
+/* ===== CONTAINER ===== */
+.corporate-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 16px;
+}
+
+/* ===== HEADER ===== */
+.corporate-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.corporate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-radius: 999px;
+  color: #f97316;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.corporate-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #1e293b;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.corporate-title span {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.corporate-subtitle {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #475569;
+  max-width: 680px;
+  margin: auto;
+}
+
+/* ===== CTA CARD ===== */
+.corporate-form-wrapper {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 28px 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  max-width: 720px;
+  margin: 0 auto 64px;
+}
+
+.corporate-form-wrapper h3 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 12px;
+}
+
+.corporate-cta-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #475569;
+  margin-bottom: 22px;
+}
+
+/* ===== CTA BUTTON ===== */
+.corporate-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.corporate-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.35);
+}
+
+/* ===== PHONE NOTE ===== */
+.corporate-note {
+  margin-top: 18px;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.corporate-note a {
+  color: #f97316;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.corporate-note a:hover {
+  text-decoration: underline;
+}
+
+/* ===== BENEFITS ===== */
+.corporate-benefits {
+  max-width: 720px;
+  margin: auto;
+  padding: 0 16px;
+}
+
+.corporate-benefits h3 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1e293b;
+}
+
+.corporate-benefits ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.corporate-benefits li {
+  padding: 10px 0;
+  font-size: 0.95rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.corporate-benefits li::before {
+  content: "✓";
+  color: #f97316;
+  font-weight: 800;
+}
+
+/* ===== HIGHLIGHT ===== */
+.corporate-highlight {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(249, 115, 22, 0.1);
+  border-left: 4px solid #f97316;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* ===============================
+   TABLET
+================================ */
+@media (min-width: 768px) {
+  .corporate-section {
+    padding: 96px 0;
+  }
+
+  .corporate-title {
+    font-size: 2.8rem;
+  }
+
+  .corporate-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .corporate-form-wrapper {
+    padding: 40px;
+  }
+
+  .corporate-submit-btn {
+    width: auto;
+    padding: 16px 28px;
+    font-size: 1.05rem;
+  }
+}
+
+/* ===============================
+   DESKTOP
+================================ */
+@media (min-width: 1024px) {
+  .corporate-title {
+    font-size: 3.2rem;
+  }
+
+  .corporate-benefits h3 {
+    font-size: 1.8rem;
+  }
+}
