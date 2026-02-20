@@ -1197,8 +1197,8 @@ body {
     padding-top: calc(44px + var(--header-height-desktop));
   }
   .nav.desktop {
-    display: flex !important;
-    align-items: center;
+    justify-content: flex-start;
+    margin-left: 40px;
   }
 }
 
@@ -2058,4 +2058,566 @@ body {
   }
 }
 
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+.logo-text,
+.mobile-menu-btn,
+.profile-avatar-logged,
+.store-btn-desktop {
+  will-change: transform;
+}
 
+/* ===== IMPROVED MOBILE MENU ===== */
+@media (max-width: 1023px) {
+  .mobile-menu-item,
+  .mobile-profile-btn,
+  .mobile-auth-btn {
+    touch-action: manipulation; /* Improve touch responsiveness */
+  }
+  
+  .header.hide-header {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease;
+  }
+}
+
+/* ===== DESKTOP HOVER EFFECTS ===== */
+@media (min-width: 1024px) {
+  .nav-link {
+    position: relative;
+    transition: color 0.2s ease;
+  }
+  
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+  
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    transform: scaleX(1);
+  }
+}
+
+/* ===== PROFILE MENU ANIMATION ===== */
+.profile-dropdown {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== DISCOUNT BAR PERFORMANCE ===== */
+.header-discount-track {
+  will-change: transform;
+}
+
+/* ===== REDUCED MOTION SUPPORT ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .header-discount-track {
+    animation: none !important;
+  }
+}
+
+/* ===== LOADING STATES ===== */
+.profile-avatar-logged.loading,
+.mobile-user-avatar-large.loading {
+  background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== CORPORATE STYLES ADDITIONS ===== */
+
+/* Corporate Link Highlight */
+.nav-link.corporate-highlight {
+  position: relative;
+  color: var(--primary-orange) !important;
+  font-weight: 600;
+}
+
+.nav-link.corporate-highlight::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: var(--primary-gradient);
+  border-radius: 2px;
+}
+
+.corporate-link-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.corporate-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 12px;
+  margin-left: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Corporate Messaging in Mobile Menu */
+.corporate-messaging-section {
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-md);
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+}
+
+.corporate-message-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.corporate-message-header svg {
+  color: #3b82f6;
+  width: 20px;
+  height: 20px;
+}
+
+.corporate-message-header h3 {
+  font-size: 1.1rem;
+  color: #3b82f6;
+  font-weight: 700;
+}
+
+.corporate-message-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-md);
+}
+
+.corporate-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.corporate-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.corporate-cta-btn i {
+  font-size: 1rem;
+}
+
+/* Mobile Corporate Badge */
+.mobile-corporate-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-left: var(--spacing-sm);
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Desktop Corporate Badge Position Fix */
+@media (min-width: 1024px) {
+  .corporate-badge {
+    position: relative;
+    top: -1px;
+  }
+  
+  .corporate-messaging-section {
+    display: none; /* Only show in mobile */
+  }
+}
+@media (min-width: 1024px) {
+  .nav-link.corporate-highlight {
+    color: #e5e7eb !important;
+    font-weight: 600;
+  }
+
+  .nav-link.corporate-highlight::before {
+    display: none;
+  }
+
+  .nav-link.corporate-highlight:hover {
+    color: #3b82f6 !important;
+    background: none;
+  }
+
+  .corporate-badge {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+}
+
+
+/* Adjust mobile app section for corporate context */
+@media (max-width: 1023px) {
+  .mobile-app-section {
+    margin-top: var(--spacing-lg);
+  }
+  
+  .mobile-app-header h3 {
+    font-size: 1rem;
+    color: var(--text-primary);
+  }
+  
+  .mobile-app-header p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}
+
+/* Corporate profile option for business accounts */
+.profile-option.corporate-option {
+  color: #3b82f6;
+}
+
+.profile-option.corporate-option:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.profile-option.corporate-option i {
+  color: #3b82f6;
+}
+
+/* Desktop Corporate Indicator */
+@media (min-width: 1024px) {
+  .header-actions::before {
+    content: '';
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 var(--spacing-sm);
+  }
+  
+  /* Adjust app store buttons spacing for corporate context */
+  .app-store-buttons {
+    position: relative;
+  }
+  
+  .app-store-buttons::after {
+    content: 'For individual customers';
+    position: absolute;
+    top: -20px;
+    left: 0;
+    right: 0;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+/* Corporate Icon in Desktop Navigation */
+.nav-link.corporate-highlight svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.9;
+}
+
+/* Mobile Corporate Menu Item */
+.mobile-menu-item.corporate-highlight {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.mobile-menu-item.corporate-highlight .menu-item-icon i {
+  color: #3b82f6;
+}
+
+/* Enhanced discount bar for corporate messaging */
+@media (min-width: 768px) {
+  .header-discount-bar::after {
+    content: 'For Corporate Accounts: Dedicated management • Scheduled pickups • Invoicing';
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(59, 130, 246, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    display: none; /* Can be enabled if needed */
+  }
+}
+
+/* Corporate visual indicator on hover */
+.nav-link.corporate-highlight:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .corporate-messaging-section {
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-sm);
+  }
+  
+  .corporate-message-text {
+    font-size: 0.85rem;
+  }
+  
+  .corporate-cta-btn {
+    padding: 10px var(--spacing-sm);
+    font-size: 0.9rem;
+  }
+}
+
+/* Smooth transitions for corporate elements */
+.corporate-badge,
+.corporate-cta-btn,
+.nav-link.corporate-highlight {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states for corporate elements */
+.corporate-cta-btn:focus-visible,
+.nav-link.corporate-highlight:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+.individual-app-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 6px;
+  white-space: nowrap;
+}
+
+.nav-link.corporate-highlight {
+  color: #3b82f6 !important;
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .store-btn-desktop {
+    min-width: 140px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    opacity: 0.85;
+    border-radius: 8px;
+  }
+
+  .store-btn-desktop:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .store-btn-desktop.apple-btn {
+    background: #111;
+  }
+
+  .store-btn-desktop.android-btn {
+    background: #2ea96a;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-actions.desktop-only {
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    padding-left: 16px;
+    margin-left: 16px;
+  }
+}
+/* ===== DESKTOP APP BUTTON REFINEMENT ===== */
+@media (min-width: 1024px) {
+
+  .app-store-buttons {
+    gap: 8px;
+  }
+
+  .store-btn-desktop {
+    min-width: 120px !important;
+    padding: 5px 8px !important;
+    font-size: 0.72rem !important;
+    border-radius: 6px !important;
+    opacity: 0.85;
+    transition: all 0.2s ease;
+  }
+
+  .store-btn-desktop .store-label {
+    font-size: 0.6rem;
+  }
+
+  .store-btn-desktop .store-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .store-btn-desktop svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .store-btn-desktop:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow: none !important;
+  }
+
+  /* Softer colors */
+  .store-btn-desktop.apple-btn {
+    background: #111 !important;
+  }
+
+  .store-btn-desktop.android-btn {
+    background: #2ea96a !important;
+  }
+}
+/* ===== DESKTOP CORPORATE LINK FIX ===== */
+@media (min-width: 1024px) {
+
+  /* Reset corporate styling */
+  .nav-link.corporate-highlight {
+    color: var(--text-primary) !important;
+    font-weight: 500 !important;
+    background: transparent !important;
+    padding: var(--spacing-sm) var(--spacing-xs) !important;
+  }
+
+  /* Remove special left bar */
+  .nav-link.corporate-highlight::before {
+    display: none !important;
+  }
+
+  /* Remove special hover */
+  .nav-link.corporate-highlight:hover {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+  }
+
+  /* When ACTIVE → behave exactly like other nav links */
+  .nav-link.corporate-highlight.active {
+    color: var(--primary-orange) !important;
+    font-weight: 600 !important;
+  }
+
+  .nav-link.corporate-highlight.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+    transform: scaleX(1);
+  }
+
+  /* Keep badge subtle */
+  .corporate-badge {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+}
+/* ===== FINAL CORPORATE LINK NORMALIZATION ===== */
+@media (min-width: 1024px) {
+
+  /* Make corporate link completely normal */
+  .nav-link.corporate-highlight {
+    color: var(--text-secondary) !important;
+    font-weight: 500 !important;
+    background: transparent !important;
+    padding: var(--spacing-sm) var(--spacing-xs) !important;
+  }
+
+  /* Remove any left bar */
+  .nav-link.corporate-highlight::before {
+    display: none !important;
+  }
+
+  /* Normal hover (same as others) */
+  .nav-link.corporate-highlight:hover {
+    color: var(--text-primary) !important;
+    background: transparent !important;
+  }
+
+  /* Only when ACTIVE → behave like others */
+  .nav-link.corporate-highlight.active {
+    color: var(--primary-orange) !important;
+    font-weight: 600 !important;
+  }
+
+  .nav-link.corporate-highlight.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+    transform: scaleX(1);
+  }
+
+  /* Make badge subtle */
+  .corporate-badge {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-light);
+    font-size: 0.6rem;
+  }
+}
