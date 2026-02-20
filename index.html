@@ -1,114 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/favicon.png" />
 
-    <!-- FontAwesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+  <!-- FontAwesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
 
-    <meta name="google-site-verification" content="W4HB1UaE29eLW5x-_6kjwbossbHvelMexotTi0H8GvA" />
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KXX1L9VLZC"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <!-- Google Maps API -->
+  <script
+    async
+    defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD56pnfmwCIdcJ_xerUT75wRxeR71uMPcc&libraries=places&loading=async">
+  </script>
 
-  gtag('config', 'G-KXX1L9VLZC');
-</script>
+  <meta name="google-site-verification" content="W4HB1UaE29eLW5x-_6kjwbossbHvelMexotTi0H8GvA" />
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-JX62G4HW9Q"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <!-- Google Analytics G-KXX1L9VLZC -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KXX1L9VLZC"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KXX1L9VLZC');
+  </script>
 
-  gtag('config', 'G-JX62G4HW9Q');
-</script>
-    <!-- Google tag (gtag.js) --> 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJPQX0FKJB"></script> 
-    <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-EJPQX0FKJB'); </script>
+  <!-- Google Analytics G-JX62G4HW9Q -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JX62G4HW9Q"></script>
+  <script>
+    gtag('config', 'G-JX62G4HW9Q');
+  </script>
 
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-17825910329">
-</script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
- 
-  gtag('config', 'AW-17825910329');
-</script>
- 
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-M5BL7JDH');</script>
-   
-    <!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1411697197142130');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1411697197142130&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
-    <script type="text/javascript">
+  <!-- Google Analytics G-EJPQX0FKJB -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJPQX0FKJB"></script>
+  <script>
+    gtag('config', 'G-EJPQX0FKJB');
+  </script>
+
+  <!-- Google Ads AW-17825910329 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17825910329"></script>
+  <script>
+    gtag('config', 'AW-17825910329');
+  </script>
+
+  <!-- Google Tag Manager -->
+  <script>
+    (function(w,d,s,l,i){
+      w[l]=w[l]||[];
+      w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+      j.async=true;
+      j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+      f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-M5BL7JDH');
+  </script>
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s){
+      if(f.fbq)return;
+      n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;
+      n.push=n;
+      n.loaded=!0;
+      n.version='2.0';
+      n.queue=[];
+      t=b.createElement(e);
+      t.async=!0;
+      t.src=v;
+      s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    }(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    fbq('init', '1411697197142130');
+    fbq('track', 'PageView');
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1411697197142130&ev=PageView&noscript=1"/>
+  </noscript>
+
+  <!-- Microsoft Clarity -->
+  <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "umhjwwpy22");
-</script>
-    <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "Ironing Boy",
-  "alternateName": "Ironing Boy",
-  "url": "https://www.ironingboy.com/",
-  "logo": "https://www.ironingboy.com/assets/logo1-RHeNoJTS.svg",
-  "sameAs": [
-    "https://www.facebook.com/ironingboyy/",
-    "https://www.instagram.com/ironingboy/"
-  ]
-}
-</script>
+  </script>
 
-    <!-- Basic Metadata -->
-    <meta name="theme-color" content="#000000" />
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Ironing Boy",
+    "url": "https://www.ironingboy.com/",
+    "logo": "https://www.ironingboy.com/assets/logo1-RHeNoJTS.svg",
+    "sameAs": [
+      "https://www.facebook.com/ironingboyy/",
+      "https://www.instagram.com/ironingboy/"
+    ]
+  }
+  </script>
 
-    <title>Ironing Boy</title>
-  </head>
+  <meta name="theme-color" content="#000000" />
+  <title>Ironing Boy</title>
+</head>
 
-  <body>
-    <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M5BL7JDH"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
-    <!-- React mounts here -->
-    <div id="root"></div>
+<body>
 
-    <!-- IMPORTANT for Vite builds -->
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M5BL7JDH"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+
+  <!-- React Root -->
+  <div id="root"></div>
+
+  <!-- Vite Entry -->
+  <script type="module" src="/src/main.jsx"></script>
+
+  <!-- Review Popup Widget -->
+  <div id="popup-rating-widget">
+    <script 
+      id="popup-rating-widget-script"
+      src="https://widget.reviewability.com/js/popupWidget.min.js"
+      data-gfspw="https://app.revu.cloud/popup-pixel/get/9b28da2ff7338597b3235538c628efe4d284cbd5"
+      async>
+    </script>
+  </div>
+
+</body>
 </html>
