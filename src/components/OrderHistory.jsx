@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback , useRef} from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./OrderHistory.css";
@@ -8,6 +8,8 @@ const API_BASE = "https://api.ironingboy.com";
 // Order Details Modal Component
 const OrderDetailsModal = ({ order, onClose }) => {
   if (!order) return null;
+
+  const scrollRef = useRef(null);
 
   // Format date properly
   const formatDate = (dateString) => {

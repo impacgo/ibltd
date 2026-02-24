@@ -39,6 +39,7 @@ const LoginPopup = ({ close, onSuccess }) => {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
+
   // Get login function from AuthContext
   const { login } = useAuth();
 
@@ -50,6 +51,16 @@ const LoginPopup = ({ close, onSuccess }) => {
   const [fullName, setFullName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPhone, setSignupPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+44");
+
+const countryCodes = [
+  { code: "+44", label: "UK" },
+  { code: "+91", label: "IN" },
+  { code: "+1", label: "US" },
+  { code: "+61", label: "AU" },
+  { code: "+971", label: "UAE" },
+];
+
 
   // Persist session helper - minimal safe object
   const saveSession = ({ token, user_id, user }) => {
@@ -187,7 +198,9 @@ const LoginPopup = ({ close, onSuccess }) => {
       const requestBody = {
         name: userName,
         email: loginEmail.trim(),
-        phone: loginPhone.trim(),
+        phone: loginPhone.trim()
+  ? `${countryCode}${loginPhone.trim()}`
+  : "",
         googleSignIn: false,
         appleSignIn: false,
       };
@@ -301,7 +314,7 @@ const LoginPopup = ({ close, onSuccess }) => {
       const requestBody = {
         name: fullName.trim(),
         email: signupEmail.trim(),
-        phone: signupPhone.trim(),
+        phone: `${countryCode}${signupPhone.trim()}`,
         googleSignIn: false,
         appleSignIn: false,
       };
@@ -477,18 +490,33 @@ const LoginPopup = ({ close, onSuccess }) => {
               />
             </div>
             
-            <div className="input-with-icon">
-              <Phone size={20} className="input-icon" />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                value={loginPhone}
-                onChange={(e) => setLoginPhone(e.target.value.replace(/\D/g, ''))}
-                onKeyPress={(e) => handleKeyPress(e, handleLogin)}
-                disabled={loading}
-                maxLength={15}
-              />
-            </div>
+            <div className="input-with-icon phone-group">
+  <Phone size={20} className="input-icon" />
+
+  <select
+    className="country-code-select"
+    value={countryCode}
+    onChange={(e) => setCountryCode(e.target.value)}
+    disabled={loading}
+  >
+    {countryCodes.map((c) => (
+      <option key={c.code} value={c.code}>
+        {c.code}
+      </option>
+    ))}
+  </select>
+
+  <input
+    type="tel"
+    placeholder="Phone Number"
+    value={loginPhone}
+    onChange={(e) => setLoginPhone(e.target.value.replace(/\D/g, ""))}
+    onKeyPress={(e) => handleKeyPress(e, handleLogin)}
+    disabled={loading}
+    maxLength={15}
+  />
+</div>
+
             
             <button 
               className="login-btn" 
@@ -552,18 +580,33 @@ const LoginPopup = ({ close, onSuccess }) => {
               />
             </div>
             
-            <div className="input-with-icon">
-              <Phone size={20} className="input-icon" />
-              <input 
-                type="tel" 
-                placeholder="Phone Number *" 
-                value={signupPhone} 
-                onChange={(e) => setSignupPhone(e.target.value.replace(/\D/g, ''))} 
-                disabled={loading}
-                onKeyPress={(e) => handleKeyPress(e, handleSignup)}
-                maxLength={15}
-              />
-            </div>
+            <div className="input-with-icon phone-group">
+  <Phone size={20} className="input-icon" />
+
+  <select
+    className="country-code-select"
+    value={countryCode}
+    onChange={(e) => setCountryCode(e.target.value)}
+    disabled={loading}
+  >
+    {countryCodes.map((c) => (
+      <option key={c.code} value={c.code}>
+        {c.code}
+      </option>
+    ))}
+  </select>
+
+  <input
+    type="tel"
+    placeholder="Phone Number *"
+    value={signupPhone}
+    onChange={(e) => setSignupPhone(e.target.value.replace(/\D/g, ""))}
+    disabled={loading}
+    maxLength={15}
+    onKeyPress={(e) => handleKeyPress(e, handleSignup)}
+  />
+</div>
+
             
             <button 
               className="login-btn" 

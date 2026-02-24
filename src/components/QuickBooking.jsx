@@ -1842,7 +1842,6 @@ import React, { useEffect, useState, useCallback,useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./QuickBooking.css";
-
 // Stripe imports
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -2033,6 +2032,30 @@ export default function QuickBooking() {
   const [pendingBookingData, setPendingBookingData] = useState(null);
 const phoneCheckTimeoutRef = useRef(null);
 
+const addressInputRef = useRef(null);
+const pickupAddressInputRef = useRef(null);
+const deliveryAddressInputRef = useRef(null);
+const [geoData, setGeoData] = useState({
+  latitude: null,
+  longitude: null,
+  street_name: "",
+  house_number: ""
+});
+
+const [deliveryGeoData, setDeliveryGeoData] = useState({
+  latitude: null,
+  longitude: null,
+  street_name: "",
+  house_number: ""
+});
+
+const [pickupGeoData, setPickupGeoData] = useState({
+  latitude: null,
+  longitude: null,
+  street_name: "",
+  house_number: ""
+});
+
   // Payment option - ALWAYS require card for ALL users
   const [saveCardOption, setSaveCardOption] = useState(true);
   const [selectedCard, setSelectedCard] = useState(null);
@@ -2072,6 +2095,7 @@ const phoneCheckTimeoutRef = useRef(null);
   const [useSameAddress, setUseSameAddress] = useState(true);
   const [selectedPickupAddressId, setSelectedPickupAddressId] = useState(null);
   const [pickupAddresses, setPickupAddresses] = useState([]);
+  const [bookingInProgress, setBookingInProgress] = useState(false);
 
   // Address form for all users
   const [addressForm, setAddressForm] = useState({
@@ -2267,25 +2291,28 @@ const phoneCheckTimeoutRef = useRef(null);
       console.error("Error creating Stripe customer:", error);
     }
   }, [userToken]);
-
-  const checkPhoneNumberExists = useCallback(async (phone) => {
+const checkPhoneNumberExists = useCallback(async (phone) => {
   if (!phone || phone.trim().length < 5) return;
 
   try {
-    const response = await fetch(`${API_BASE}/check-phone`, {
+    const response = await fetch(`${API_BASE}/auth/access`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ phone: phone.trim() }),
+      body: JSON.stringify({
+        phone: phone.trim(),
+        name: userInfo.name || "User",
+        email: userInfo.email || null
+      }),
     });
 
-    if (response.status === 404) return;
     if (!response.ok) return;
 
     const data = await response.json();
 
-    if (data.exists && data.user) {
+    if (data.success && data.user) {
+
       setUserInfo(prev => ({
         ...prev,
         name: data.user.name || prev.name,
@@ -2293,9 +2320,7 @@ const phoneCheckTimeoutRef = useRef(null);
         phone: data.user.phone || prev.phone,
       }));
 
-      showToast("Welcome back! Your details have been auto-filled.", "success");
-
-      if (data.token && !userToken) {
+      if (data.token) {
         localStorage.setItem("jwtToken", data.token);
         setUserToken(data.token);
 
@@ -2311,18 +2336,28 @@ const phoneCheckTimeoutRef = useRef(null);
         fetchSavedCards();
         ensureStripeCustomer();
       }
+
+      showToast(
+        data.isNewUser
+          ? "Account created successfully!"
+          : "Welcome back!",
+        "success"
+      );
     }
-  } catch {
-    /* silent */
+
+  } catch (error) {
+    console.error("Auth access error:", error);
   }
+
 }, [
-  showToast,
-  userToken,
+  userInfo.name,
+  userInfo.email,
   login,
   fetchUserProfile,
   fetchAddresses,
   fetchSavedCards,
   ensureStripeCustomer,
+  showToast
 ]);
 
   const createSetupIntent = useCallback(async (token) => {
@@ -2564,201 +2599,173 @@ const phoneCheckTimeoutRef = useRef(null);
 
   /* ------------------------- Order Preparation ---------------------------- */
   const prepareOrderData = useCallback(() => {
-    if (!selectedCollectSlot || !selectedDeliverSlot || !collectDate || !deliverDate) {
-      return null;
-    }
+  if (!selectedCollectSlot || !selectedDeliverSlot || !collectDate || !deliverDate) {
+    return null;
+  }
 
-    const pickupSlotText = `${formatDateDDMMYYYY(collectDate)}, ${formatTimeRange24Hour(
-      selectedCollectSlot.start,
-      selectedCollectSlot.end
-    )}`;
+  const pickupSlotText = `${formatDateDDMMYYYY(collectDate)}, ${formatTimeRange24Hour(
+    selectedCollectSlot.start,
+    selectedCollectSlot.end
+  )}`;
 
-    const deliverySlotText = `${formatDateDDMMYYYY(deliverDate)}, ${formatTimeRange24Hour(
-      selectedDeliverSlot.start,
-      selectedDeliverSlot.end
-    )}`;
+  const deliverySlotText = `${formatDateDDMMYYYY(deliverDate)}, ${formatTimeRange24Hour(
+    selectedDeliverSlot.start,
+    selectedDeliverSlot.end
+  )}`;
 
-    // Get delivery address details
-    let deliveryAddressData = {};
-    if (userToken && addresses.length > 0 && selectedAddressId) {
-      const selectedAddress = addresses.find(addr => 
-        String(addr.address_id) === selectedAddressId
+  /* -------------------- PICKUP ADDRESS -------------------- */
+  let pickupAddressData = {};
+
+  if (!useSameAddress) {
+    if (userToken && pickupAddresses.length > 0 && selectedPickupAddressId && selectedPickupAddressId !== "new") {
+      const selectedPickupAddress = pickupAddresses.find(
+        addr => String(addr.address_id) === selectedPickupAddressId
       );
-      deliveryAddressData = {
-        address_id: selectedAddressId,
-        street_address: selectedAddress?.full_address || "",
-        postcode: selectedAddress?.postcode || "",
-        city: selectedAddress?.city || "",
-        house_number: selectedAddress?.house_number || "",
-        full_address: selectedAddress?.full_address || "",
-        street_name: selectedAddress?.full_address || "",
+
+      if (!selectedPickupAddress) return null;
+
+      pickupAddressData = {
+        pickup_street_address: selectedPickupAddress.street_address,
+        pickup_postcode: selectedPickupAddress.postcode,
+        pickup_city: selectedPickupAddress.city || "",
+        pickup_full_address: selectedPickupAddress.full_address,
+        pickup_house_number: selectedPickupAddress.house_number || "",
+        pickup_street_name: selectedPickupAddress.street_name || "",
+        pickup_latitude: selectedPickupAddress.latitude || null,
+        pickup_longitude: selectedPickupAddress.longitude || null
       };
     } else {
-      deliveryAddressData = {
-        street_address: addressForm.street_address,
-        postcode: addressForm.postcode,
-        city: addressForm.city || "",
-        full_address: addressForm.street_address,
-        additional_details: addressForm.additional_details || "",
-        house_number: addressForm.house_number || "",
-        street_name: addressForm.street_address || "",
-      };
-    }
-
-    // Get pickup address details
-    let pickupAddressData = {};
-    if (useSameAddress) {
-      pickupAddressData = { ...deliveryAddressData };
-    } else if (userToken && pickupAddresses.length > 0 && selectedPickupAddressId) {
-      const selectedPickupAddress = pickupAddresses.find(addr => 
-        String(addr.address_id) === selectedPickupAddressId
-      );
-      if (selectedPickupAddress) {
-        pickupAddressData = {
-          pickup_address_id: selectedPickupAddressId,
-          pickup_street_address: selectedPickupAddress.full_address || "",
-          pickup_postcode: selectedPickupAddress.postcode || "",
-          pickup_city: selectedPickupAddress.city || "",
-          pickup_full_address: selectedPickupAddress.full_address || "",
-        };
-      }
-    } else if (!userToken || showPickupAddressForm) {
       pickupAddressData = {
         pickup_street_address: pickupAddressForm.street_address,
         pickup_postcode: pickupAddressForm.postcode,
         pickup_city: pickupAddressForm.city || "",
         pickup_full_address: pickupAddressForm.street_address,
-        pickup_additional_details: pickupAddressForm.additional_details || "",
         pickup_house_number: pickupAddressForm.house_number || "",
+        pickup_street_name: pickupGeoData.street_name || "",
+        pickup_latitude: pickupGeoData.latitude || null,
+        pickup_longitude: pickupGeoData.longitude || null
       };
     }
-
-    return {
-      ...deliveryAddressData,
-      ...pickupAddressData,
-      use_same_address: useSameAddress,
-      name: userInfo.name,
-      email: userInfo.email,
-      phone: userInfo.phone,
-      collect_slot: pickupSlotText,
-      delivery_slot: deliverySlotText,
-      notes: notes.trim() || null,
-      images: [],
+  } else {
+    // Same address → use delivery address for pickup
+    pickupAddressData = {
+      pickup_street_address: addressForm.street_address,
+      pickup_postcode: addressForm.postcode,
+      pickup_city: addressForm.city || "",
+      pickup_full_address: addressForm.street_address,
+      pickup_house_number: addressForm.house_number || "",
+      pickup_street_name: geoData.street_name || "",
+      pickup_latitude: geoData.latitude || null,
+      pickup_longitude: geoData.longitude || null
     };
-  }, [
-    selectedCollectSlot,
-    selectedDeliverSlot,
-    collectDate,
-    deliverDate,
-    userToken,
-    addresses,
-    selectedAddressId,
-    pickupAddresses,
-    selectedPickupAddressId,
-    useSameAddress,
-    addressForm,
-    pickupAddressForm,
-    showPickupAddressForm,
-    notes,
-    userInfo,
-  ]);
+  }
+
+  /* -------------------- DELIVERY ADDRESS -------------------- */
+  let deliveryAddressData = {};
+
+if (useSameAddress) {
+  deliveryAddressData = {
+    street_address: pickupAddressData.pickup_street_address,
+    postcode: pickupAddressData.pickup_postcode,
+    city: pickupAddressData.pickup_city,
+    full_address: pickupAddressData.pickup_full_address,
+    house_number: pickupAddressData.pickup_house_number,
+    latitude: pickupAddressData.pickup_latitude,
+    longitude: pickupAddressData.pickup_longitude
+  };
+} else {
+  deliveryAddressData = {
+    street_address: addressForm.street_address,
+    postcode: addressForm.postcode,
+    city: addressForm.city || "",
+    full_address: addressForm.street_address,
+    house_number: deliveryGeoData.house_number || "",
+    latitude: deliveryGeoData.latitude,
+    longitude: deliveryGeoData.longitude
+  };
+}
+
+  return {
+    ...deliveryAddressData,
+    ...pickupAddressData,
+    use_same_address: useSameAddress,
+    name: userInfo.name,
+    email: userInfo.email,
+    phone: userInfo.phone,
+    collect_slot: pickupSlotText,
+    delivery_slot: deliverySlotText,
+    notes: notes.trim() || null,
+    images: []
+  };
+
+}, [
+  selectedCollectSlot,
+  selectedDeliverSlot,
+  collectDate,
+  deliverDate,
+  userToken,
+  addresses,
+  selectedAddressId,
+  pickupAddresses,
+  selectedPickupAddressId,
+  useSameAddress,
+  addressForm,
+  pickupAddressForm,
+  geoData,
+  pickupGeoData,
+  deliveryGeoData,
+  notes,
+  userInfo
+]);
 
   /* ------------------------- Main Booking Flow ---------------------------- */
   const handleConfirmBooking = async () => {
-    setLoading(true);
-    
-    try {
-      // 1️⃣ Prepare order data
-      const order = prepareOrderData();
-      if (!order) throw new Error("Please select pickup and delivery times");
+  if (bookingInProgress) return;
 
-      // NEW: Validate pickup address when useSameAddress is false
-      if (!useSameAddress) {
-        if (userToken && (!selectedPickupAddressId || selectedPickupAddressId === "new")) {
-          // User needs to select or add a pickup address
-          if (selectedPickupAddressId === "new" && !showPickupAddressForm) {
-            setShowPickupAddressForm(true);
-            showToast("Please add pickup address details", "info");
-            setLoading(false);
-            return;
-          }
-          
-          if (showPickupAddressForm) {
-            if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) {
-              throw new Error("Please complete pickup address details");
-            }
-            
-            // Add the new pickup address
-            const newAddressId = await addPickupAddress();
-            if (!newAddressId) {
-              throw new Error("Failed to save pickup address");
-            }
-          } else if (!selectedPickupAddressId) {
-            throw new Error("Please select a pickup address");
-          }
-        } else if (!userToken) {
-          if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) {
-            throw new Error("Please complete pickup address details");
-          }
-        }
+  setBookingInProgress(true);
+  setLoading(true);
+
+  try {
+    // Validate geo before anything
+    if (!userToken || showAddressForm) {
+      if (!geoData.latitude || !geoData.longitude) {
+        throw new Error("Please select a valid delivery address from suggestions");
       }
-
-      console.log("Creating quick booking:", order);
-
-      // 2️⃣ Create quick booking (ALWAYS FIRST)
-      const response = await fetch(`${API_BASE}/quick-booking`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-      });
-
-      const bookingData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(bookingData.message || "Failed to create booking");
-      }
-
-      // 3️⃣ Store booking data
-      setBookingData(bookingData);
-      setPendingBookingData(bookingData);
-
-      // 4️⃣ Save token and update state
-      if (bookingData.token) {
-        localStorage.setItem("jwtToken", bookingData.token);
-        setUserToken(bookingData.token);
-        
-        if (bookingData.user) {
-          login({
-            id: bookingData.user.id,
-            name: bookingData.user.name,
-            email: bookingData.user.email,
-            phone: bookingData.user.phone,
-          });
-        }
-      }
-
-      // 5️⃣ Store user data for PersonalInfo component
-      const userInfoData = {
-        name: userInfo.name,
-        email: userInfo.email,
-        phone: userInfo.phone,
-        bookingId: bookingData.order?.id
-      };
-      localStorage.setItem("quick_booking_user_info", JSON.stringify(userInfoData));
-
-      // 6️⃣ ALWAYS show Stripe setup - payment is required
-      showToast("Please complete card setup to confirm your booking", "info");
-      await initiateStripeSetup(bookingData.token, bookingData.stripeCustomerId);
-
-    } catch (error) {
-      console.error("Booking error:", error);
-      showToast(error.message || "Failed to create booking", "error");
-    } finally {
-      setLoading(false);
     }
-  };
+
+    if (!useSameAddress) {
+      if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
+        throw new Error("Please select a valid pickup address from suggestions");
+      }
+    }
+
+    const order = prepareOrderData();
+    if (!order) {
+      throw new Error("Please select pickup and delivery times");
+    }
+
+    // 🚀 DO NOT CREATE BOOKING HERE
+    // Just store order temporarily
+    setPendingBookingData(order);
+
+    showToast("Please complete card setup to confirm your booking", "info");
+
+    const token = userToken || localStorage.getItem("jwtToken");
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+
+    await initiateStripeSetup(token, customerId);
+
+  } catch (error) {
+    showToast(error.message || "Booking failed", "error");
+  } finally {
+    setLoading(false);
+    setBookingInProgress(false);
+  }
+};
+
+
 
   // Handle saved card booking for logged-in users with saved cards
   const handleSavedCardBooking = async () => {
@@ -2772,10 +2779,10 @@ const phoneCheckTimeoutRef = useRef(null);
     try {
       // Validate pickup address when useSameAddress is false
       if (!useSameAddress) {
-        if (!selectedPickupAddressId) {
-          throw new Error("Please select a pickup address");
-        }
-      }
+if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
+    throw new Error("Please select a valid delivery address from suggestions");
+  }
+}
 
       const selectedCardData = savedCards.find(card => card.id === selectedCard);
       if (!selectedCardData) {
@@ -2831,40 +2838,30 @@ const phoneCheckTimeoutRef = useRef(null);
 
   // Handle "Use Another Card" for logged-in users
   const handleUseAnotherCard = async () => {
-    try {
-      setSetupProcessing(true);
-      
-      const order = prepareOrderData();
-      if (!order) throw new Error("Please select pickup and delivery times");
+  try {
+    setSetupProcessing(true);
 
-      const response = await fetch(`${API_BASE}/quick-booking`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-      });
-
-      const bookingData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(bookingData.message || "Failed to create booking");
-      }
-
-      setBookingData(bookingData);
-      setPendingBookingData(bookingData);
-
-      const token = userToken || localStorage.getItem("jwtToken");
-      if (!token) throw new Error("Authentication required");
-      
-      await initiateStripeSetup(token, bookingData.stripeCustomerId);
-      
-    } catch (err) {
-      showToast(err.message || "Failed to setup card", "error");
-    } finally {
-      setSetupProcessing(false);
+    // 🚨 DO NOT CREATE NEW BOOKING
+    if (!pendingBookingData?.order?.id) {
+      showToast("Please create booking first.", "error");
+      return;
     }
-  };
+
+    const token = userToken || localStorage.getItem("jwtToken");
+    if (!token) throw new Error("Authentication required");
+
+    await initiateStripeSetup(
+      token,
+      pendingBookingData.stripeCustomerId
+    );
+
+  } catch (err) {
+    showToast(err.message || "Failed to setup card", "error");
+  } finally {
+    setSetupProcessing(false);
+  }
+};
+
 
   // Initiate Stripe setup AFTER booking
   const initiateStripeSetup = async (token, stripeCustomerId) => {
@@ -2899,73 +2896,85 @@ const phoneCheckTimeoutRef = useRef(null);
 
   // Handle Stripe setup success (card saved)
   const handleSetupSuccess = async (setupIntent) => {
-    setSetupProcessing(true);
+  setSetupProcessing(true);
 
-    try {
-      const token = userToken || localStorage.getItem("jwtToken");
-      if (!token) throw new Error("Authentication required");
+  try {
+    const token = userToken || localStorage.getItem("jwtToken");
+    if (!token) throw new Error("Authentication required");
 
-      const paymentMethodId = setupIntent.payment_method || setupIntent.latest_attempt?.payment_method;
-      if (!paymentMethodId) {
-        throw new Error("Payment method not returned by Stripe");
-      }
-
-      if (customerId) {
-        await fetch(`${API_BASE}/stripe/set-default-payment`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            customerId,
-            paymentMethodId,
-          }),
-        });
-      }
-
-      setShowPaymentSetup(false);
-      showToast("Card saved successfully! Your booking is confirmed.", "success");
-      
-      setTimeout(() => {
-        navigate("/thankyou", {
-          state: {
-            orderId: bookingData?.order?.id || pendingBookingData?.order?.id,
-            paymentStatus: "card_saved",
-            paymentMethod: "new_card",
-            pickupDate: formatDateDDMMYYYY(collectDate),
-            pickupTime: formatTimeRange24Hour(selectedCollectSlot?.start, selectedCollectSlot?.end),
-            deliveryDate: formatDateDDMMYYYY(deliverDate),
-            deliveryTime: formatTimeRange24Hour(selectedDeliverSlot?.start, selectedDeliverSlot?.end),
-            message: "Your booking is confirmed and your card has been saved for future payments.",
-          },
-        });
-      }, 1000);
-
-    } catch (error) {
-      console.error("Setup success error:", error);
-      showToast(error.message || "Failed to save card", "error");
-      
-      if (bookingData || pendingBookingData) {
-        setTimeout(() => {
-          navigate("/thankyou", {
-            state: {
-              orderId: bookingData?.order?.id || pendingBookingData?.order?.id,
-              paymentStatus: "card_saved",
-              paymentMethod: "new_card",
-              pickupDate: formatDateDDMMYYYY(collectDate),
-              pickupTime: formatTimeRange24Hour(selectedCollectSlot?.start, selectedCollectSlot?.end),
-              deliveryDate: formatDateDDMMYYYY(deliverDate),
-              deliveryTime: formatTimeRange24Hour(selectedDeliverSlot?.start, selectedDeliverSlot?.end),
-              message: "Your booking is confirmed! There was an issue setting your card as default, but you can update it later.",
-            },
-          });
-        }, 1000);
-      }
-    } finally {
-      setSetupProcessing(false);
+    if (!pendingBookingData) {
+      throw new Error("Booking data missing");
     }
-  };
+
+    const paymentMethodId =
+      setupIntent.payment_method ||
+      setupIntent.latest_attempt?.payment_method;
+
+    if (!paymentMethodId) {
+      throw new Error("Payment method not returned by Stripe");
+    }
+
+    // Set default payment method
+    if (customerId) {
+      await fetch(`${API_BASE}/stripe/set-default-payment`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerId,
+          paymentMethodId,
+        }),
+      });
+    }
+
+    // 🚀 NOW CREATE ORDER (ONLY AFTER CARD SAVED)
+    const response = await fetch(`${API_BASE}/quick-booking`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(pendingBookingData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to create booking");
+    }
+
+    setShowPaymentSetup(false);
+    setPendingBookingData(null);
+
+    showToast("Booking confirmed successfully!", "success");
+
+    setTimeout(() => {
+      navigate("/thankyou", {
+        state: {
+          orderId: data.order?.id,
+          paymentStatus: "card_saved",
+          paymentMethod: "new_card",
+          pickupDate: formatDateDDMMYYYY(collectDate),
+          pickupTime: formatTimeRange24Hour(
+            selectedCollectSlot?.start,
+            selectedCollectSlot?.end
+          ),
+          deliveryDate: formatDateDDMMYYYY(deliverDate),
+          deliveryTime: formatTimeRange24Hour(
+            selectedDeliverSlot?.start,
+            selectedDeliverSlot?.end
+          ),
+        },
+      });
+    }, 1000);
+
+  } catch (error) {
+    showToast(error.message || "Failed to complete booking", "error");
+  } finally {
+    setSetupProcessing(false);
+  }
+};
 
   const handleSetupError = (errorMessage) => {
     showToast(errorMessage || "Failed to save card. Please try again.", "error");
@@ -3059,13 +3068,24 @@ const phoneCheckTimeoutRef = useRef(null);
   };
 
   const handleToggleSameAddress = (e) => {
-    const checked = e.target.checked;
-    setUseSameAddress(checked);
-    if (checked && selectedAddressId) {
-      setSelectedPickupAddressId(selectedAddressId);
-      setShowPickupAddressForm(false);
-    }
-  };
+  const checked = e.target.checked;
+  setUseSameAddress(checked);
+
+  if (checked) {
+    // Copy pickup → delivery
+    setPickupAddressForm({
+      street_address: addressForm.street_address,
+      postcode: addressForm.postcode,
+      city: addressForm.city,
+      additional_details: addressForm.additional_details,
+      house_number: addressForm.house_number
+    });
+
+    setPickupGeoData({ ...geoData });
+  }
+};
+
+
 
   // NEW: Handle pickup address selection
   const handlePickupAddressSelect = (addressId) => {
@@ -3101,15 +3121,21 @@ const phoneCheckTimeoutRef = useRef(null);
   };
 
   const handleAddAddressClick = () => {
-    setShowAddressForm(true);
-    setAddressForm({
-      street_address: "",
-      postcode: "",
-      city: "",
-      additional_details: "",
-      house_number: ""
-    });
-  };
+  setShowAddressForm(true);
+
+  if (useSameAddress) {
+    setSelectedPickupAddressId(null);
+  }
+
+  setAddressForm({
+    street_address: "",
+    postcode: "",
+    city: "",
+    additional_details: "",
+    house_number: ""
+  });
+};
+
 
   /* ---------------------------- Effects ----------------------------------- */
   useEffect(() => {
@@ -3122,6 +3148,183 @@ const phoneCheckTimeoutRef = useRef(null);
       setLoadingCards(false);
     }
   }, [userToken, fetchUserProfile, fetchAddresses, fetchSavedCards, ensureStripeCustomer]);
+
+  // 🔥 Auto-sync pickup when delivery changes and toggle is ON
+
+
+ useEffect(() => {
+  if (!window.google || !addressInputRef.current) return;
+
+  const autocomplete = new window.google.maps.places.Autocomplete(
+    addressInputRef.current,
+    {
+      types: ["address"],
+      componentRestrictions: { country: "gb" }
+    }
+  );
+
+  autocomplete.addListener("place_changed", () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry) return;
+
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+
+    let street = "";
+    let house = "";
+
+    place.address_components.forEach(component => {
+      if (component.types.includes("route")) {
+        street = component.long_name;
+      }
+      if (component.types.includes("street_number")) {
+        house = component.long_name;
+      }
+    });
+
+    // ✅ STORE PICKUP GEO
+    setGeoData({
+      latitude: lat,
+      longitude: lng,
+      street_name: street,
+      house_number: house
+    });
+
+    // ✅ UPDATE PICKUP FORM (NOT delivery)
+    setAddressForm(prev => ({
+      ...prev,
+      street_address: place.formatted_address,
+      postcode:
+        place.address_components.find(c =>
+          c.types.includes("postal_code")
+        )?.long_name || ""
+    }));
+
+    // ✅ If same address toggle ON → auto sync delivery
+    if (useSameAddress) {
+      setPickupAddressForm({
+        street_address: place.formatted_address,
+        postcode:
+          place.address_components.find(c =>
+            c.types.includes("postal_code")
+          )?.long_name || "",
+        city: "",
+        additional_details: "",
+        house_number: house
+      });
+
+      setPickupGeoData({
+        latitude: lat,
+        longitude: lng,
+        street_name: street,
+        house_number: house
+      });
+    }
+  });
+
+}, [useSameAddress]);
+
+useEffect(() => {
+  if (!window.google || !deliveryAddressInputRef.current) return;
+
+  const autocomplete = new window.google.maps.places.Autocomplete(
+    deliveryAddressInputRef.current,
+    {
+      types: ["address"],
+      componentRestrictions: { country: "gb" }
+    }
+  );
+
+  autocomplete.addListener("place_changed", () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry) return;
+
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+
+    let street = "";
+    let house = "";
+
+    place.address_components.forEach(component => {
+      if (component.types.includes("route")) {
+        street = component.long_name;
+      }
+      if (component.types.includes("street_number")) {
+        house = component.long_name;
+      }
+    });
+
+    // ✅ STORE DELIVERY GEO
+    setPickupGeoData({
+      latitude: lat,
+      longitude: lng,
+      street_name: street,
+      house_number: house
+    });
+
+    // ✅ UPDATE DELIVERY FORM
+    setPickupAddressForm(prev => ({
+      ...prev,
+      street_address: place.formatted_address,
+      postcode:
+        place.address_components.find(c =>
+          c.types.includes("postal_code")
+        )?.long_name || ""
+    }));
+  });
+
+}, []);
+
+
+useEffect(() => {
+  if (!window.google || !pickupAddressInputRef.current) return;
+
+  const autocomplete = new window.google.maps.places.Autocomplete(
+    pickupAddressInputRef.current,
+    {
+      types: ["address"],
+      componentRestrictions: { country: "gb" }
+    }
+  );
+
+  autocomplete.addListener("place_changed", () => {
+  const place = autocomplete.getPlace();
+  if (!place.geometry) return;
+
+  const lat = place.geometry.location.lat();
+  const lng = place.geometry.location.lng();
+
+  let street = "";
+  let house = "";
+
+  place.address_components.forEach(component => {
+    if (component.types.includes("route")) {
+      street = component.long_name;
+    }
+    if (component.types.includes("street_number")) {
+      house = component.long_name;
+    }
+  });
+
+  setPickupGeoData({
+    latitude: lat,
+    longitude: lng,
+    street_name: street,
+    house_number: house
+  });
+
+  setPickupAddressForm(prev => ({
+    ...prev,
+    street_address: place.formatted_address,
+    postcode:
+      place.address_components.find(c =>
+        c.types.includes("postal_code")
+      )?.long_name || ""
+  }));
+});
+
+}, []);
+
 
   // Effect to fetch collect slots when collectDate changes
   useEffect(() => {
@@ -3154,6 +3357,8 @@ const phoneCheckTimeoutRef = useRef(null);
       document.body.classList.remove('payment-modal-open');
     };
   }, [showPaymentSetup]);
+  // 🔥 Auto-sync delivery when pickup changes and toggle ON
+
 
   // Calculate min delivery date
   const minDeliveryDate = collectDate || today;
@@ -3190,167 +3395,6 @@ const phoneCheckTimeoutRef = useRef(null);
 
   /* ------------------------------ Render ---------------------------------- */
   
-  // NEW: Render pickup address section
-  const renderPickupAddressSection = () => {
-    if (useSameAddress) return null;
-
-    return (
-      <div className="qb-address-section" style={{ marginTop: '24px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
-        <h3 className="qb-address-section-title">
-          <i className="fas fa-truck-pickup"></i>
-          Pickup Address
-          <span className="qb-required-badge">Required</span>
-        </h3>
-        <p className="qb-address-section-subtitle">
-          Where should we collect your laundry from?
-        </p>
-
-        {userToken && pickupAddresses.length > 0 && !showPickupAddressForm ? (
-          <>
-            <div className="qb-address-grid">
-              {pickupAddresses.map((addr) => (
-                <div
-                  key={`pickup-${addr.address_id}`}
-                  className={`qb-address-option ${
-                    selectedPickupAddressId === String(addr.address_id) ? "selected" : ""
-                  }`}
-                  onClick={() => handlePickupAddressSelect(String(addr.address_id))}
-                >
-                  <div className="qb-address-option-header">
-                    <div className="qb-address-type">
-                      <i className="fas fa-home"></i>
-                      <span>{addr.name || "Home"}</span>
-                    </div>
-                    {addr.is_selected && (
-                      <span className="qb-default-badge">
-                        <i className="fas fa-star"></i>
-                        Default
-                      </span>
-                    )}
-                  </div>
-                  <div className="qb-address-option-details">
-                    <p className="qb-address-text">{addr.full_address}</p>
-                    <p className="qb-address-postcode">
-                      <i className="fas fa-map-pin"></i>
-                      {addr.postcode}
-                    </p>
-                  </div>
-                  {selectedPickupAddressId === String(addr.address_id) && (
-                    <div className="qb-address-selected">
-                      <i className="fas fa-check-circle"></i>
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              <div 
-                className="qb-add-address-option"
-                onClick={() => handlePickupAddressSelect("new")}
-              >
-                <div className="qb-add-address-icon">
-                  <i className="fas fa-plus-circle"></i>
-                </div>
-                <div className="qb-add-address-text">
-                  <h4>Add New Pickup Address</h4>
-                  <p>Enter a different pickup location</p>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="qb-address-form-section">
-            <div className="qb-form-grid">
-              <div className="qb-form-group">
-                {/* <label className="qb-form-label">
-                  <i className="fas fa-home"></i>
-                  House/Flat Number
-                  <input
-                    type="text"
-                    className="qb-form-input"
-                    value={pickupAddressForm.house_number}
-                    onChange={handlePickupAddressFormChange("house_number")}
-                    placeholder="123"
-                  />
-                </label> */}
-              </div>
-
-              <div className="qb-form-group full-width">
-                <label className="qb-form-label">
-                  <i className="fas fa-road"></i>
-                  Full Address *
-                  <input
-                    type="text"
-                    className="qb-form-input"
-                    value={pickupAddressForm.street_address}
-                    onChange={handlePickupAddressFormChange("street_address")}
-                    placeholder="Main Street, Apt 4B"
-                    required
-                  />
-                </label>
-              </div>
-
-              <div className="qb-form-group">
-                <label className="qb-form-label">
-                  <i className="fas fa-map-pin"></i>
-                  Postcode *
-                  <input
-                    type="text"
-                    className="qb-form-input"
-                    value={pickupAddressForm.postcode}
-                    onChange={handlePickupAddressFormChange("postcode")}
-                    placeholder="SW1A 1AA"
-                    required
-                  />
-                </label>
-              </div>
-
-              {/* <div className="qb-form-group">
-                <label className="qb-form-label">
-                  <i className="fas fa-city"></i>
-                  City/Town
-                  <input
-                    type="text"
-                    className="qb-form-input"
-                    value={pickupAddressForm.city}
-                    onChange={handlePickupAddressFormChange("city")}
-                    placeholder="London"
-                  />
-                </label>
-              </div> */}
-
-              {/* <div className="qb-form-group full-width">
-                <label className="qb-form-label">
-                  <i className="fas fa-info-circle"></i>
-                  Additional Details (Optional)
-                  <textarea
-                    className="qb-form-textarea"
-                    value={pickupAddressForm.additional_details}
-                    onChange={handlePickupAddressFormChange("additional_details")}
-                    placeholder="Floor, building, landmarks, access instructions..."
-                    rows="2"
-                  />
-                </label>
-              </div> */}
-            </div>
-
-            {userToken && pickupAddresses.length > 0 && showPickupAddressForm && (
-              <button
-                className="qb-secondary-btn"
-                onClick={() => {
-                  setShowPickupAddressForm(false);
-                  setSelectedPickupAddressId(null);
-                }}
-                style={{ marginTop: '10px' }}
-              >
-                <i className="fas fa-arrow-left"></i>
-                Back to Saved Pickup Addresses
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="qb-page">
@@ -3454,200 +3498,203 @@ const phoneCheckTimeoutRef = useRef(null);
         </div>
 
         {/* Address Section */}
-        <div className="qb-card">
-          <div className="qb-card-header">
-            <div className="qb-section-icon">
-              <i className="fas fa-map-marker-alt"></i>
+        {/* ---------------------- ADDRESS SECTION (FIXED) ---------------------- */}
+<div className="qb-card">
+  <div className="qb-card-header">
+    <div className="qb-section-icon">
+      <i className="fas fa-map-marker-alt"></i>
+    </div>
+    <div>
+      <h2 className="qb-section-title">Pickup Address</h2>
+      <p className="qb-section-subtitle">Where should we collect your laundry?</p>
+    </div>
+  </div>
+
+  {/* ---------- Logged-in user with saved addresses ---------- */}
+  {userToken && addresses.length > 0 && !showAddressForm ? (
+    <>
+      <div className="qb-address-selection">
+        <h3 className="qb-address-selection-title">Select a Saved Address</h3>
+        <div className="qb-address-grid">
+          {addresses.map((addr) => (
+            <div
+              key={addr.address_id}
+              className={`qb-address-option ${
+                selectedAddressId === String(addr.address_id) ? "selected" : ""
+              }`}
+              onClick={() => {
+                const id = String(addr.address_id);
+                setSelectedAddressId(id);
+
+                if (useSameAddress) {
+                  setSelectedPickupAddressId(id);
+                }
+              }}
+            >
+              <div className="qb-address-option-header">
+                <div className="qb-address-type">
+                  <i className="fas fa-home"></i>
+                  <span>{addr.name || "Home"}</span>
+                </div>
+                {addr.is_selected && (
+                  <span className="qb-default-badge">
+                    <i className="fas fa-star"></i>
+                    Default
+                  </span>
+                )}
+              </div>
+              <div className="qb-address-option-details">
+                <p className="qb-address-text">{addr.full_address}</p>
+                <p className="qb-address-postcode">
+                  <i className="fas fa-map-pin"></i>
+                  {addr.postcode}
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="qb-section-title">Delivery Address</h2>
-              <p className="qb-section-subtitle">Where should we deliver your laundry?</p>
+          ))}
+
+          {/* ADD NEW ADDRESS */}
+          <div className="qb-add-address-option" onClick={handleAddAddressClick}>
+            <div className="qb-add-address-icon">
+              <i className="fas fa-plus-circle"></i>
+            </div>
+            <div className="qb-add-address-text">
+              <h4>Add New Address</h4>
+              <p>Enter a different delivery address</p>
             </div>
           </div>
-
-          {userToken && addresses.length > 0 && !showAddressForm ? (
-            <>
-              <div className="qb-address-selection">
-                <h3 className="qb-address-selection-title">Select a Saved Address</h3>
-                <div className="qb-address-grid">
-                  {addresses.map((addr) => (
-                    <div
-                      key={addr.address_id}
-                      className={`qb-address-option ${
-                        selectedAddressId === String(addr.address_id) ? "selected" : ""
-                      }`}
-                      onClick={() => setSelectedAddressId(String(addr.address_id))}
-                    >
-                      <div className="qb-address-option-header">
-                        <div className="qb-address-type">
-                          <i className="fas fa-home"></i>
-                          <span>{addr.name || "Home"}</span>
-                        </div>
-                        {addr.is_selected && (
-                          <span className="qb-default-badge">
-                            <i className="fas fa-star"></i>
-                            Default
-                          </span>
-                        )}
-                      </div>
-                      <div className="qb-address-option-details">
-                        <p className="qb-address-text">{addr.full_address}</p>
-                        <p className="qb-address-postcode">
-                          <i className="fas fa-map-pin"></i>
-                          {addr.postcode}
-                        </p>
-                      </div>
-                      {selectedAddressId === String(addr.address_id) && (
-                        <div className="qb-address-selected">
-                          <i className="fas fa-check-circle"></i>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  <div 
-                    className="qb-add-address-option"
-                    onClick={handleAddAddressClick}
-                  >
-                    <div className="qb-add-address-icon">
-                      <i className="fas fa-plus-circle"></i>
-                    </div>
-                    <div className="qb-add-address-text">
-                      <h4>Add New Address</h4>
-                      <p>Enter a different delivery address</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="qb-address-toggle">
-                <label className="qb-toggle-container">
-                  <div className="qb-toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={useSameAddress}
-                      onChange={handleToggleSameAddress}
-                    />
-                    <span className="qb-toggle-slider"></span>
-                  </div>
-                  <div className="qb-toggle-label">
-                    <span className="qb-toggle-title">Use same address for pickup</span>
-                    <span className="qb-toggle-description">Pickup and delivery at the same location</span>
-                  </div>
-                </label>
-              </div>
-            </>
-          ) : (
-            <div className="qb-address-form-section">
-              <div className="qb-form-grid">
-                {/* <div className="qb-form-group">
-                  <label className="qb-form-label">
-                    <i className="fas fa-home"></i>
-                    House/Flat Number
-                    <input
-                      type="text"
-                      className="qb-form-input"
-                      value={addressForm.house_number}
-                      onChange={handleAddressFormChange("house_number")}
-                      placeholder="123"
-                    />
-                  </label>
-                </div> */}
-
-                <div className="qb-form-group full-width">
-                  <label className="qb-form-label">
-                    <i className="fas fa-road"></i>
-                    Full Address *
-                    <input
-                      type="text"
-                      className="qb-form-input"
-                      value={addressForm.street_address}
-                      onChange={handleAddressFormChange("street_address")}
-                      placeholder="Main Street, Apt 4B"
-                      required
-                    />
-                  </label>
-                </div>
-
-                <div className="qb-form-group">
-                  <label className="qb-form-label">
-                    <i className="fas fa-map-pin"></i>
-                    Postcode *
-                    <input
-                      type="text"
-                      className="qb-form-input"
-                      value={addressForm.postcode}
-                      onChange={handleAddressFormChange("postcode")}
-                      placeholder="SW1A 1AA"
-                      required
-                    />
-                  </label>
-                </div>
-
-                {/* <div className="qb-form-group">
-                  <label className="qb-form-label">
-                    <i className="fas fa-city"></i>
-                    City/Town
-                    <input
-                      type="text"
-                      className="qb-form-input"
-                      value={addressForm.city}
-                      onChange={handleAddressFormChange("city")}
-                      placeholder="London"
-                    />
-                  </label>
-                </div> */}
-
-                {/* <div className="qb-form-group full-width">
-                  <label className="qb-form-label">
-                    <i className="fas fa-info-circle"></i>
-                    Additional Details (Optional)
-                    <textarea
-                      className="qb-form-textarea"
-                      value={addressForm.additional_details}
-                      onChange={handleAddressFormChange("additional_details")}
-                      placeholder="Floor, building, landmarks, access instructions..."
-                      rows="2"
-                    />
-                  </label>
-                </div> */}
-              </div>
-
-              {userToken && addresses.length > 0 && showAddressForm && (
-                <button
-                  className="qb-secondary-btn"
-                  onClick={() => setShowAddressForm(false)}
-                >
-                  <i className="fas fa-arrow-left"></i>
-                  Back to Saved Addresses
-                </button>
-              )}
-
-              {/* Same Address Toggle for non-logged in users or when adding new address */}
-              {(!userToken || showAddressForm) && (
-                <div className="qb-address-toggle" style={{ marginTop: '20px' }}>
-                  <label className="qb-toggle-container">
-                    <div className="qb-toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={useSameAddress}
-                        onChange={handleToggleSameAddress}
-                      />
-                      <span className="qb-toggle-slider"></span>
-                    </div>
-                    <div className="qb-toggle-label">
-                      <span className="qb-toggle-title">Use same address for pickup</span>
-                      <span className="qb-toggle-description">Pickup and delivery at the same location</span>
-                    </div>
-                  </label>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Render separate pickup address section when useSameAddress is false */}
-          {renderPickupAddressSection()}
         </div>
+      </div>
+
+      {/* Toggle: Same Address or Different */}
+      <div className="qb-address-toggle">
+        <label className="qb-toggle-container">
+          <div className="qb-toggle-switch">
+            <input type="checkbox" checked={useSameAddress} onChange={handleToggleSameAddress} />
+            <span className="qb-toggle-slider"></span>
+          </div>
+          <div className="qb-toggle-label">
+            <span className="qb-toggle-title">Use same address for delivery</span>
+            <span className="qb-toggle-description">Deliver back to pickup location</span>
+          </div>
+        </label>
+      </div>
+    </>
+  ) : (
+    /* ---------- Manual Address Form (Guest or Adding New) ---------- */
+    <div className="qb-address-form-section">
+      <div className="qb-form-grid">
+        <div className="qb-form-group full-width">
+          <label className="qb-form-label">
+            <i className="fas fa-road"></i>
+            Full Address *
+            <input
+              type="text"
+              ref={addressInputRef}
+              className="qb-form-input"
+              value={addressForm.street_address}
+              onChange={(e) => {
+                setAddressForm(prev => ({ ...prev, street_address: e.target.value }));
+                setGeoData({ latitude: null, longitude: null, street_name: "", house_number: "" });
+              }}
+              placeholder="Start typing address..."
+              required
+            />
+          </label>
+        </div>
+
+        <div className="qb-form-group">
+          <label className="qb-form-label">
+            <i className="fas fa-map-pin"></i>
+            Postcode *
+            <input
+              type="text"
+              className="qb-form-input"
+              value={addressForm.postcode}
+              onChange={handleAddressFormChange("postcode")}
+              placeholder="SW1A 1AA"
+              required
+            />
+          </label>
+        </div>
+      </div>
+
+      {userToken && addresses.length > 0 && showAddressForm && (
+        <button className="qb-secondary-btn" onClick={() => setShowAddressForm(false)}>
+          <i className="fas fa-arrow-left"></i>
+          Back to Saved Addresses
+        </button>
+      )}
+
+      {/* Toggle shown for Guest users or when manually adding new address */}
+      {(!userToken || showAddressForm) && (
+        <div className="qb-address-toggle" style={{ marginTop: "20px" }}>
+          <label className="qb-toggle-container">
+            <div className="qb-toggle-switch">
+              <input type="checkbox" checked={useSameAddress} onChange={handleToggleSameAddress} />
+              <span className="qb-toggle-slider"></span>
+            </div>
+            <div className="qb-toggle-label">
+              <span className="qb-toggle-title">Use same address for delivery</span>
+              <span className="qb-toggle-description">Deliver back to pickup location</span>
+            </div>
+          </label>
+        </div>
+      )}
+    </div>
+  )}
+
+  {/* ------------ DELIVERY ADDRESS (ONLY IF DIFFERENT) ------------ */}
+  {!useSameAddress && (
+    <div className="qb-address-section" style={{ marginTop: "24px" }}>
+      <h3 className="qb-address-section-title">
+        <i className="fas fa-truck"></i>
+        Delivery Address
+        <span className="qb-required-badge">Required</span>
+      </h3>
+
+      <div className="qb-form-grid">
+        <div className="qb-form-group full-width">
+          <label className="qb-form-label">
+            <i className="fas fa-road"></i>
+            Full Address *
+            <input
+              type="text"
+              ref={deliveryAddressInputRef}
+              className="qb-form-input"
+              value={pickupAddressForm.street_address}
+              onChange={(e) => {
+                setPickupAddressForm(prev => ({ ...prev, street_address: e.target.value }));
+                setPickupGeoData({
+                  latitude: null,
+                  longitude: null,
+                  street_name: "",
+                  house_number: ""
+                });
+              }}
+              placeholder="Start typing delivery address..."
+              required
+            />
+          </label>
+        </div>
+
+        <div className="qb-form-group">
+          <label className="qb-form-label">
+            <i className="fas fa-map-pin"></i>
+            Postcode *
+            <input
+              type="text"
+              className="qb-form-input"
+              value={pickupAddressForm.postcode}
+              onChange={(e) => setPickupAddressForm(prev => ({ ...prev, postcode: e.target.value }))}
+              required
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
 
         {/* Pickup & Delivery Schedule */}
         <div className="qb-card">
@@ -3972,7 +4019,14 @@ const phoneCheckTimeoutRef = useRef(null);
                   <button 
                     className="qb-primary-btn qb-book-btn" 
                     onClick={handleSavedCardBooking}
-                    disabled={!isBookingValid() || !selectedCard || loading}
+                    disabled={
+  !isBookingValid() ||
+  loading ||
+  setupProcessing ||
+  bookingInProgress ||
+  pendingBookingData?.order?.id
+}
+
                   >
                     {loading ? (
                       <>
@@ -4028,7 +4082,14 @@ const phoneCheckTimeoutRef = useRef(null);
                   <button 
                     className="qb-primary-btn qb-book-btn" 
                     onClick={handleConfirmBooking}
-                    disabled={!isBookingValid() || loading || setupProcessing}
+                    disabled={
+  !isBookingValid() ||
+  loading ||
+  setupProcessing ||
+  bookingInProgress ||
+  pendingBookingData?.order?.id
+}
+
                   >
                     {loading || setupProcessing ? (
                       <>
@@ -4076,7 +4137,14 @@ const phoneCheckTimeoutRef = useRef(null);
               <button 
                 className="qb-primary-btn qb-confirm-btn"
                 onClick={userToken && savedCards.length > 0 ? handleSavedCardBooking : handleConfirmBooking}
-                disabled={!isBookingValid() || loading || setupProcessing}
+                disabled={
+  !isBookingValid() ||
+  loading ||
+  setupProcessing ||
+  bookingInProgress ||
+  pendingBookingData?.order?.id
+}
+
               >
                 {loading ? (
                   <>

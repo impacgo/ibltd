@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate,NavLink } from "react-router-dom";
 import "./Header.css";
 import LoginPopup from "./LoginPopup";
 import { useAuth } from "../context/AuthContext";
@@ -70,6 +70,9 @@ const Header = () => {
   const menuButtonRef = useRef(null);
 
   const location = useLocation();
+  const isActive = (path) => {
+  return location.pathname === path ? "active" : "";
+};
   const navigate = useNavigate();
 
   // Function to get user display name
@@ -178,7 +181,6 @@ const Header = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const isActive = (path) => location.pathname === path ? "active" : "";
 
   // Handle logout properly
   const handleLogout = useCallback(async () => {
@@ -377,6 +379,27 @@ const Header = () => {
                 </li>
 
                 <li><Link className={`nav-link ${isActive("/areas")}`} to="/areas">Areas</Link></li>
+                <li>
+  {/* <NavLink
+  to="/corporate-services"
+  className={({ isActive }) =>
+    `nav-link corporate-highlight ${isActive ? "active" : ""}`
+  }
+>
+  Corporate
+  <span className="corporate-badge">No App</span>
+</NavLink> */}
+
+<Link 
+                    className={`nav-link ${isActive("/services")}`} 
+                    to="/corporate-services"
+                    onClick={() => setIsServiceOpen(false)}
+                  >
+                    Corporate
+                    <span className="corporate-badge">No App</span>
+                  </Link>
+</li>
+
                 <li><Link className={`nav-link ${isActive("/pricing")}`} to="/pricing">Pricing</Link></li>
                 <li><Link className={`nav-link ${isActive("/how-it-works")}`} to="/how-it-works">How It Works</Link></li>
                 <li><Link className={`nav-link ${isActive("/faq")}`} to="/faq">FAQ</Link></li>
@@ -385,6 +408,9 @@ const Header = () => {
 
             {/* Desktop Actions - Professional App Store Buttons */}
             <div className="header-actions desktop-only">
+              {/* <div className="individual-app-note">
+                For individual customers
+              </div> */}
               <div className="app-store-buttons">
                 <button 
                   className="store-btn-desktop apple-btn"
@@ -549,6 +575,19 @@ const Header = () => {
                 </Link>
               </li>
               <li>
+  <Link
+    className="mobile-menu-item"
+    to="/corporate-services"
+    onClick={closeMenu}
+  >
+    <span className="menu-item-icon">
+      <i className="fas fa-building"></i>
+    </span>
+    <span className="menu-item-text">Corporate Services</span>
+  </Link>
+</li>
+
+              <li>
                 <Link className="mobile-menu-item" to="/pricing" onClick={closeMenu}>
                   <span className="menu-item-icon">
                     <i className="fas fa-tag"></i>
@@ -638,12 +677,37 @@ const Header = () => {
                 </>
               )}
             </ul>
+            <div className="corporate-messaging-section">
+  <div className="corporate-message-header">
+    <i className="fas fa-building"></i>
+    <h3>Corporate Accounts</h3>
+  </div>
+
+  <p className="corporate-message-text">
+    For hotels, offices & bulk laundry needs, we provide
+    <strong> dedicated account management</strong>,
+    invoicing, and scheduled pickups.
+  </p>
+
+  <Link
+    to="/corporate-services"
+    className="corporate-cta-btn"
+    onClick={closeMenu}
+  >
+    Contact Corporate Team
+  </Link>
+</div>
+
 
             {/* App Store Buttons at the END of mobile menu */}
             <div className="mobile-app-section">
               <div className="mobile-app-header">
                 <h3>Get Our App</h3>
-                <p>Faster booking and exclusive mobile-only offers</p>
+                <p>
+  For individual customers only.
+  <br />
+  Corporate accounts are handled separately.
+</p>
               </div>
               <div className="mobile-app-buttons">
                 <button 

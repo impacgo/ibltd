@@ -406,3 +406,22 @@
     display: none;
   }
 }
+.phone-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.country-code-select {
+  height: 44px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: none;
+  background: #f1f1f1;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.country-code-select:focus {
+  outline: 2px solid #ff8c00;
+}

@@ -249,19 +249,29 @@ const handleAppleApp = () => {
               </div>
               <div className={`footer-column-content ${expandedSection === 'contact' ? 'active' : ''}`}>
                 <ul className="contact-info">
-                  <li>
-                    <i className="fas fa-phone"></i>
-                    <span>+44 02031231010</span>
-                  </li>
-                  <li>
-                    <i className="fas fa-envelope"></i>
-                    <span>support@ironingboy.com</span>
-                  </li>
-                  {/* <li>
-                    <i className="fas fa-map-marker-alt"></i>
-                    <span>2 Turnpike Lane, Uxbridge, Hillingdon, UB10 0AH, UK</span>
-                  </li> */}
+  <li>
+    <i className="fas fa-phone"></i>
+    <a
+      href="tel:+442031231010"
+      className="contact-link"
+      aria-label="Call Ironing Boy support"
+    >
+      +44 020 3123 1010
+    </a>
+  </li>
+
+  <li>
+    <i className="fas fa-envelope"></i>
+    <a
+      href="mailto:support@ironingboy.com"
+      className="contact-link"
+      aria-label="Email Ironing Boy support"
+        >
+      support@ironingboy.com
+    </a>
+               </li>
                 </ul>
+
               </div>
             </div>
 
