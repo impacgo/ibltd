@@ -37,14 +37,24 @@
   --personal-shadow-accent: 0 8px 20px rgba(255, 107, 0, 0.2);
 }
 
-/* Main Container */
 .personal-info-container {
   background: var(--personal-bg-light);
-  min-height: 100vh;
+  min-height: 100dvh; /* mobile-safe viewport */
   padding: 40px 20px 100px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   position: relative;
+
+  overflow-y: auto;        /* ✅ allow vertical scroll */
+  overflow-x: hidden;      /* prevent horizontal lock */
+  -webkit-overflow-scrolling: touch; /* iOS smooth scroll */
 }
+
+.profile-card {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
 
 .personal-info-container::before {
   content: '';
@@ -797,6 +807,7 @@
 @media (max-width: 768px) {
   .personal-info-container {
     padding: 30px 16px 120px;
+    padding-bottom: 160px;
   }
   
   .page-title {
@@ -1089,4 +1100,15 @@ button:focus:not(:focus-visible) {
     border-color: var(--personal-accent);
     color: var(--personal-accent);
   }
+}
+@media (max-width: 480px) {
+  .personal-info-container {
+    padding-bottom: 180px;
+  }
+}
+
+.booking-info-content,
+.error-banner {
+  max-width: 100%;
+  overflow-wrap: break-word;
 }

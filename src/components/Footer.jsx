@@ -249,7 +249,7 @@ const handleAppleApp = () => {
               </div>
               <div className={`footer-column-content ${expandedSection === 'contact' ? 'active' : ''}`}>
                 <ul className="contact-info">
-                  <li>
+  <li>
     <i className="fas fa-phone"></i>
     <a
       href="tel:+442031231010"
@@ -270,11 +270,8 @@ const handleAppleApp = () => {
       support@ironingboy.com
     </a>
                </li>
-                  {/* <li>
-                    <i className="fas fa-map-marker-alt"></i>
-                    <span>2 Turnpike Lane, Uxbridge, Hillingdon, UB10 0AH, UK</span>
-                  </li> */}
                 </ul>
+
               </div>
             </div>
 
@@ -348,6 +345,5 @@ const handleAppleApp = () => {
     </footer>
   );
 };
-
 
 export default Footer;

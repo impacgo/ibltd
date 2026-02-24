@@ -5,7 +5,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Checkout.css";
-
+import { createWorker } from "tesseract.js";
 // Stripe imports
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -26,7 +26,10 @@ const StripeSetupForm = ({
   onSetupError,
   onCancel,
   setupProcessing,
-  userToken
+  userToken,
+  isStudent,
+  studentIdBase64,
+  studentVerified,
 }) => {
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState(null);
@@ -74,7 +77,13 @@ const StripeSetupForm = ({
 
   return (
     <div className="stripe-payment-modal">
-      <div className="stripe-modal-overlay" onClick={onCancel}></div>
+      <div
+        className="stripe-modal-overlay"
+        onClick={() => {
+          if (!submitting && !setupProcessing) onCancel();
+       }}
+      ></div>
+
       <div className="stripe-modal-content">
         <div className="stripe-modal-header">
           <div className="stripe-modal-icon">
@@ -149,7 +158,7 @@ const StripeSetupForm = ({
           <div className="stripe-modal-actions">
             <button
               type="submit"
-              disabled={!stripe || submitting || setupProcessing || !consent}
+              disabled={!stripe || submitting || setupProcessing || !consent || (isStudent && (!studentIdBase64 || !studentVerified))}
               className="stripe-confirm-btn"
             >
               {submitting ? (
@@ -188,6 +197,12 @@ export default function Checkout() {
   }
 }, []);
 
+// Student verification
+const [isStudent, setIsStudent] = useState(false);
+const [studentIdBase64, setStudentIdBase64] = useState(null);
+const [studentIdPreview, setStudentIdPreview] = useState(null);
+const [isVerifyingStudent, setIsVerifyingStudent] = useState(false);
+const [studentVerified, setStudentVerified] = useState(false);
 
   // State management
   const [cartItems, setCartItems] = useState(initialCart);
@@ -320,6 +335,147 @@ export default function Checkout() {
       return dateString;
     }
   };
+
+const levenshteinDistance = (a = "", b = "") => {
+  const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      matrix[i][j] =
+        b[i - 1] === a[j - 1]
+          ? matrix[i - 1][j - 1]
+          : Math.min(
+              matrix[i - 1][j] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j - 1] + 1
+            );
+    }
+  }
+  return matrix[b.length][a.length];
+};
+
+const normalizeText = (text = "") =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/**
+ * ✔ Allows:
+ *  - BHUSHAN GONTHINA  vs Bhushan
+ *  - Bhsuhan (typo)
+ *  - First-time users
+ */
+const matchNameWithProfile = (ocrText, enteredName) => {
+  if (!enteredName) return false;
+
+  const ocr = normalizeText(ocrText);
+  const nameParts = normalizeText(enteredName).split(" ");
+
+  let matchCount = 0;
+
+  for (const part of nameParts) {
+    const ocrWords = ocr.split(" ");
+
+    const matched = ocrWords.some(word => {
+      if (word.length < 3) return false;
+      if (word === part) return true;
+
+      // tolerate typos (Bhushan vs Bhsuhan)
+      return levenshteinDistance(word, part) <= 2;
+    });
+
+    if (matched) matchCount++;
+  }
+
+  // ✅ At least 1 meaningful name match is enough
+  return matchCount >= 1;
+};
+
+
+const extractTextFromImage = async (file) => {
+  const worker = await createWorker({
+    logger: () => {}, // keep silent
+  });
+
+  await worker.loadLanguage("eng");
+  await worker.initialize("eng");
+
+  const {
+    data: { text },
+  } = await worker.recognize(file);
+
+  await worker.terminate();
+  return text;
+};
+
+
+
+  const handleStudentIdUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    showToast("Please upload a valid image file", "error");
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    showToast("Student ID image must be under 2MB", "error");
+    return;
+  }
+
+  setIsVerifyingStudent(true);
+  setStudentVerified(false);
+
+  try {
+    const ocrText = await extractTextFromImage(file);
+
+    const isValid = matchNameWithProfile(
+      ocrText,
+      userInfo.name // ✅ works for logged-in & first-time users
+    );
+
+    if (!isValid) {
+      // 🚫 HARD BLOCK
+      setStudentIdBase64(null);
+      setStudentIdPreview(null);
+      setStudentVerified(false);
+
+      showToast(
+        "Student ID name does not match entered full name",
+        "error"
+      );
+
+      return;
+    }
+
+    // ✅ Save ONLY after verification
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setStudentIdBase64(reader.result);
+      setStudentIdPreview(reader.result);
+      setStudentVerified(true);
+      showToast("Student ID verified successfully", "success");
+    };
+    reader.readAsDataURL(file);
+
+  } catch (err) {
+    console.error(err);
+    setStudentIdBase64(null);
+    setStudentIdPreview(null);
+    setStudentVerified(false);
+    showToast("Failed to verify student ID", "error");
+  } finally {
+    setIsVerifyingStudent(false);
+  }
+};
+
+
+
+
 
   const getCardBrandClass = (brand) => {
     if (!brand) return 'card-brand-unknown';
@@ -865,6 +1021,8 @@ export default function Checkout() {
       name: userInfo.name,
       email: userInfo.email,
       phone: userInfo.phone,
+      is_student: isStudent,
+      student_id_image: isStudent ? studentIdBase64 : null,
     };
   }, [
     selectedCollectSlot,
@@ -894,6 +1052,11 @@ export default function Checkout() {
   /* ------------------------- Main Booking Flow ---------------------------- */
   const placeOrder = async () => {
     if (loading) return;
+      // STUDENT VALIDATION
+  if (isStudent && (!studentIdBase64 || !studentVerified)) {
+    showToast("Please upload your student ID to continue", "error");
+    return;
+  }
   setLoading(true);
 
   try {
@@ -2106,6 +2269,78 @@ const authenticateUserIfNeeded = async () => {
               </div>
             </div>
 
+{/* STUDENT VERIFICATION */}
+<div className="checkout-card student-card">
+  <div className="checkout-card-header">
+    <div className="checkout-section-icon">
+      <i className="fas fa-graduation-cap"></i>
+    </div>
+    <div>
+      <h2 className="checkout-section-title">Student Discount</h2>
+      <p className="checkout-section-subtitle">
+        Verify your student status to unlock special pricing
+      </p>
+    </div>
+  </div>
+
+  <label className="student-toggle">
+    <input
+      type="checkbox"
+      checked={isStudent}
+      onChange={(e) => {
+        setIsStudent(e.target.checked);
+        if (!e.target.checked) {
+          setStudentIdBase64(null);
+          setStudentIdPreview(null);
+          setStudentVerified(false);
+        }
+      }}
+    />
+    <span>I am a student</span>
+  </label>
+
+  {isStudent && (
+  <div className="student-upload">
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleStudentIdUpload}
+    />
+
+    {/* 🔄 OCR verification in progress */}
+    {isVerifyingStudent && (
+      <p className="student-verifying">
+        <i className="fas fa-spinner fa-spin"></i> Verifying student ID...
+      </p>
+    )}
+
+    {/* ✅ OCR success */}
+    {studentVerified && (
+      <p className="student-verified">
+        <i className="fas fa-check-circle"></i> Student ID verified successfully
+      </p>
+    )}
+
+    {/* 🖼️ Preview */}
+    {studentIdPreview && (
+      <img
+        src={studentIdPreview}
+        alt="Student ID"
+        className="student-id-preview"
+      />
+    )}
+
+    <p className="student-hint">
+      <i className="fas fa-info-circle"></i>
+      Upload a valid student ID (max 2MB)
+    </p>
+  </div>
+)}
+
+</div>
+
+
+
             {/* Special Instructions */}
             <div className="checkout-card">
               <div className="checkout-card-header">
@@ -2341,7 +2576,7 @@ const authenticateUserIfNeeded = async () => {
               <button 
                 className="checkout-primary-btn checkout-confirm-btn"
                 onClick={userToken && savedCards.length > 0 && selectedCard ? handleSavedCardBooking : handleUseAnotherCard}
-                disabled={!isBookingValid() || loading || setupProcessing}
+                disabled={!isBookingValid() || loading || setupProcessing || (isStudent && (!studentIdBase64 || !studentVerified))}
               >
                 {loading ? (
                   <>
@@ -2375,6 +2610,9 @@ const authenticateUserIfNeeded = async () => {
             onCancel={handlePaymentModalCancel}
             setupProcessing={setupProcessing}
             userToken={userToken}
+            isStudent={isStudent}
+            studentIdBase64={studentIdBase64}
+            studentVerified={studentVerified}
           />
         </Elements>
       )}

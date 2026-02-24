@@ -2052,6 +2052,7 @@ input:focus:not(:focus-visible) {
   background: var(--footer-accent);
   transform: scale(1.05);
 }
+
 .contact-link {
   color: #f1f5f9;
   text-decoration: none;
@@ -2067,5 +2068,3 @@ input:focus:not(:focus-visible) {
     font-size: 1rem;
   }
 }
-
-
