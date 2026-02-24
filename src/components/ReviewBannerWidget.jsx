@@ -1,3 +1,4 @@
+
 // src/components/ReviewBannerWidget.jsx
 import React, { useEffect, useRef } from "react";
 

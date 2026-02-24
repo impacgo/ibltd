@@ -1,3 +1,4 @@
+
 /* ===== FLOATING CALL BUTTON ===== */
 
 .floating-call-btn {
@@ -73,3 +74,79 @@
   outline: 3px solid #ffffff;
   outline-offset: 3px;
 }
+/* ===== FLOATING CALL BUTTON ===== */
+
+.floating-call-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 20px;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background: linear-gradient(135deg, #ff6b00, #ff8c00);
+  color: #ffffff;
+  text-decoration: none;
+
+  padding: 12px 16px;
+  border-radius: 999px;
+
+  font-weight: 700;
+  box-shadow: 0 12px 30px rgba(255, 107, 0, 0.45);
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Hover / Desktop */
+.floating-call-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(255, 107, 0, 0.6);
+}
+
+.floating-call-btn i {
+  font-size: 1.1rem;
+}
+
+/* Text */
+.floating-call-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.floating-call-title {
+  font-size: 0.85rem;
+  letter-spacing: 0.4px;
+}
+
+.floating-call-subtitle {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* ===== MOBILE OPTIMIZATION ===== */
+@media (max-width: 768px) {
+  .floating-call-btn {
+    right: 14px;
+    bottom: 16px;
+    padding: 12px;
+  }
+
+  .floating-call-text {
+    display: none; /* icon-only on mobile */
+  }
+
+  .floating-call-btn i {
+    font-size: 1.25rem;
+  }
+}
+
+/* Accessibility */
+.floating-call-btn:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
