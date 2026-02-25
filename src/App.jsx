@@ -413,12 +413,11 @@ const HomePage = () => (
   <>
     <Hero />
     <Services />
-    
+    <ReviewBannerWidget />
     <HowItWorks />
     <Pricing />
     <Testimonials />
     <FAQ />
-    <ReviewBannerWidget/>
     <Contact />
   </>
 );
