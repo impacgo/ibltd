@@ -3,15 +3,16 @@ import { useEffect } from "react";
 
 const ReviewsPageWidget = () => {
     useEffect(() => {
-        const script = document.createElement("script");
-        script.src = "https://widget.reviewability.com/js/widgetAdv.min.js";
-        script.async = true;
-        document.body.appendChild(script);
+  console.log("ReviewBannerWidget mounted");
 
-        return () => {
-            document.body.removeChild(script);
-        };
-    }, []);
+  if (!document.getElementById("review-banner-script")) {
+    const script = document.createElement("script");
+    script.id = "review-banner-script";
+    script.src = "https://widget.reviewability.com/js/widgetAdv.min.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }
+}, []);
 
     return (
         <>

@@ -25,8 +25,13 @@ html, body {
   background: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   color: #1a1a1a;
-  padding-bottom: 100px;
+  padding-bottom: 260px;
   position: relative;
+}
+  @media (max-width: 640px) {
+  .service-pricing-container {
+    padding-bottom: 300px;
+  }
 }
 
 /* ==================== HEADER ==================== */
@@ -233,7 +238,7 @@ html, body {
   border-radius: 24px;
   padding: 24px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   position: relative;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -297,7 +302,7 @@ html, body {
 .selection-card-arrow {
   color: #718096;
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .service-selection-card:hover .selection-card-arrow {
@@ -372,7 +377,7 @@ html, body {
   border-radius: 24px;
   padding: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -441,7 +446,7 @@ html, body {
 .item-card-arrow {
   color: #718096;
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .item-selection-card:hover .item-card-arrow {
@@ -744,23 +749,9 @@ html, body {
 }
 
 /* ==================== CART SUMMARY ==================== */
-.cart-summary {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #ffffff;
-  border-top: 2px solid #FF6B00;
-  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.08);
-  z-index: 1000;
-  transform: translateY(0);
-  transition: transform 0.3s ease;
-}
 
-.cart-summary.expanded {
-  height: 60vh;
-  overflow: hidden;
-}
+
+
 
 .cart-summary-top {
   padding: 16px 20px;
@@ -831,16 +822,7 @@ html, body {
   transform: rotate(180deg);
 }
 
-.cart-summary-content {
-  height: calc(60vh - 60px);
-  overflow-y: auto;
-  padding: 20px;
-  display: none;
-}
 
-.cart-summary.expanded .cart-summary-content {
-  display: block;
-}
 
 .cart-items h4 {
   font-size: 1.1rem;
@@ -1194,13 +1176,8 @@ html, body {
     text-align: left;
   }
   
-  .cart-summary.expanded {
-    height: 70vh;
-  }
+ 
   
-  .cart-summary-content {
-    height: calc(70vh - 60px);
-  }
 }
 
 /* ==================== ANIMATIONS ==================== */
@@ -1290,6 +1267,208 @@ html, body {
   .todo-service-type,
   .todo-gender {
     font-size: 0.7rem;
+  }
+}
+  .call-us-button {
+  position: fixed;
+  bottom: 110px; 
+  right: 20px;
+  z-index: 2000; 
+}
+/* ==================== MODERN FIXED CART ==================== */
+
+.cart-summary {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+
+  background: #fff;
+  border-radius: 20px;
+  border: 2px solid #FF6B00;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+
+  max-height: calc(100vh - 40px);  /* 🔥 FIXED */
+  overflow: hidden;
+
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* TOP HEADER */
+.cart-summary-top {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #FF6B00, #FF8C00);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* CONTENT WRAPPER */
+.cart-summary-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 🔥 SCROLLABLE ITEMS AREA */
+.cart-items {
+  flex: 1;
+  min-height: 0;        /* 🔥 CRITICAL FIX */
+  overflow-y: auto;
+  overflow-x: hidden;   /* ❌ Remove horizontal scroll */
+  padding: 16px 20px;
+}
+
+/* KEEP BUTTONS ALWAYS VISIBLE */
+.cart-summary-bottom {
+  background: white;
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* Scrollbar */
+.cart-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cart-items::-webkit-scrollbar-thumb {
+  background: #FF6B00;
+  border-radius: 10px;
+}
+
+/* CART ADD ANIMATION */
+.cart-summary.animate {
+  animation: cartBounce 0.4s ease;
+}
+
+@keyframes cartBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .cart-summary {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    max-height: calc(100vh - 20px); /* 🔥 FIXED */
+  }
+}
+
+}
+/* ==================== MODERN FIXED CART ==================== */
+
+.cart-summary {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  background: #fff;
+  border-radius: 20px;
+  border: 2px solid #FF6B00;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* TOP HEADER */
+.cart-summary-top {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #FF6B00, #FF8C00);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* CONTENT WRAPPER - FIXED SCROLLING */
+.cart-summary-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;  /* CRITICAL for flexbox scrolling */
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 🔥 SCROLLABLE ITEMS AREA - FIXED */
+.cart-items {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 20px;
+  max-height: 300px; /* Adjust this value as needed */
+  min-height: 0; /* CRITICAL for flexbox scrolling */
+}
+
+/* KEEP BUTTONS ALWAYS VISIBLE */
+.cart-summary-bottom {
+  background: white;
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* Scrollbar styling */
+.cart-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cart-items::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.cart-items::-webkit-scrollbar-thumb {
+  background: #FF6B00;
+  border-radius: 10px;
+}
+
+.cart-items::-webkit-scrollbar-thumb:hover {
+  background: #FF8C00;
+}
+
+/* CART ADD ANIMATION */
+.cart-summary.animate {
+  animation: cartBounce 0.4s ease;
+}
+
+@keyframes cartBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1.05); }
+}
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .cart-summary {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    max-height: calc(100vh - 20px);
+  }
+  
+  .cart-items {
+    max-height: 250px; /* Smaller on mobile */
   }
 }
 `;
@@ -1825,24 +2004,33 @@ const getServiceTypeDisplay = (serviceType, productName) => {
   };
 
   const addToCart = (product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        return [...prevCart, {
-          ...product,
-          quantity: 1,
-          price: product.price
-        }];
-      }
-    });
-  };
+  setCart(prevCart => {
+    const existingItem = prevCart.find(item => item.id === product.id);
+
+    if (existingItem) {
+      return prevCart.map(item =>
+        item.id === product.id
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+    } else {
+      return [...prevCart, {
+        ...product,
+        quantity: 1,
+        price: product.price
+      }];
+    }
+  });
+
+  // 🔥 Trigger cart animation
+  const cartEl = document.querySelector('.cart-summary');
+  if (cartEl) {
+    cartEl.classList.add('animate');
+    setTimeout(() => {
+      cartEl.classList.remove('animate');
+    }, 400);
+  }
+};
 
   const removeFromCart = (productId) => {
     setCart(prevCart => {
@@ -2194,70 +2382,97 @@ const getServiceTypeDisplay = (serviceType, productName) => {
       {cart.length > 0 && (
         <div className={`cart-summary ${showCart ? 'expanded' : ''}`}>
           <div className="cart-summary-top" onClick={() => setShowCart(!showCart)}>
-            <div className="cart-info">
-              <div className="cart-icon-wrapper">
-                <i className="fas fa-shopping-bag"></i>
-                <span className="cart-count" style={{color:"#1a1a1a"}}>{getCartItemCount()}</span>
-              </div>
-              <div className="cart-details">
-                <span className="cart-items-text" style={{color:"#1a1a1a"}}>{getCartItemCount()} items</span>
-                <span className="cart-total-text" style={{color:"#1a1a1a"}}>{formatPrice(getCartTotal())}</span>
-              </div>
-            </div>
-            <i className={`fas fa-chevron-${showCart ? 'up' : 'down'}`}></i>
-          </div>
+  <div className="cart-info">
+    <div className="cart-icon-wrapper">
+      <i className="fas fa-shopping-bag"></i>
+      <span className="cart-count">{getCartItemCount()}</span>
+    </div>
+
+    <div className="cart-details">
+      <span className="cart-label">Your Basket</span>
+      <span className="cart-items-text">
+        {getCartItemCount()} items
+      </span>
+      <span className="cart-total-text">
+        {formatPrice(getCartTotal())}
+      </span>
+    </div>
+  </div>
+
+  <i className={`fas fa-chevron-${showCart ? "up" : "down"}`}></i>
+</div>
           
           {showCart && (
-            <div className="cart-summary-content">
-              <div className="cart-items" style={{color:"#1a1a1a"}}>
-                <h4 style={{color:"#1a1a1a"}}>Your Cart</h4>
-                {cart.map(item => (
-                  <div key={item.id} className="cart-item">
-                    <div className="cart-item-left">
-                      <span className="cart-item-emoji">{item.emoji || "👕"}</span>
-                      <div className="cart-item-info">
-                        <h5 style={{color:"#1a1a1a"}}>{item.name}</h5>
-                        <span className="cart-item-price" style={{color:"#1a1a1a"}}>{formatPrice(item.price)} each</span>
-                      </div>
-                    </div>
-                    <div className="cart-item-right">
-                      <div className="cart-item-controls">
-                        <button 
-                          className="cart-qty-btn"
-                          onClick={() => removeFromCart(item.id)}
-                        >
-                          <i className="fas fa-minus"></i>
-                        </button>
-                        <span className="cart-qty">{item.quantity}</span>
-                        <button 
-                          className="cart-qty-btn"
-                          onClick={() => addToCart(item)}
-                        >
-                          <i className="fas fa-plus"></i>
-                        </button>
-                      </div>
-                      <span className="cart-item-total" style={{color:"#1a1a1a"}}>{formatPrice(item.price * item.quantity)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="cart-summary-bottom">
-                <div className="cart-total-section">
-                  <span style={{color:"#1a1a1a"}}>Subtotal</span>
-                  <span className="cart-final-total" style={{color:"#1a1a1a"}}>{formatPrice(getCartTotal())}</span>
-                </div>
-                <div className="cart-actions">
-                  <button className="cart-clear-btn" onClick={clearCart} style={{border:" 1px solid #e2e8f0",color:"#4a5568"}}>
-                    Clear Cart
-                  </button>
-                  <button className="cart-checkout-btn" onClick={handleProceedToCheckout}>
-                    Checkout <i className="fas fa-arrow-right"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+  <div className="cart-summary-content">
+    
+    <div className="cart-items">
+      <h4>Your Cart</h4>
+
+      {cart.map(item => (
+  <div key={item.id} className="cart-item">
+
+    <div className="cart-item-left">
+      <span className="cart-item-emoji">{item.emoji}</span>
+      <div className="cart-item-info">
+        <h5>{item.name}</h5>
+        <span className="cart-item-price">
+          {formatPrice(item.price)} × {item.quantity}
+        </span>
+      </div>
+    </div>
+
+    <div className="cart-item-right">
+      <div className="cart-item-controls">
+        <button
+          className="cart-qty-btn"
+          onClick={() => removeFromCart(item.id)}
+        >
+          <i className="fas fa-minus"></i>
+        </button>
+
+        <span className="cart-qty">{item.quantity}</span>
+
+        <button
+          className="cart-qty-btn"
+          onClick={() => addToCart(item)}
+        >
+          <i className="fas fa-plus"></i>
+        </button>
+      </div>
+
+      <div className="cart-item-total">
+        {formatPrice(item.price * item.quantity)}
+      </div>
+    </div>
+
+  </div>
+))}
+    </div>
+
+    <div className="cart-summary-bottom">
+      <div className="cart-total-section">
+        <span>Subtotal</span>
+        <span className="cart-final-total">
+          {formatPrice(getCartTotal())}
+        </span>
+      </div>
+
+      <div className="cart-actions">
+        <button className="cart-clear-btn" onClick={clearCart}>
+          Clear Cart
+        </button>
+
+        <button
+          className="cart-checkout-btn"
+          onClick={handleProceedToCheckout}
+        >
+          Checkout <i className="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+)}
         </div>
       )}
 

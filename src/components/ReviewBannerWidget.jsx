@@ -1,12 +1,23 @@
 // src/components/ReviewBannerWidget.jsx
-import React from "react";
+import React, { useEffect } from "react";
 
 const ReviewBannerWidget = () => {
+  useEffect(() => {
+    // Load script only once
+    if (!document.getElementById("review-banner-script")) {
+      const script = document.createElement("script");
+      script.id = "review-banner-script";
+      script.src = "https://widget.reviewability.com/js/widgetAdv.min.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
   return (
     <section
       style={{
-        padding: "80px 20px",
-        background: "#f9fafb",
+        padding: "70px 20px",
+        background: "#ffffff",
       }}
     >
       <div
