@@ -3952,7 +3952,7 @@ useEffect(() => {
                 <i className="fas fa-info-circle"></i>
               </div>
               <div className="qb-notice-content">
-                <strong>No payment taken now</strong> – Save your payment method to confirm your booking. You won't be charged now. We'll send an invoice after the service and only take payment once you're happy to proceed.
+                <strong>No payment taken now</strong> – Save your payment method to confirm your booking. You won't be charged now. We'll send an invoice after the pickup and only take payment once you're happy to proceed.
               </div>
             </div>
 
