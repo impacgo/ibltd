@@ -490,13 +490,31 @@ function App() {
             <Route path="/coming-soon" element={<ComingSoon />} />
             <Route path="*" element={<PageWrapper component={NotFound} />} />
           </Routes>
-          <FloatingCallButton />
+          
+          {/* FloatingCallButton with conditional rendering based on path */}
+          <FloatingCallButtonWithCondition />
         </Router>
       </HelmetProvider>
     </AuthProvider>
   );
 }
 
+const FloatingCallButtonWithCondition = () => {
+  const location = useLocation();
+  
+  // Don't show on service-pricing page
+  if (location.pathname === "/service-pricing") {
+    return null;
+  }
+  if (location.pathname === "/quick-booking") {
+    return null;
+  }
+  if (location.pathname === "/checkout") {
+    return null;
+  }
+  
+  return <FloatingCallButton />;
+};
 export default App;
 
 // // // src/App.jsx
