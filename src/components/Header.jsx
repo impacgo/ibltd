@@ -295,18 +295,22 @@ const Header = () => {
     <div className="header-discount-marquee">
       <div className="header-discount-track">
         {[
-  "🎉 <strong>First Booking</strong> – <strong>50% OFF</strong> on orders above £50",
-
-  "🔁 <strong>Second Booking</strong> – <strong>35% OFF</strong> on orders above £45",
-
-  "🔁 <strong>Third Booking</strong> – <strong>30% OFF</strong> on orders above £40",
-
-  "💷 <strong>Exclusive Offer (After 3 Bookings)</strong> – <strong>Flat 10% OFF</strong> on orders between £80 – £150",
-
-  "💎 <strong>Exclusive Offer (After 3 Bookings)</strong> – <strong>Flat 15% OFF</strong> on orders above £150",
-
-  "🎓 <strong>Students</strong>: <strong>50% OFF</strong> on first booking + <strong>EXTRA 5% OFF</strong> on all other offers"
+  "🎉 <strong>First Booking Offer</strong> – Get <strong>50% OFF</strong> on your first order.",
+  "🎉 <strong>First Booking Offer</strong> – Get <strong>50% OFF</strong> on your first order."
 ]
+//         [
+//   "🎉 <strong>First Booking</strong> – <strong>50% OFF</strong> on orders above £50",
+
+//   "🔁 <strong>Second Booking</strong> – <strong>35% OFF</strong> on orders above £45",
+
+//   "🔁 <strong>Third Booking</strong> – <strong>30% OFF</strong> on orders above £40",
+
+//   "💷 <strong>Exclusive Offer (After 3 Bookings)</strong> – <strong>Flat 10% OFF</strong> on orders between £80 – £150",
+
+//   "💎 <strong>Exclusive Offer (After 3 Bookings)</strong> – <strong>Flat 15% OFF</strong> on orders above £150",
+
+//   "🎓 <strong>Students</strong>: <strong>50% OFF</strong> on first booking + <strong>EXTRA 5% OFF</strong> on all other offers"
+// ]
 
 .map((item, idx) => (
           <span key={`h1-${idx}`} className="header-discount-item">
@@ -321,18 +325,22 @@ const Header = () => {
 
         {/* duplicate for seamless loop */}
         {[
-  "🎉 <strong>First Booking</strong> – <strong>50% OFF</strong> on orders above £50",
-
-  "🔁 <strong>Second Booking</strong> – <strong>35% OFF</strong> on orders above £45",
-
-  "🔁 <strong>Third Booking</strong> – <strong>30% OFF</strong> on orders above £40",
-
-  "💷 <strong>Exclusive Offer (After 3 Bookings)</strong> – <strong>Flat 10% OFF</strong> on orders between £80 – £150",
-
-  "💎 <strong>Exclusive Offer (After 3 Bookings)</strong> – <strong>Flat 15% OFF</strong> on orders above £150",
-
-  "🎓 <strong>Students</strong>: <strong>50% OFF</strong> on first booking + <strong>EXTRA 5% OFF</strong> on all other offers"
+  "🎉 <strong>First Booking Offer</strong> – Get <strong>50% OFF</strong> on your first order.",
+  "🎉 <strong>First Booking Offer</strong> – Get <strong>50% OFF</strong> on your first order."
 ]
+//         [
+//   "🎉 <strong>First Booking</strong> – <strong>50% OFF</strong> on orders above £50",
+
+//   "🔁 <strong>Second Booking</strong> – <strong>35% OFF</strong> on orders above £45",
+
+//   "🔁 <strong>Third Booking</strong> – <strong>30% OFF</strong> on orders above £40",
+
+//   "💷 <strong>Exclusive Offer (After 3 Bookings)</strong> – <strong>Flat 10% OFF</strong> on orders between £80 – £150",
+
+//   "💎 <strong>Exclusive Offer (After 3 Bookings)</strong> – <strong>Flat 15% OFF</strong> on orders above £150",
+
+//   "🎓 <strong>Students</strong>: <strong>50% OFF</strong> on first booking + <strong>EXTRA 5% OFF</strong> on all other offers"
+// ]
 .map((item, idx) => (
           <span key={`h2-${idx}`} className="header-discount-item">
             <i className="fas fa-gift"></i>

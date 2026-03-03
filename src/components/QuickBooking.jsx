@@ -3929,7 +3929,7 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Payment Section - ALWAYS SHOW PAYMENT */}
+                {/* Payment Section - ALWAYS SHOW PAYMENT */}
         {!showPaymentSetup && (
           <div className="qb-card">
             <div className="qb-card-header">
@@ -3943,6 +3943,17 @@ useEffect(() => {
               <div className="qb-security-badge">
                 <i className="fas fa-shield-alt"></i>
                 <span>Secure Payment</span>
+              </div>
+            </div>
+
+            {/* 🔥 IMPORTANT NOTE ABOUT PAYMENT - Added this section */}
+              <div className="qb-payment-notice">
+              <div className="qb-notice-icon">
+                <i className="fas fa-info-circle"></i>
+              </div>
+              <div className="qb-notice-content">
+                <strong>No payment taken now</strong> – We'll send an invoice after inspecting your items. 
+                You only pay if you approve the cleaning. No charges if declined.
               </div>
             </div>
 
@@ -4005,13 +4016,13 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="qb-payment-info">
+                {/* 🔥 ADDED NOTE HERE TOO for saved cards section */}
+                <div className="qb-payment-info" style={{ marginTop: '12px' }}>
                   <div className="qb-payment-info-icon">
                     <i className="fas fa-info-circle"></i>
                   </div>
                   <div className="qb-payment-info-text">
-                    Your card will only be charged after your laundry manager sends the invoice. 
-                    No charges will be made now.
+                    <strong>No payment taken now:</strong> We'll send an invoice after inspection. You approve payment only after reviewing.
                   </div>
                 </div>
 
@@ -4045,28 +4056,28 @@ useEffect(() => {
             ) : (
               <>
                 <div className="qb-payment-options">
-                  <div className="qb-payment-option">
-                    <div className="qb-payment-icon">
-                      <i className="fas fa-credit-card"></i>
-                    </div>
-                    <div className="qb-payment-content">
-                      <h3 className="qb-payment-title">Save Card for Faster Checkout</h3>
-                      <p className="qb-payment-description">
-                        Securely save your card with Stripe. No charges until your laundry manager sends the invoice.
-                      </p>
-                    </div>
-                    <div className="qb-payment-toggle">
-                      <label className="qb-switch">
-                        <input
-                          type="checkbox"
-                          checked={saveCardOption}
-                          onChange={(e) => setSaveCardOption(e.target.checked)}
-                        />
-                        <span className="qb-switch-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
+  <div className="qb-payment-option">
+    <div className="qb-payment-icon">
+      <i className="fas fa-credit-card"></i>
+    </div>
+    <div className="qb-payment-content">
+      <h3 className="qb-payment-title">Save Card for Faster Checkout</h3>
+      <p className="qb-payment-description">
+        Securely save your card with Stripe. No charges now.
+      </p>
+    </div>
+    <div className="qb-payment-toggle">
+      <label className="qb-switch">
+        <input
+          type="checkbox"
+          checked={saveCardOption}
+          onChange={(e) => setSaveCardOption(e.target.checked)}
+        />
+        <span className="qb-switch-slider"></span>
+      </label>
+    </div>
+  </div>
+</div>
 
                 <div className="qb-payment-info">
                   <div className="qb-payment-info-icon">

@@ -2621,3 +2621,157 @@ body {
     font-size: 0.6rem;
   }
 }
+/* ===== HEADER DISCOUNT BAR – PREMIUM ATTENTION VERSION ===== */
+.header-discount-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  z-index: 1200;
+  background: linear-gradient(
+    90deg,
+    #120800,
+    #2a1200,
+    #120800
+  );
+  border-bottom: 1px solid rgba(255, 140, 0, 0.35);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.25);
+  overflow: hidden;
+}
+
+.header-discount-wrapper {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 12px;
+}
+
+.header-discount-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ff9f1c;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: 999px;
+  background: rgba(255, 140, 0, 0.12);
+  flex-shrink: 0;
+}
+
+.header-discount-label i {
+  font-size: 0.7rem;
+}
+
+.header-discount-marquee {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+.header-discount-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 48px; /* Increased gap for better spacing */
+  white-space: nowrap;
+  animation: marquee-scroll 25s linear infinite; /* Faster speed - 25s */
+  will-change: transform;
+  padding: 0 24px; /* Add padding for smoother edges */
+}
+
+/* For smoother infinite loop, ensure content is wide enough */
+.header-discount-track {
+  width: max-content;
+}
+
+.header-discount-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 820;
+  color: #f8fafc;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+  opacity: 0.95;
+}
+
+.header-discount-item i {
+  color: var(--primary-orange);
+  font-size: 0.9rem;
+  filter: drop-shadow(0 0 6px rgba(255, 107, 0, 0.5));
+}
+
+/* FASTER ANIMATION KEYFRAMES */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); } /* Move exactly half of total width */
+}
+
+/* Optional: Pause on hover for better UX */
+.header-discount-marquee:hover .header-discount-track {
+  animation-play-state: paused;
+}
+
+/* RESPONSIVE SPEED ADJUSTMENTS */
+@media (max-width: 768px) {
+  .header-discount-track {
+    animation: marquee-scroll 18s linear infinite; /* Even faster on mobile */
+    gap: 32px;
+  }
+  
+  .header-discount-item {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-discount-track {
+    animation: marquee-scroll 15s linear infinite; /* Fastest on small screens */
+    gap: 24px;
+  }
+  
+  .header-discount-item {
+    font-size: 0.9rem;
+  }
+  
+  .header-discount-item i {
+    font-size: 0.8rem;
+  }
+}
+
+/* ===== BODY OFFSET (SINGLE SOURCE OF TRUTH) ===== */
+body {
+  padding-top: calc(48px + var(--header-height-mobile));
+}
+
+@media (min-width: 768px) {
+  body {
+    padding-top: calc(48px + var(--header-height-tablet));
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    padding-top: calc(48px + var(--header-height-desktop));
+  }
+}
