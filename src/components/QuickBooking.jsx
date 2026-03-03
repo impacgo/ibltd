@@ -3952,8 +3952,7 @@ useEffect(() => {
                 <i className="fas fa-info-circle"></i>
               </div>
               <div className="qb-notice-content">
-                <strong>No payment taken now</strong> – We'll send an invoice after inspecting your items. 
-                You only pay if you approve the cleaning. No charges if declined.
+                <strong>No payment taken now</strong> – Save your payment method to confirm your booking. You won't be charged now. We'll send an invoice after the service and only take payment once you're happy to proceed.
               </div>
             </div>
 
@@ -4085,7 +4084,7 @@ useEffect(() => {
                   </div>
                   <div className="qb-payment-info-text">
                     <strong>Payment Required:</strong> A valid card must be saved to confirm your booking. 
-                    No charges will be made now - your card will only be charged after service completion when the invoice is sent.
+                    {/* No charges will be made now - your card will only be charged after service completion when the invoice is sent. */}
                   </div>
                 </div>
 
