@@ -2729,7 +2729,7 @@ if (useSameAddress) {
     // Validate geo before anything
     if (!userToken || showAddressForm) {
       if (!geoData.latitude || !geoData.longitude) {
-        throw new Error("Please select a valid delivery address from suggestions");
+        throw new Error("Please select a valid pickup address from suggestions");
       }
     }
 
@@ -2842,7 +2842,7 @@ if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
     setSetupProcessing(true);
 
     // 🚨 DO NOT CREATE NEW BOOKING
-    if (!pendingBookingData?.order?.id) {
+    if (!pendingBookingData) {
       showToast("Please create booking first.", "error");
       return;
     }
@@ -2931,12 +2931,17 @@ if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
 
     // 🚀 NOW CREATE ORDER (ONLY AFTER CARD SAVED)
     const response = await fetch(`${API_BASE}/quick-booking`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(pendingBookingData),
-    });
+    method: "POST",
+    headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`,
+     },
+  body: JSON.stringify({
+    ...pendingBookingData,
+    payment_method_id: paymentMethodId,
+    stripe_customer_id: customerId
+  }),
+});
 
     const data = await response.json();
 
@@ -3255,17 +3260,17 @@ useEffect(() => {
     });
 
     // ✅ STORE DELIVERY GEO
-    setPickupGeoData({
-      latitude: lat,
-      longitude: lng,
-      street_name: street,
-      house_number: house
-    });
+    setDeliveryGeoData({
+  latitude: lat,
+  longitude: lng,
+  street_name: street,
+  house_number: house
+});
 
     // ✅ UPDATE DELIVERY FORM
-    setPickupAddressForm(prev => ({
-      ...prev,
-      street_address: place.formatted_address,
+    setAddressForm(prev => ({
+  ...prev,
+  street_address: place.formatted_address,
       postcode:
         place.address_components.find(c =>
           c.types.includes("postal_code")
