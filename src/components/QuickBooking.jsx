@@ -7272,12 +7272,20 @@ if (useSameAddress) {
     showToast(errorMessage || "Failed to save card. Please try again.", "error");
   };
 
-  const handlePaymentModalCancel = () => {
-    setShowPaymentSetup(false);
-    setSetupClientSecret(null);
-    
-    showToast("Booking not confirmed. Please complete card setup to confirm your booking.", "warning");
-  };
+ const handlePaymentModalCancel = () => {
+  setShowPaymentSetup(false);
+  setSetupClientSecret(null);
+
+  // 🔥 IMPORTANT FIX
+  setPendingBookingData(null);
+  setSetupProcessing(false); // optional safety
+
+
+  showToast(
+    "Booking not confirmed. Please complete card setup to confirm your booking.",
+    "warning"
+  );
+};
 
   /* ---------------------------- UI Handlers ------------------------------- */
   
