@@ -6388,6 +6388,16 @@ const [pickupGeoData, setPickupGeoData] = useState({
       phone: "",
     };
   });
+  // Country code state
+const [countryCode, setCountryCode] = useState("+44");
+
+const countryCodes = [
+  { code: "+44", label: "UK" },
+  { code: "+91", label: "IN" },
+  { code: "+1", label: "US" },
+  { code: "+61", label: "AU" },
+  { code: "+971", label: "UAE" },
+];
   
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -6418,6 +6428,23 @@ const [pickupGeoData, setPickupGeoData] = useState({
   const [collectDate, setCollectDate] = useState("");
   const [deliverDate, setDeliverDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [postcode, setPostcode] = useState("");
+const [postcodeAddresses, setPostcodeAddresses] = useState([]);
+const [selectedPostcodeAddress, setSelectedPostcodeAddress] = useState("");
+const [addressDetails, setAddressDetails] = useState("");
+const [loadingPostcode, setLoadingPostcode] = useState(false);
+const [googleReady, setGoogleReady] = useState(false);
+useEffect(() => {
+  const checkGoogle = () => {
+    if (window.google && window.google.maps && window.google.maps.places) {
+      setGoogleReady(true);
+    } else {
+      setTimeout(checkGoogle, 300);
+    }
+  };
+
+  checkGoogle();
+}, []);
 
   // Constants
   const today = new Date().toISOString().split("T")[0];
@@ -6427,6 +6454,19 @@ const [pickupGeoData, setPickupGeoData] = useState({
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
   }, []);
+  useEffect(() => {
+
+  if (!googleReady) return;
+
+  const clean = postcode.trim();
+
+  if (clean.length >= 3) {
+    fetchAddressesByPostcode(clean);
+  } else {
+    setPostcodeAddresses([]);
+  }
+
+}, [postcode, googleReady]);
 
   /* --------------------------- Helper Functions --------------------------- */
   const formatTime24Hour = (timeString) => {
@@ -6441,6 +6481,39 @@ const [pickupGeoData, setPickupGeoData] = useState({
       return timeString;
     }
   };
+  const fetchAddressesByPostcode = (postcode) => {
+
+  if (!window.google || !window.google.maps || !window.google.maps.places) {
+    setPostcodeAddresses([]);
+    return;
+  }
+
+  const service = new window.google.maps.places.AutocompleteService();
+
+  service.getPlacePredictions(
+    {
+      input: postcode,
+      componentRestrictions: { country: "gb" }
+    },
+    (predictions, status) => {
+
+      if (
+        status !== window.google.maps.places.PlacesServiceStatus.OK ||
+        !predictions
+      ) {
+        setPostcodeAddresses([]);
+        return;
+      }
+
+      const results = predictions.map((p) => ({
+        full: p.description,
+        place_id: p.place_id
+      }));
+
+      setPostcodeAddresses(results);
+    }
+  );
+};
 
   const formatTimeRange24Hour = (startTime, endTime) => {
     const start = formatTime24Hour(startTime);
@@ -6600,10 +6673,10 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        phone: phone.trim(),
-        name: userInfo.name || "User",
-        email: userInfo.email || null
-      }),
+  phone: `${countryCode}${phone.trim()}`,
+  name: userInfo.name || "User",
+  email: userInfo.email || null
+}),
     });
 
     if (!response.ok) return;
@@ -6898,6 +6971,7 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
 
   /* ------------------------- Order Preparation ---------------------------- */
   const prepareOrderData = useCallback(() => {
+
   if (!selectedCollectSlot || !selectedDeliverSlot || !collectDate || !deliverDate) {
     return null;
   }
@@ -6912,11 +6986,14 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
     selectedDeliverSlot.end
   )}`;
 
-  /* -------------------- PICKUP ADDRESS -------------------- */
+  /* ---------------- PICKUP ADDRESS ---------------- */
+
   let pickupAddressData = {};
 
   if (!useSameAddress) {
+
     if (userToken && pickupAddresses.length > 0 && selectedPickupAddressId && selectedPickupAddressId !== "new") {
+
       const selectedPickupAddress = pickupAddresses.find(
         addr => String(addr.address_id) === selectedPickupAddressId
       );
@@ -6929,70 +7006,84 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
         pickup_city: selectedPickupAddress.city || "",
         pickup_full_address: selectedPickupAddress.full_address,
         pickup_house_number: selectedPickupAddress.house_number || "",
-        pickup_street_name: selectedPickupAddress.street_name || "",
         pickup_latitude: selectedPickupAddress.latitude || null,
         pickup_longitude: selectedPickupAddress.longitude || null
       };
+
     } else {
+
       pickupAddressData = {
         pickup_street_address: pickupAddressForm.street_address,
         pickup_postcode: pickupAddressForm.postcode,
         pickup_city: pickupAddressForm.city || "",
         pickup_full_address: pickupAddressForm.street_address,
-        pickup_house_number: pickupAddressForm.house_number || "",
-        pickup_street_name: pickupGeoData.street_name || "",
+        pickup_house_number: pickupGeoData.house_number || "",
         pickup_latitude: pickupGeoData.latitude || null,
         pickup_longitude: pickupGeoData.longitude || null
       };
+
     }
+
   } else {
-    // Same address → use delivery address for pickup
+
     pickupAddressData = {
       pickup_street_address: addressForm.street_address,
       pickup_postcode: addressForm.postcode,
       pickup_city: addressForm.city || "",
       pickup_full_address: addressForm.street_address,
-      pickup_house_number: addressForm.house_number || "",
-      pickup_street_name: geoData.street_name || "",
+      pickup_house_number: geoData.house_number || "",
       pickup_latitude: geoData.latitude || null,
       pickup_longitude: geoData.longitude || null
     };
+
   }
 
-  /* -------------------- DELIVERY ADDRESS -------------------- */
+  /* ---------------- DELIVERY ADDRESS ---------------- */
+
   let deliveryAddressData = {};
 
-if (useSameAddress) {
-  deliveryAddressData = {
-    street_address: pickupAddressData.pickup_street_address,
-    postcode: pickupAddressData.pickup_postcode,
-    city: pickupAddressData.pickup_city,
-    full_address: pickupAddressData.pickup_full_address,
-    house_number: pickupAddressData.pickup_house_number,
-    latitude: pickupAddressData.pickup_latitude,
-    longitude: pickupAddressData.pickup_longitude
-  };
-} else {
-  deliveryAddressData = {
-    street_address: addressForm.street_address,
-    postcode: addressForm.postcode,
-    city: addressForm.city || "",
-    full_address: addressForm.street_address,
-    house_number: deliveryGeoData.house_number || "",
-    latitude: deliveryGeoData.latitude,
-    longitude: deliveryGeoData.longitude
-  };
-}
+  if (useSameAddress) {
+
+    deliveryAddressData = {
+      street_address: pickupAddressData.pickup_street_address,
+      postcode: pickupAddressData.pickup_postcode,
+      city: pickupAddressData.pickup_city,
+      full_address: pickupAddressData.pickup_full_address,
+      house_number: pickupAddressData.pickup_house_number,
+      latitude: pickupAddressData.pickup_latitude,
+      longitude: pickupAddressData.pickup_longitude
+    };
+
+  } else {
+
+    deliveryAddressData = {
+      street_address: addressForm.street_address,
+      postcode: addressForm.postcode,
+      city: addressForm.city || "",
+      full_address: addressForm.street_address,
+      house_number: deliveryGeoData.house_number || "",
+      latitude: deliveryGeoData.latitude || null,
+      longitude: deliveryGeoData.longitude || null
+    };
+
+  }
+
+  /* ---------------- FINAL ORDER ---------------- */
 
   return {
     ...deliveryAddressData,
     ...pickupAddressData,
+
+    additional_details: addressDetails,
+
     use_same_address: useSameAddress,
     name: userInfo.name,
     email: userInfo.email,
-    phone: userInfo.phone,
+    phone: `${countryCode}${userInfo.phone}`,
+
     collect_slot: pickupSlotText,
     delivery_slot: deliverySlotText,
+
     notes: notes.trim() || null,
     images: []
   };
@@ -7003,8 +7094,6 @@ if (useSameAddress) {
   collectDate,
   deliverDate,
   userToken,
-  addresses,
-  selectedAddressId,
   pickupAddresses,
   selectedPickupAddressId,
   useSameAddress,
@@ -7013,6 +7102,7 @@ if (useSameAddress) {
   geoData,
   pickupGeoData,
   deliveryGeoData,
+  addressDetails,
   notes,
   userInfo
 ]);
@@ -7453,6 +7543,7 @@ if (useSameAddress) {
 
 
  useEffect(() => {
+
   if (!window.google || !addressInputRef.current) return;
 
   const autocomplete = new window.google.maps.places.Autocomplete(
@@ -7463,66 +7554,54 @@ if (useSameAddress) {
     }
   );
 
-  autocomplete.addListener("place_changed", () => {
-    const place = autocomplete.getPlace();
-    if (!place.geometry) return;
+  const listener = autocomplete.addListener("place_changed", () => {
+  const place = autocomplete.getPlace();
+  if (!place.geometry) return;
 
-    const lat = place.geometry.location.lat();
-    const lng = place.geometry.location.lng();
+  let street = "";
+  let houseNumber = "";
+  let postcode = "";
+  let city = "";
 
-    let street = "";
-    let house = "";
-
-    place.address_components.forEach(component => {
-      if (component.types.includes("route")) {
-        street = component.long_name;
-      }
-      if (component.types.includes("street_number")) {
-        house = component.long_name;
-      }
-    });
-
-    // ✅ STORE PICKUP GEO
-    setGeoData({
-      latitude: lat,
-      longitude: lng,
-      street_name: street,
-      house_number: house
-    });
-
-    // ✅ UPDATE PICKUP FORM (NOT delivery)
-    setAddressForm(prev => ({
-      ...prev,
-      street_address: place.formatted_address,
-      postcode:
-        place.address_components.find(c =>
-          c.types.includes("postal_code")
-        )?.long_name || ""
-    }));
-
-    // ✅ If same address toggle ON → auto sync delivery
-    if (useSameAddress) {
-      setPickupAddressForm({
-        street_address: place.formatted_address,
-        postcode:
-          place.address_components.find(c =>
-            c.types.includes("postal_code")
-          )?.long_name || "",
-        city: "",
-        additional_details: "",
-        house_number: house
-      });
-
-      setPickupGeoData({
-        latitude: lat,
-        longitude: lng,
-        street_name: street,
-        house_number: house
-      });
+  place.address_components.forEach(component => {
+    if (component.types.includes("route")) {
+      street = component.long_name;
+    }
+    if (component.types.includes("street_number")) {
+      houseNumber = component.long_name;
+    }
+    if (component.types.includes("postal_code")) {
+      postcode = component.long_name;
+    }
+    if (component.types.includes("postal_town")) {
+      city = component.long_name;
     }
   });
 
-}, [useSameAddress]);
+  const lat = place.geometry.location.lat();
+  const lng = place.geometry.location.lng();
+
+  setGeoData({
+    latitude: lat,
+    longitude: lng,
+    street_name: street,
+    house_number: houseNumber
+  });
+
+  setAddressForm(prev => ({
+    ...prev,
+    street_address: place.formatted_address,
+    postcode: postcode,
+    city: city,
+    house_number: houseNumber
+  }));
+});
+
+  return () => {
+    window.google.maps.event.removeListener(listener);
+  };
+
+}, []);
 
 useEffect(() => {
   if (!window.google || !deliveryAddressInputRef.current) return;
@@ -7535,7 +7614,7 @@ useEffect(() => {
     }
   );
 
-  autocomplete.addListener("place_changed", () => {
+  const listener = autocomplete.addListener("place_changed", () => {
     const place = autocomplete.getPlace();
     if (!place.geometry) return;
 
@@ -7546,15 +7625,10 @@ useEffect(() => {
     let house = "";
 
     place.address_components.forEach(component => {
-      if (component.types.includes("route")) {
-        street = component.long_name;
-      }
-      if (component.types.includes("street_number")) {
-        house = component.long_name;
-      }
+      if (component.types.includes("route")) street = component.long_name;
+      if (component.types.includes("street_number")) house = component.long_name;
     });
 
-    // ✅ STORE DELIVERY GEO
     setDeliveryGeoData({
       latitude: lat,
       longitude: lng,
@@ -7562,8 +7636,7 @@ useEffect(() => {
       house_number: house
     });
 
-    // ✅ UPDATE DELIVERY FORM
-    setPickupAddressForm(prev => ({
+    setAddressForm(prev => ({
       ...prev,
       street_address: place.formatted_address,
       postcode:
@@ -7572,6 +7645,11 @@ useEffect(() => {
         )?.long_name || ""
     }));
   });
+
+  // ✅ CLEANUP HERE
+  return () => {
+    window.google.maps.event.removeListener(listener);
+  };
 
 }, []);
 
@@ -7587,41 +7665,42 @@ useEffect(() => {
     }
   );
 
-  autocomplete.addListener("place_changed", () => {
-  const place = autocomplete.getPlace();
-  if (!place.geometry) return;
+  const listener = autocomplete.addListener("place_changed", () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry) return;
 
-  const lat = place.geometry.location.lat();
-  const lng = place.geometry.location.lng();
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
 
-  let street = "";
-  let house = "";
+    let street = "";
+    let house = "";
 
-  place.address_components.forEach(component => {
-    if (component.types.includes("route")) {
-      street = component.long_name;
-    }
-    if (component.types.includes("street_number")) {
-      house = component.long_name;
-    }
+    place.address_components.forEach(component => {
+      if (component.types.includes("route")) street = component.long_name;
+      if (component.types.includes("street_number")) house = component.long_name;
+    });
+
+    setPickupGeoData({
+      latitude: lat,
+      longitude: lng,
+      street_name: street,
+      house_number: house
+    });
+
+    setPickupAddressForm(prev => ({
+      ...prev,
+      street_address: place.formatted_address,
+      postcode:
+        place.address_components.find(c =>
+          c.types.includes("postal_code")
+        )?.long_name || ""
+    }));
   });
 
-  setPickupGeoData({
-    latitude: lat,
-    longitude: lng,
-    street_name: street,
-    house_number: house
-  });
-
-  setPickupAddressForm(prev => ({
-    ...prev,
-    street_address: place.formatted_address,
-    postcode:
-      place.address_components.find(c =>
-        c.types.includes("postal_code")
-      )?.long_name || ""
-  }));
-});
+  // ✅ CLEANUP HERE
+  return () => {
+    window.google.maps.event.removeListener(listener);
+  };
 
 }, []);
 
@@ -7665,34 +7744,134 @@ useEffect(() => {
 
   // Check if form is valid for booking
   const isBookingValid = () => {
-    if (!userInfo.name.trim()) return false;
-    if (!userInfo.email.trim()) return false;
-    if (!userInfo.phone.trim()) return false;
-    if (!selectedCollectSlot || !selectedDeliverSlot) return false;
-    
-    // Delivery address validation
-    if (userToken && addresses.length > 0 && !showAddressForm) {
-      if (!selectedAddressId) return false;
-    } else {
-      if (!addressForm.street_address.trim()) return false;
-      if (!addressForm.postcode.trim()) return false;
-    }
-    
-    // Pickup address validation (when useSameAddress is false)
-    if (!useSameAddress) {
-      if (userToken) {
-        if (!selectedPickupAddressId) return false;
-        if (selectedPickupAddressId === "new" && showPickupAddressForm) {
-          if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
-        }
-      } else {
+  if (!userInfo.name.trim()) return false;
+  if (!userInfo.email.trim()) return false;
+  if (!userInfo.phone.trim()) return false;
+  if (!selectedCollectSlot || !selectedDeliverSlot) return false;
+  
+  // Delivery address validation
+  if (userToken && addresses.length > 0 && !showAddressForm) {
+    if (!selectedAddressId) return false;
+  } else {
+    if (!addressForm.street_address.trim()) return false;
+    if (!addressForm.postcode.trim()) return false;
+  }
+  
+  // Pickup address validation (when useSameAddress is false)
+  if (!useSameAddress) {
+    if (userToken) {
+      if (!selectedPickupAddressId) return false;
+      if (selectedPickupAddressId === "new" && showPickupAddressForm) {
         if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
       }
+    } else {
+      if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
     }
-    
-    return true;
-  };
+  }
+  // Pickup address validation (when useSameAddress is false)
+if (!useSameAddress) {
+  if (userToken) {
+    if (!selectedPickupAddressId) return false;
+    if (selectedPickupAddressId === "new" && showPickupAddressForm) {
+      if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
+    }
+  } else {
+    if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
+  }
+}
 
+/* ADD THIS BLOCK HERE */
+if (useSameAddress) {
+  if (!geoData.latitude || !geoData.longitude) return false;
+} else {
+  if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) return false;
+}
+
+/* END */
+
+return true;
+  
+  return true;
+};
+
+  const geocodeAddress = (placeId) => {
+
+  if (!window.google || !placeId) return;
+
+  const geocoder = new window.google.maps.Geocoder();
+
+  geocoder.geocode({ placeId: placeId }, (results, status) => {
+
+    if (status !== "OK" || !results[0]) return;
+
+    const result = results[0];
+
+    const lat = result.geometry.location.lat();
+    const lng = result.geometry.location.lng();
+
+    let postcode = "";
+let house = "";
+let street = "";
+let city = "";
+
+    result.address_components.forEach((c) => {
+
+      if (c.types.includes("postal_code")) {
+        postcode = c.long_name;
+      }
+
+      if (c.types.includes("street_number")) {
+        house = c.long_name;
+      }
+
+      if (c.types.includes("route")) {
+        street = c.long_name;
+      }
+      if (c.types.includes("postal_town")) {
+  city = c.long_name;
+}
+
+    });
+
+    if (useSameAddress) {
+  setGeoData({
+    latitude: lat,
+    longitude: lng,
+    street_name: street,
+    house_number: house
+  });
+} else {
+  setDeliveryGeoData({
+    latitude: lat,
+    longitude: lng,
+    street_name: street,
+    house_number: house
+  });
+}
+
+    setAddressForm(prev => ({
+      ...prev,
+      street_address: result.formatted_address,
+      postcode: postcode,
+      house_number: house,
+      city: city
+    }));
+
+  });
+};
+useEffect(() => {
+  if (selectedPostcodeAddress) {
+    geocodeAddress(selectedPostcodeAddress);
+  }
+}, [selectedPostcodeAddress]);
+
+useEffect(() => {
+  return () => {
+    if (phoneCheckTimeoutRef.current) {
+      clearTimeout(phoneCheckTimeoutRef.current);
+    }
+  };
+}, []);
   /* ------------------------------ Render ---------------------------------- */
   
 
@@ -7776,24 +7955,38 @@ useEffect(() => {
               </label>
             </div>
 
-            <div className="qb-form-group">
-              <label className="qb-form-label">
-                <i className="fas fa-phone"></i>
-                Phone Number
-                <input
-                  type="tel"
-                  className="qb-form-input"
-                  value={userInfo.phone}
-                  onChange={handlePhoneChange}
-                  placeholder="+44 20 1234 5678"
-                  required
-                />
-                {/* <div className="qb-phone-hint">
-                  <i className="fas fa-info-circle"></i>
-                  Enter phone number to check for existing account
-                </div> */}
-              </label>
-            </div>
+            <div className="qb-phone-group">
+  <div className="qb-phone-group">
+  <select
+    className="qb-country-code"
+    value={countryCode}
+    onChange={(e) => setCountryCode(e.target.value)}
+  >
+    {countryCodes.map((c) => (
+      <option key={c.code} value={c.code}>
+        {c.code}
+      </option>
+    ))}
+  </select>
+
+  <input
+    type="tel"
+    value={userInfo.phone}
+    onChange={handlePhoneChange}
+    placeholder="Phone number"
+    required
+  />
+</div>
+
+  <input
+    type="tel"
+    className="qb-form-input"
+    value={userInfo.phone}
+    onChange={handlePhoneChange}
+    placeholder="Phone Number"
+    required
+  />
+</div>
           </div>
         </div>
 
@@ -7884,39 +8077,53 @@ useEffect(() => {
     /* ---------- Manual Address Form (Guest or Adding New) ---------- */
     <div className="qb-address-form-section">
       <div className="qb-form-grid">
-        <div className="qb-form-group full-width">
-          <label className="qb-form-label">
-            <i className="fas fa-road"></i>
-            Full Address *
-            <input
-              type="text"
-              ref={addressInputRef}
-              className="qb-form-input"
-              value={addressForm.street_address}
-              onChange={(e) => {
-                setAddressForm(prev => ({ ...prev, street_address: e.target.value }));
-                setGeoData({ latitude: null, longitude: null, street_name: "", house_number: "" });
-              }}
-              placeholder="Start typing address..."
-              required
-            />
-          </label>
-        </div>
+        <div className="qb-form-group">
+<label className="qb-form-label">
+Postcode *
+<input
+type="text"
+className="qb-form-input"
+value={postcode}
+onChange={(e) => {
+  const value = e.target.value.toUpperCase();
+  setPostcode(value);
+}}
+placeholder="SW1A2AA"
+/>
+</label>
+</div>
+
 
         <div className="qb-form-group">
-          <label className="qb-form-label">
-            <i className="fas fa-map-pin"></i>
-            Postcode *
-            <input
-              type="text"
-              className="qb-form-input"
-              value={addressForm.postcode}
-              onChange={handleAddressFormChange("postcode")}
-              placeholder="SW1A 1AA"
-              required
-            />
-          </label>
-        </div>
+<label className="qb-form-label">
+Select Address *
+<select
+  className="qb-form-input"
+  value={selectedPostcodeAddress}
+  onChange={(e) => setSelectedPostcodeAddress(e.target.value)}
+>
+  <option value="">Select address</option>
+
+  {postcodeAddresses.map((addr, index) => (
+    <option key={index} value={addr.place_id}>
+      {addr.full}
+    </option>
+  ))}
+</select>
+</label>
+</div>
+<div className="qb-form-group">
+<label className="qb-form-label">
+Address details
+<input
+  type="text"
+  className="qb-address-details-input"
+  placeholder="Flat / Door / Floor"
+  value={addressDetails}
+  onChange={(e) => setAddressDetails(e.target.value)}
+/>
+</label>
+</div>
       </div>
 
       {userToken && addresses.length > 0 && showAddressForm && (
@@ -7959,22 +8166,26 @@ useEffect(() => {
             <i className="fas fa-road"></i>
             Full Address *
             <input
-              type="text"
-              ref={deliveryAddressInputRef}
-              className="qb-form-input"
-              value={pickupAddressForm.street_address}
-              onChange={(e) => {
-                setPickupAddressForm(prev => ({ ...prev, street_address: e.target.value }));
-                setPickupGeoData({
-                  latitude: null,
-                  longitude: null,
-                  street_name: "",
-                  house_number: ""
-                });
-              }}
-              placeholder="Start typing delivery address..."
-              required
-            />
+  type="text"
+  ref={deliveryAddressInputRef}
+  className="qb-form-input"
+  value={addressForm.street_address}
+  onChange={(e) => {
+    setAddressForm(prev => ({
+      ...prev,
+      street_address: e.target.value
+    }));
+
+    setDeliveryGeoData({
+      latitude: null,
+      longitude: null,
+      street_name: "",
+      house_number: ""
+    });
+  }}
+  placeholder="Start typing delivery address..."
+  required
+/>
           </label>
         </div>
 
@@ -7985,8 +8196,13 @@ useEffect(() => {
             <input
               type="text"
               className="qb-form-input"
-              value={pickupAddressForm.postcode}
-              onChange={(e) => setPickupAddressForm(prev => ({ ...prev, postcode: e.target.value }))}
+              value={addressForm.postcode}
+onChange={(e) =>
+  setAddressForm(prev => ({
+    ...prev,
+    postcode: e.target.value
+  }))
+}
               required
             />
           </label>
