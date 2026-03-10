@@ -1841,7 +1841,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "./QuickBooking.css";  // <-- now uses QuickBooking styles
+import "./QuickBooking.css";  // uses QuickBooking styles
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -1881,6 +1881,8 @@ const StripeSetupForm = ({
 
     if (!stripe || !elements) return;
 
+    // Prevent double submission
+    if (submitting) return;
     setSubmitting(true);
     setError(null);
 
@@ -1891,7 +1893,8 @@ const StripeSetupForm = ({
       });
 
       if (result.error) {
-        throw result.error;
+        // Show Stripe's error message
+        throw new Error(result.error.message);
       }
 
       const setupIntent = result.setupIntent;
@@ -1902,6 +1905,7 @@ const StripeSetupForm = ({
 
       await onSetupSuccess(setupIntent);
     } catch (err) {
+      console.error("Stripe confirmSetup error:", err);
       setError(err.message || "Card save failed");
       onSetupError(err.message);
     } finally {
@@ -2462,6 +2466,95 @@ export default function Checkout() {
     }
   }, [userToken, addresses, showToast, fetchAddresses]);
 
+  // Handle saving the main pickup address manually
+  const handleSaveAddress = async () => {
+    try {
+      const token = userToken || localStorage.getItem("jwtToken");
+      if (!token) {
+        showToast("Please login to save address", "error");
+        return;
+      }
+
+      if (!pickupAddressForm.street_address || !pickupPostcode) {
+        showToast("Please enter a valid address", "error");
+        return;
+      }
+
+      // Prevent duplicates
+      const normalize = (v) => v?.replace(/\s/g, "").toLowerCase();
+      const existing = pickupAddresses.find(
+        (addr) => normalize(addr.postcode) === normalize(pickupPostcode)
+      );
+
+      if (existing) {
+        showToast("Address already saved", "info");
+        setSelectedPickupAddressId(String(existing.address_id));
+        setShowPickupAddressForm(false);
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/addresses`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          address_type: "pickup",
+          full_address: pickupAddressForm.street_address,
+          additional_details: pickupAddressDetails || "",
+          pincode: pickupPostcode || "",
+          latitude: pickupGeoData.latitude,
+          longitude: pickupGeoData.longitude,
+          house_number: pickupGeoData.house_number || "",
+          street_name: pickupGeoData.street_name || "",
+          postcode: pickupPostcode || "",
+          city: pickupAddressForm.city || "",
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || "Failed to save address");
+      }
+
+      const data = await response.json();
+      showToast("Address saved successfully", "success");
+      await fetchAddresses();
+      setSelectedPickupAddressId(String(data.address_id));
+      setShowPickupAddressForm(false);
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || "Failed to save address", "error");
+    }
+  };
+
+  // Handle saving the delivery address manually
+  const handleSaveDeliveryAddress = async () => {
+    if (!userToken) {
+      showToast("Please login to save address", "error");
+      return;
+    }
+    if (!deliveryAddressForm.street_address || !deliveryPostcode) {
+      showToast("Please enter a valid address", "error");
+      return;
+    }
+    const newId = await saveNewAddress({
+      street_address: deliveryAddressForm.street_address,
+      postcode: deliveryPostcode,
+      city: deliveryAddressForm.city,
+      house_number: deliveryGeoData.house_number,
+      street_name: deliveryGeoData.street_name,
+      additional_details: deliveryAddressDetails,
+      latitude: deliveryGeoData.latitude,
+      longitude: deliveryGeoData.longitude,
+    }, 'delivery');
+    if (newId) {
+      setSelectedAddressId(String(newId));
+      setShowAddressForm(false);
+    }
+  };
+
   // Delete address
   const handleDeleteAddress = async (addressId) => {
     if (!window.confirm("Are you sure you want to delete this address?")) return;
@@ -2911,6 +3004,13 @@ export default function Checkout() {
       showToast("Please select a saved card", "error");
       return;
     }
+
+    // Validate delivery address ID
+    if (!selectedAddressId) {
+      showToast("Please select a delivery address", "error");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -3030,19 +3130,25 @@ export default function Checkout() {
     }
   };
 
+  // 🔥 FIXED: Full handleSetupSuccess with order creation
   const handleSetupSuccess = async (setupIntent) => {
     setSetupProcessing(true);
-
     try {
       const token = userToken || localStorage.getItem("jwtToken");
       if (!token) throw new Error("Authentication required");
       if (!pendingBookingData) throw new Error("Booking data missing");
+
+      // Validate delivery address ID
+      if (!selectedAddressId) {
+        throw new Error("Delivery address is missing. Please try again.");
+      }
 
       const paymentMethodId =
         setupIntent.payment_method ||
         setupIntent.latest_attempt?.payment_method;
       if (!paymentMethodId) throw new Error("Payment method not returned by Stripe");
 
+      // Set default payment method
       if (customerId) {
         await fetch(`${API_BASE}/stripe/set-default-payment`, {
           method: "POST",
@@ -3054,8 +3160,10 @@ export default function Checkout() {
         });
       }
 
+      // Ensure addresses are saved and get IDs
       const { deliveryId, pickupId } = await ensureAddressIds(pendingBookingData);
 
+      // Create order
       const payload = {
         address_id: deliveryId,
         pickup_address_id: pickupId,
@@ -3084,7 +3192,7 @@ export default function Checkout() {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -3414,56 +3522,6 @@ export default function Checkout() {
           )}
         </div>
 
-         {/* Order Summary Card (new) */}
-        {/* <div className="qb-card">
-          <div className="qb-card-header">
-            <div className="qb-section-icon">
-              <i className="fas fa-shopping-bag"></i>
-            </div>
-            <div>
-              <h2 className="qb-section-title">Order Summary</h2>
-              <p className="qb-section-subtitle">Review your items before confirming</p>
-            </div>
-          </div>
-
-          <div className="qb-cards-list" style={{ marginBottom: '16px' }}>
-            {items.map(item => (
-              <div key={item.id} className="qb-card-option" style={{ cursor: 'default', padding: '12px' }}>
-                <div className="qb-card-option-icon" style={{ fontSize: '1.8rem' }}>
-                  {item.emoji || '🧺'}
-                </div>
-                <div className="qb-card-option-details">
-                  <div className="qb-card-brand">{item.name}</div>
-                  <div className="qb-card-number">Qty: {item.quantity} × £{Number(item.price).toFixed(2)}</div>
-                </div>
-                <div className="qb-card-selected" style={{ fontSize: '1.1rem' }}>
-                  £{(item.price * item.quantity).toFixed(2)}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="qb-payment-info" style={{ marginTop: '8px' }}>
-            <div className="qb-payment-info-icon">
-              <i className="fas fa-calculator"></i>
-            </div>
-            <div className="qb-payment-info-text">
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Subtotal:</span>
-                <span>£{Number(subtotal).toFixed(2)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Tip:</span>
-                <span>£{Number(tip).toFixed(2)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', marginTop: '8px' }}>
-                <span>Total:</span>
-                <span>£{Number(total).toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        </div> */}
-
         {/* Personal Information Card */}
         <div className="qb-card">
           <div className="qb-card-header">
@@ -3528,8 +3586,6 @@ export default function Checkout() {
             </div>
           </div>
         </div>
-
-       
 
         {/* Pickup Address Card */}
         <div className="qb-card">
@@ -3621,6 +3677,32 @@ export default function Checkout() {
           ) : (
             <div className="qb-address-form-section">
               <div className="qb-form-grid">
+                {/* Full Address input – commented out as requested */}
+                {/* <div className="qb-form-group full-width">
+                  <label className="qb-form-label">
+                    <i className="fas fa-road"></i> Full Address *
+                    <input
+                      type="text"
+                      className="qb-form-input"
+                      value={pickupAddressForm.street_address}
+                      onChange={(e) => {
+                        setPickupAddressForm(prev => ({
+                          ...prev,
+                          street_address: e.target.value
+                        }));
+                        setPickupGeoData({
+                          latitude: null,
+                          longitude: null,
+                          street_name: "",
+                          house_number: ""
+                        });
+                      }}
+                      placeholder="Start typing or select from dropdown"
+                      required
+                    />
+                  </label>
+                </div> */}
+
                 <div className="qb-form-group">
                   <label className="qb-form-label">
                     Postcode *
@@ -3665,16 +3747,30 @@ export default function Checkout() {
               </div>
 
               {userToken && (
-                <div className="qb-save-address-checkbox">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={savePickupAddress}
-                      onChange={(e) => setSavePickupAddress(e.target.checked)}
-                    />
-                    <span>Save this address to my account</span>
-                  </label>
-                </div>
+                <>
+                  <div className="qb-save-address-checkbox">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={savePickupAddress}
+                        onChange={(e) => setSavePickupAddress(e.target.checked)}
+                      />
+                      <span>Save this address to my account</span>
+                    </label>
+                  </div>
+
+                  {savePickupAddress && (
+                    <div style={{ marginTop: "12px" }}>
+                      <button
+                        type="button"
+                        className="qb-primary-btn"
+                        onClick={handleSaveAddress}
+                      >
+                        <i className="fas fa-save"></i> Save Address
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
 
               {userToken && pickupAddresses.length > 0 && showPickupAddressForm && (
@@ -3735,6 +3831,32 @@ export default function Checkout() {
                 </div>
               ) : (
                 <div className="qb-form-grid">
+                  {/* Full Address input for delivery – commented out */}
+                  {/* <div className="qb-form-group full-width">
+                    <label className="qb-form-label">
+                      <i className="fas fa-road"></i> Full Address *
+                      <input
+                        type="text"
+                        className="qb-form-input"
+                        value={deliveryAddressForm.street_address}
+                        onChange={(e) => {
+                          setDeliveryAddressForm(prev => ({
+                            ...prev,
+                            street_address: e.target.value
+                          }));
+                          setDeliveryGeoData({
+                            latitude: null,
+                            longitude: null,
+                            street_name: "",
+                            house_number: ""
+                          });
+                        }}
+                        placeholder="Start typing or select from dropdown"
+                        required
+                      />
+                    </label>
+                  </div> */}
+
                   <div className="qb-form-group">
                     <label className="qb-form-label">
                       Postcode *
@@ -3780,16 +3902,30 @@ export default function Checkout() {
               )}
 
               {userToken && showAddressForm && (
-                <div className="qb-save-address-checkbox">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={saveDeliveryAddress}
-                      onChange={(e) => setSaveDeliveryAddress(e.target.checked)}
-                    />
-                    <span>Save this delivery address to my account</span>
-                  </label>
-                </div>
+                <>
+                  <div className="qb-save-address-checkbox">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={saveDeliveryAddress}
+                        onChange={(e) => setSaveDeliveryAddress(e.target.checked)}
+                      />
+                      <span>Save this delivery address to my account</span>
+                    </label>
+                  </div>
+
+                  {saveDeliveryAddress && (
+                    <div style={{ marginTop: "12px" }}>
+                      <button
+                        type="button"
+                        className="qb-primary-btn"
+                        onClick={handleSaveDeliveryAddress}
+                      >
+                        <i className="fas fa-save"></i> Save Address
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
