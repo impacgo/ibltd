@@ -658,4 +658,4 @@ const PersonalInfo = () => {
     </div>
   );
 };
-
+export default PersonalInfo;
