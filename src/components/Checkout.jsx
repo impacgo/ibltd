@@ -3071,6 +3071,9 @@ export default function Checkout() {
         throw new Error(data.message || "Booking failed");
       }
 
+      // ✅ Clear the cart from localStorage after successful order
+      localStorage.removeItem('laundryCart');
+
       showToast("Booking confirmed successfully!", "success");
 
       navigate("/thankyou", {

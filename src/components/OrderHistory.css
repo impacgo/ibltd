@@ -1377,3 +1377,149 @@ button:focus:not(:focus-visible) {
     color: var(--order-text-secondary) !important;
   }
 }
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --order-bg: #111827;
+    --order-bg-light: #1f2937;
+    --order-bg-lighter: #374151;
+    --order-card-bg: #1f2937;
+    --order-card-border: #4b5563; /* Lighter border for better visibility */
+    --order-text-primary: #f9fafb;
+    --order-text-secondary: #e5e7eb;
+    --order-text-light: #d1d5db;
+    --order-text-muted: #9ca3af;
+  }
+  
+  /* ... existing dark theme styles ... */
+
+  /* 🔥 FIX: Schedule items with borders in dark theme */
+  .schedule-item {
+    background: var(--order-bg-light) !important;
+    border: 1px solid var(--order-card-border) !important;
+    border-radius: var(--order-radius-md) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .schedule-label {
+    color: var(--order-text-secondary) !important;
+    font-weight: 600 !important;
+  }
+
+  .schedule-value {
+    color: var(--order-text-primary) !important;
+    font-weight: 500 !important;
+  }
+
+  .schedule-icon-small {
+    background: var(--order-accent-gradient) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(255, 107, 0, 0.3) !important;
+    border: 1px solid rgba(255, 107, 0, 0.5) !important;
+  }
+
+  /* Schedule cards in modal with borders */
+  .schedule-card {
+    background: var(--order-bg-light) !important;
+    border: 1px solid var(--order-card-border) !important;
+    border-radius: var(--order-radius-md) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .schedule-type {
+    color: var(--order-text-primary) !important;
+    font-weight: 600 !important;
+  }
+
+  .schedule-time {
+    color: var(--order-text-secondary) !important;
+  }
+
+  /* Schedule grid with border */
+  .schedule-grid {
+    background: var(--order-card-bg) !important;
+    border: 1px solid var(--order-card-border) !important;
+    border-radius: var(--order-radius-md) !important;
+    padding: 16px !important;
+  }
+
+  /* Add borders to pickup/delivery cards specifically */
+  .schedule-card.pickup-card,
+  .schedule-card.delivery-card {
+    border: 2px solid var(--order-card-border) !important;
+    background: var(--order-bg-light) !important;
+  }
+
+  /* If you have specific classes for pickup and delivery */
+  [class*="pickup"] .schedule-card,
+  [class*="delivery"] .schedule-card {
+    border: 2px solid var(--order-card-border) !important;
+  }
+
+  /* Alternative: Target by icon */
+  .schedule-card:has(.fa-truck-loading),
+  .schedule-card:has(.fa-truck) {
+    border: 2px solid var(--order-card-border) !important;
+    background: var(--order-bg-light) !important;
+  }
+}
+/* Items Table Styles */
+.items-table-container {
+  background: var(--order-card-bg);
+  border-radius: var(--order-radius-md);
+  border: 1px solid var(--order-card-border);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.table-header {
+  background: var(--order-bg-light);
+  border-bottom: 2px solid var(--order-card-border);
+  font-weight: 600;
+  color: var(--order-text-primary);
+}
+
+.table-row {
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background: var(--order-bg-light);
+}
+
+.table-col {
+  color: var(--order-text-primary);
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .table-header {
+    background: var(--order-bg-light);
+    color: var(--order-text-primary);
+    border-color: var(--order-card-border);
+  }
+  
+  .table-row:hover {
+    background: var(--order-bg-lighter);
+  }
+  
+  .table-col {
+    color: var(--order-text-primary);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .items-table-container {
+    overflow-x: auto;
+  }
+  
+  .table-header,
+  .table-row {
+    min-width: 500px;
+  }
+}
