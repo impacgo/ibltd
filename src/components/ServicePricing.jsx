@@ -2075,7 +2075,7 @@ const getServiceTypeDisplay = (serviceType, productName) => {
   };
 
   const handleProceedToCheckout = () => {
-    navigate("/checkout", { state: { cart } });
+   navigate("/checkout", { state: { items: cart } });
   };
 
   const formatPrice = (price) => {

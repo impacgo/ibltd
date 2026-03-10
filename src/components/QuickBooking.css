@@ -3092,3 +3092,48 @@ select.qb-form-input option {
 .qb-country-code option {
   font-size: 14px;
 }
+.qb-guide {
+  position: absolute;
+  background: #111827;
+  color: white;
+  padding: 10px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+  top: -40px;
+  left: 0;
+  z-index: 20;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.qb-guide::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 16px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #111827 transparent transparent transparent;
+}
+
+.qb-guide-tooltip {
+  position: absolute;
+  top: -38px;
+  left: 0;
+  background: #111827;
+  color: white;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.qb-guide-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 12px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #111827 transparent transparent transparent;
+}

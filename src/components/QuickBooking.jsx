@@ -6449,6 +6449,7 @@ export default function QuickBooking() {
 const [deliveryPostcodeAddresses, setDeliveryPostcodeAddresses] = useState([]);
 const [selectedDeliveryPostcodeAddress, setSelectedDeliveryPostcodeAddress] = useState("");
 const [deliveryAddressDetails, setDeliveryAddressDetails] = useState("");
+const [guideStep, setGuideStep] = useState(1);
   useEffect(() => {
     const checkGoogle = () => {
       if (window.google && window.google.maps && window.google.maps.places) {
@@ -6459,6 +6460,50 @@ const [deliveryAddressDetails, setDeliveryAddressDetails] = useState("");
     };
     checkGoogle();
   }, []);
+
+  useEffect(() => {
+
+  if (guideStep === 1 && userInfo.name.trim().length > 1) {
+    setGuideStep(2);
+  }
+
+  if (guideStep === 2 && userInfo.email.trim().length > 3) {
+    setGuideStep(3);
+  }
+
+  if (guideStep === 3 && userInfo.phone.trim().length > 5) {
+    setGuideStep(4);
+  }
+
+  if (guideStep === 4 && addressForm.street_address) {
+    setGuideStep(5);
+  }
+
+  if (guideStep === 5 && collectDate) {
+    setGuideStep(6);
+  }
+
+  if (guideStep === 6 && selectedCollectSlot) {
+    setGuideStep(7);
+  }
+
+  if (guideStep === 7 && deliverDate) {
+    setGuideStep(8);
+  }
+
+  if (guideStep === 8 && selectedDeliverSlot) {
+    setGuideStep(9);
+  }
+
+}, [
+  userInfo,
+  addressForm,
+  collectDate,
+  selectedCollectSlot,
+  deliverDate,
+  selectedDeliverSlot,
+  guideStep
+]);
 
   useEffect(() => {
 
@@ -7398,10 +7443,11 @@ if (useSameAddress) {
       if (!order) throw new Error("Please select pickup and delivery times");
 
       const payload = {
-        ...order,
-        payment_method_id: selectedCardData.payment_method_id,
-        stripe_customer_id: customerId
-      };
+  ...order,
+  address_id: selectedAddressId, // ADD THIS
+  payment_method_id: selectedCardData.payment_method_id,
+  stripe_customer_id: customerId
+};
 
       const response = await fetch(`${API_BASE}/quick-booking`, {
         method: "POST",
@@ -7530,6 +7576,7 @@ if (useSameAddress) {
         },
         body: JSON.stringify({
           ...pendingBookingData,
+          address_id: selectedAddressId,
           payment_method_id: paymentMethodId,
           stripe_customer_id: customerId
         }),
@@ -8242,57 +8289,82 @@ if (useSameAddress) {
           </div>
 
           <div className="qb-form-grid">
-            <div className="qb-form-group">
-              <label className="qb-form-label">
-                <i className="fas fa-user-tag"></i>
-                Full Name
-                <input
-                  type="text"
-                  className="qb-form-input"
-                  value={userInfo.name}
-                  onChange={handleUserInfoChange("name")}
-                  placeholder="John Smith"
-                  required
-                />
-              </label>
-            </div>
+            <div className="qb-form-group" style={{position:"relative"}}>
 
-            <div className="qb-form-group">
-              <label className="qb-form-label">
-                <i className="fas fa-envelope"></i>
-                Email Address
-                <input
-                  type="email"
-                  className="qb-form-input"
-                  value={userInfo.email}
-                  onChange={handleUserInfoChange("email")}
-                  placeholder="john@example.com"
-                  required
-                />
-              </label>
-            </div>
+{guideStep === 1 && (
+  <div className="qb-guide">
+    Enter your full name
+  </div>
+)}
 
-            <div className="qb-phone-group">
-              <select
-                className="qb-country-code"
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-              >
-                {countryCodes.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.code}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="tel"
-                className="qb-form-input"
-                value={userInfo.phone}
-                onChange={handlePhoneChange}
-                placeholder="Phone Number"
-                required
-              />
-            </div>
+<label className="qb-form-label">
+  <i className="fas fa-user-tag"></i>
+  Full Name
+  <input
+    type="text"
+    className="qb-form-input"
+    value={userInfo.name}
+    onChange={handleUserInfoChange("name")}
+    placeholder="John Smith"
+    required
+  />
+</label>
+
+</div>
+
+            <div className="qb-form-group" style={{ position: "relative" }}>
+
+  {guideStep === 2 && (
+    <div className="qb-guide-tooltip">
+      Enter your email address
+    </div>
+  )}
+
+  <label className="qb-form-label">
+    <i className="fas fa-envelope"></i>
+    Email Address
+    <input
+      type="email"
+      className="qb-form-input"
+      value={userInfo.email}
+      onChange={handleUserInfoChange("email")}
+      placeholder="john@example.com"
+      required
+    />
+  </label>
+
+</div>
+
+            <div className="qb-phone-group" style={{ position: "relative" }}>
+
+  {guideStep === 3 && (
+    <div className="qb-guide-tooltip">
+      Enter your phone number
+    </div>
+  )}
+
+  <select
+    className="qb-country-code"
+    value={countryCode}
+    onChange={(e) => setCountryCode(e.target.value)}
+  >
+    {countryCodes.map((c) => (
+      <option key={c.code} value={c.code}>
+        {c.code}
+      </option>
+    ))}
+  </select>
+
+  <input
+    type="tel"
+    className="qb-form-input"
+    value={userInfo.phone}
+    onChange={handlePhoneChange}
+    placeholder="Phone Number"
+    required
+  />
+
+</div>
           </div>
         </div>
 

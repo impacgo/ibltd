@@ -2399,5 +2399,50 @@ body {
     font-size: 12px;
   }
 }
+.qb-delete-card-btn {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 16px;
+}
 
+.qb-delete-card-btn:hover {
+  color: #dc2626;
+}
+.qb-card-option {
+  position: relative;
+}
+/* Card container */
+.qb-card-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 16px;
+}
+
+/* Delete button */
+.qb-delete-card-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  background: transparent;
+  border: none;
+  color: #ff4d4f;
+
+  font-size: 16px;
+  cursor: pointer;
+
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.qb-delete-card-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
 

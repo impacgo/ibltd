@@ -1837,12 +1837,11 @@
 //   );
 // }
 
-// src/components/QuickBooking.jsx
-import React, { useEffect, useState, useCallback,useRef } from "react";
-import { useNavigate } from "react-router-dom";
+// src/components/Checkout.jsx
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "./QuickBooking.css";
-// Stripe imports
+import "./QuickBooking.css";  // <-- now uses QuickBooking styles
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -1874,14 +1873,14 @@ const StripeSetupForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!consent) {
       setError("You must consent to save your card for future payments");
       return;
     }
-    
+
     if (!stripe || !elements) return;
-    
+
     setSubmitting(true);
     setError(null);
 
@@ -1922,8 +1921,8 @@ const StripeSetupForm = ({
             <h3>Save Card to Complete Booking</h3>
             <p>Your booking will be confirmed after you save your card securely.</p>
           </div>
-          <button 
-            className="stripe-modal-close" 
+          <button
+            className="stripe-modal-close"
             onClick={onCancel}
             disabled={submitting || setupProcessing}
           >
@@ -1944,7 +1943,7 @@ const StripeSetupForm = ({
             </div>
 
             <div className="stripe-element-container">
-              <PaymentElement 
+              <PaymentElement
                 options={{
                   layout: {
                     type: 'tabs',
@@ -1957,7 +1956,7 @@ const StripeSetupForm = ({
                 }}
               />
             </div>
-            
+
             <div className="stripe-consent-section">
               <div className="stripe-consent-checkbox">
                 <input
@@ -1975,7 +1974,7 @@ const StripeSetupForm = ({
                 </label>
               </div>
             </div>
-            
+
             {error && (
               <div className="stripe-error-message">
                 <i className="fas fa-exclamation-triangle"></i>
@@ -2010,11 +2009,26 @@ const StripeSetupForm = ({
 };
 
 /* -------------------------------------------------------------------------- */
-/*                           Main QuickBooking Component                      */
+/*                           Main Checkout Component                          */
 /* -------------------------------------------------------------------------- */
-export default function QuickBooking() {
+export default function Checkout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, login } = useAuth();
+
+  // Get items from previous page – safely default to empty array
+  const { items = [], subtotal: propSubtotal, tip: propTip, total: propTotal } = location.state || {
+    items: [],
+    subtotal: 0,
+    tip: 0,
+    total: 0,
+  };
+
+  // Compute totals from items if they weren't passed
+  const computedSubtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = propSubtotal !== undefined ? propSubtotal : computedSubtotal;
+  const tip = propTip !== undefined ? propTip : 0;
+  const total = propTotal !== undefined ? propTotal : subtotal + tip;
 
   // State management
   const [loading, setLoading] = useState(false);
@@ -2026,37 +2040,34 @@ export default function QuickBooking() {
   const [setupClientSecret, setSetupClientSecret] = useState(null);
   const [customerId, setCustomerId] = useState(null);
   const [userToken, setUserToken] = useState(localStorage.getItem("jwtToken"));
-  const [bookingData, setBookingData] = useState(null);
-  const [showAddressForm, setShowAddressForm] = useState(false);
-  const [showPickupAddressForm, setShowPickupAddressForm] = useState(false);
+  const [showAddressForm, setShowAddressForm] = useState(false); // for delivery new address
+  const [showPickupAddressForm, setShowPickupAddressForm] = useState(false); // for pickup new address
   const [pendingBookingData, setPendingBookingData] = useState(null);
-const phoneCheckTimeoutRef = useRef(null);
+  const phoneCheckTimeoutRef = useRef(null);
 
-const addressInputRef = useRef(null);
-const pickupAddressInputRef = useRef(null);
-const deliveryAddressInputRef = useRef(null);
-const [geoData, setGeoData] = useState({
-  latitude: null,
-  longitude: null,
-  street_name: "",
-  house_number: ""
-});
+  // Geo data for addresses
+  const [geoData, setGeoData] = useState({
+    latitude: null,
+    longitude: null,
+    street_name: "",
+    house_number: ""
+  });
 
-const [deliveryGeoData, setDeliveryGeoData] = useState({
-  latitude: null,
-  longitude: null,
-  street_name: "",
-  house_number: ""
-});
+  const [deliveryGeoData, setDeliveryGeoData] = useState({
+    latitude: null,
+    longitude: null,
+    street_name: "",
+    house_number: ""
+  });
 
-const [pickupGeoData, setPickupGeoData] = useState({
-  latitude: null,
-  longitude: null,
-  street_name: "",
-  house_number: ""
-});
+  const [pickupGeoData, setPickupGeoData] = useState({
+    latitude: null,
+    longitude: null,
+    street_name: "",
+    house_number: ""
+  });
 
-  // Payment option - ALWAYS require card for ALL users
+  // Payment option
   const [saveCardOption, setSaveCardOption] = useState(true);
   const [selectedCard, setSelectedCard] = useState(null);
 
@@ -2089,36 +2100,68 @@ const [pickupGeoData, setPickupGeoData] = useState({
       phone: "",
     };
   });
-  
-  const [addresses, setAddresses] = useState([]);
+  const [countryCode, setCountryCode] = useState("+44");
+
+  const countryCodes = [
+    { code: "+44", label: "UK" },
+    { code: "+91", label: "IN" },
+    { code: "+1", label: "US" },
+    { code: "+61", label: "AU" },
+    { code: "+971", label: "UAE" },
+  ];
+
+  const [addresses, setAddresses] = useState([]); // saved delivery addresses
   const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [useSameAddress, setUseSameAddress] = useState(true);
+  const [useSameAddress, setUseSameAddress] = useState(true); // true = pickup same as delivery
   const [selectedPickupAddressId, setSelectedPickupAddressId] = useState(null);
-  const [pickupAddresses, setPickupAddresses] = useState([]);
+  const [pickupAddresses, setPickupAddresses] = useState([]); // saved pickup addresses
   const [bookingInProgress, setBookingInProgress] = useState(false);
 
-  // Address form for all users
-  const [addressForm, setAddressForm] = useState({
-    street_address: "",
-    postcode: "",
-    city: "",
-    additional_details: "",
-    house_number: ""
-  });
-
-  // Pickup address form (when useSameAddress is false)
+  // Manual address forms (for guests or new addresses)
+  // Pickup address (main)
+  const [pickupPostcode, setPickupPostcode] = useState("");
+  const [pickupPostcodeAddresses, setPickupPostcodeAddresses] = useState([]);
+  const [selectedPickupPostcodeAddress, setSelectedPickupPostcodeAddress] = useState("");
+  const [pickupAddressDetails, setPickupAddressDetails] = useState("");
   const [pickupAddressForm, setPickupAddressForm] = useState({
     street_address: "",
     postcode: "",
     city: "",
-    additional_details: "",
-    house_number: ""
+    house_number: "",
+    additional_details: ""
   });
+
+  // Delivery address (when useSameAddress = false)
+  const [deliveryPostcode, setDeliveryPostcode] = useState("");
+  const [deliveryPostcodeAddresses, setDeliveryPostcodeAddresses] = useState([]);
+  const [selectedDeliveryPostcodeAddress, setSelectedDeliveryPostcodeAddress] = useState("");
+  const [deliveryAddressDetails, setDeliveryAddressDetails] = useState("");
+  const [deliveryAddressForm, setDeliveryAddressForm] = useState({
+    street_address: "",
+    postcode: "",
+    city: "",
+    house_number: "",
+    additional_details: ""
+  });
+
+  // Flags to control saving new addresses
+  const [savePickupAddress, setSavePickupAddress] = useState(false);
+  const [saveDeliveryAddress, setSaveDeliveryAddress] = useState(false);
+
+  // Additional order fields (defaults)
+  const [isStudent, setIsStudent] = useState(false);
+  const [studentIdImage, setStudentIdImage] = useState(null);
+  const [changeManagerRequested, setChangeManagerRequested] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [topupAmount, setTopupAmount] = useState(0);
 
   // Form state
   const [collectDate, setCollectDate] = useState("");
   const [deliverDate, setDeliverDate] = useState("");
   const [notes, setNotes] = useState("");
+
+  const [googleReady, setGoogleReady] = useState(false);
 
   // Constants
   const today = new Date().toISOString().split("T")[0];
@@ -2129,7 +2172,7 @@ const [pickupGeoData, setPickupGeoData] = useState({
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  /* --------------------------- Helper Functions --------------------------- */
+  // Helper functions
   const formatTime24Hour = (timeString) => {
     if (!timeString) return "";
     try {
@@ -2183,21 +2226,13 @@ const [pickupGeoData, setPickupGeoData] = useState({
     return 'fas fa-credit-card';
   };
 
-  /* ---------------------------- Data Fetching ----------------------------- */
-  
-  // NEW: Check if phone number exists and auto-fill user info
-
-
+  // Data fetching functions
   const fetchUserProfile = useCallback(async () => {
     if (!userToken) return;
-    
     try {
       const response = await fetch(`${API_BASE}/profile`, {
-        headers: {
-          "Authorization": `Bearer ${userToken}`,
-        },
+        headers: { "Authorization": `Bearer ${userToken}` },
       });
-
       if (response.ok) {
         const data = await response.json();
         setUserInfo({
@@ -2213,19 +2248,14 @@ const [pickupGeoData, setPickupGeoData] = useState({
 
   const fetchAddresses = useCallback(async () => {
     if (!userToken) return;
-    
     try {
       const response = await fetch(`${API_BASE}/addresses`, {
-        headers: {
-          "Authorization": `Bearer ${userToken}`,
-        },
+        headers: { "Authorization": `Bearer ${userToken}` },
       });
-
       if (response.ok) {
         const data = await response.json();
         setAddresses(data);
-        setPickupAddresses(data); // Also set pickup addresses
-        
+        setPickupAddresses(data);
         if (data.length > 0) {
           const defaultAddress = data.find(addr => addr.is_selected) || data[0];
           if (defaultAddress) {
@@ -2245,21 +2275,19 @@ const [pickupGeoData, setPickupGeoData] = useState({
       setLoadingCards(false);
       return;
     }
-    
     try {
       const response = await fetch(`${API_BASE}/stripe/saved-cards`, {
-        headers: {
-          "Authorization": `Bearer ${userToken}`,
-        },
+        headers: { "Authorization": `Bearer ${userToken}` },
       });
-
       if (response.ok) {
         const data = await response.json();
         setSavedCards(data.cards || []);
         if (data.cards?.length > 0) {
           const defaultCard = data.cards.find(card => card.is_default);
           if (defaultCard) {
-            setSelectedCard(defaultCard.id);
+            setSelectedCard(defaultCard.payment_method_id);
+          } else if (data.cards.length > 0) {
+            setSelectedCard(data.cards[0].payment_method_id);
           }
         }
       }
@@ -2272,8 +2300,7 @@ const [pickupGeoData, setPickupGeoData] = useState({
   }, [userToken]);
 
   const ensureStripeCustomer = useCallback(async () => {
-    if (!userToken) return;
-
+    if (!userToken) return null;
     try {
       const response = await fetch(`${API_BASE}/stripe/create-customer`, {
         method: "POST",
@@ -2282,83 +2309,77 @@ const [pickupGeoData, setPickupGeoData] = useState({
           "Authorization": `Bearer ${userToken}`,
         },
       });
-
       if (response.ok) {
         const data = await response.json();
         setCustomerId(data.customerId);
+        return data.customerId;
       }
     } catch (error) {
       console.error("Error creating Stripe customer:", error);
     }
+    return null;
   }, [userToken]);
-const checkPhoneNumberExists = useCallback(async (phone) => {
-  if (!phone || phone.trim().length < 5) return;
 
-  try {
-    const response = await fetch(`${API_BASE}/auth/access`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        phone: phone.trim(),
-        name: userInfo.name || "User",
-        email: userInfo.email || null
-      }),
-    });
+  const checkPhoneNumberExists = useCallback(async (phone) => {
+    if (!phone || phone.trim().length < 5) return;
 
-    if (!response.ok) return;
+    try {
+      const response = await fetch(`${API_BASE}/auth/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: `${countryCode}${phone.trim()}`,
+          name: userInfo.name || "User",
+          email: userInfo.email || null
+        }),
+      });
 
-    const data = await response.json();
+      if (!response.ok) return;
 
-    if (data.success && data.user) {
+      const data = await response.json();
 
-      setUserInfo(prev => ({
-        ...prev,
-        name: data.user.name || prev.name,
-        email: data.user.email || prev.email,
-        phone: data.user.phone || prev.phone,
-      }));
+      if (data.success && data.user) {
+        setUserInfo(prev => ({
+          ...prev,
+          name: data.user.name || prev.name,
+          email: data.user.email || prev.email,
+          phone: data.user.phone || prev.phone,
+        }));
 
-      if (data.token) {
-        localStorage.setItem("jwtToken", data.token);
-        setUserToken(data.token);
+        if (data.token) {
+          localStorage.setItem("jwtToken", data.token);
+          setUserToken(data.token);
+          login({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            phone: data.user.phone,
+          });
+          fetchUserProfile();
+          fetchAddresses();
+          fetchSavedCards();
+          ensureStripeCustomer();
+        }
 
-        login({
-          id: data.user.id,
-          name: data.user.name,
-          email: data.user.email,
-          phone: data.user.phone,
-        });
-
-        fetchUserProfile();
-        fetchAddresses();
-        fetchSavedCards();
-        ensureStripeCustomer();
+        showToast(
+          data.isNewUser ? "Account created successfully!" : "Welcome back!",
+          "success"
+        );
       }
-
-      showToast(
-        data.isNewUser
-          ? "Account created successfully!"
-          : "Welcome back!",
-        "success"
-      );
+    } catch (error) {
+      console.error("Auth access error:", error);
     }
-
-  } catch (error) {
-    console.error("Auth access error:", error);
-  }
-
-}, [
-  userInfo.name,
-  userInfo.email,
-  login,
-  fetchUserProfile,
-  fetchAddresses,
-  fetchSavedCards,
-  ensureStripeCustomer,
-  showToast
-]);
+  }, [
+    countryCode,
+    userInfo.name,
+    userInfo.email,
+    login,
+    fetchUserProfile,
+    fetchAddresses,
+    fetchSavedCards,
+    ensureStripeCustomer,
+    showToast
+  ]);
 
   const createSetupIntent = useCallback(async (token) => {
     try {
@@ -2369,12 +2390,10 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
           "Authorization": `Bearer ${token}`,
         },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to create setup intent");
       }
-
       const data = await response.json();
       return data;
     } catch (error) {
@@ -2383,95 +2402,194 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
     }
   }, []);
 
-  // NEW: Add pickup address
-  const addPickupAddress = useCallback(async () => {
+  // Save a new address (delivery or pickup)
+  const saveNewAddress = useCallback(async (addressData, type = "pickup") => {
     if (!userToken) {
-      showToast("Please log in to save pickup address", "error");
+      showToast("Please log in to save address", "error");
       return null;
     }
 
     try {
+      const normalize = (value) => value?.replace(/\s/g, "").toLowerCase();
+      const existing = addresses.find(addr =>
+        normalize(addr.postcode) === normalize(addressData.postcode)
+      );
+      if (existing) {
+        return existing.address_id;
+      }
+
+      const payload = {
+        address_type: type,
+        full_address: addressData.street_address,
+        additional_details: addressData.additional_details || "",
+        pincode: addressData.postcode,
+        postcode: addressData.postcode,
+        latitude: addressData.latitude,
+        longitude: addressData.longitude,
+        house_number: addressData.house_number || "",
+        street_name: addressData.street_name || "",
+        city: addressData.city || "",
+        name: type === "pickup" ? "Pickup Location" : "Delivery Address",
+        is_selected: false,
+      };
+
       const response = await fetch(`${API_BASE}/addresses`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
-        body: JSON.stringify({
-          street_address: pickupAddressForm.street_address,
-          postcode: pickupAddressForm.postcode,
-          city: pickupAddressForm.city,
-          additional_details: pickupAddressForm.additional_details,
-          house_number: pickupAddressForm.house_number,
-          name: "Pickup Location",
-          is_selected: false,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        showToast("Pickup address saved successfully", "success");
-        
-        // Refresh addresses list
-        fetchAddresses();
-        
-        // Select the new address
-        setSelectedPickupAddressId(String(data.address_id));
-        setShowPickupAddressForm(false);
-        
-        return data.address_id;
-      } else {
-        throw new Error("Failed to save pickup address");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to save address");
       }
+
+      const data = await response.json();
+      showToast(
+        `${type === "pickup" ? "Pickup" : "Delivery"} address saved`,
+        "success"
+      );
+
+      await fetchAddresses();
+      return data.address_id;
     } catch (error) {
-      console.error("Error adding pickup address:", error);
-      showToast(error.message || "Failed to save pickup address", "error");
+      console.error("Error saving address:", error);
+      showToast(error.message || "Failed to save address", "error");
       return null;
     }
-  }, [userToken, pickupAddressForm, showToast, fetchAddresses]);
+  }, [userToken, addresses, showToast, fetchAddresses]);
 
-  /* -------------------------- UPDATED TIME SLOT FUNCTIONS ------------------------- */
-  // Helper function to get postcode for time slot fetching
+  // Delete address
+  const handleDeleteAddress = async (addressId) => {
+    if (!window.confirm("Are you sure you want to delete this address?")) return;
+    try {
+      const token = userToken || localStorage.getItem("jwtToken");
+      if (!token) throw new Error("Authentication required");
+
+      const response = await fetch(`${API_BASE}/addresses/${addressId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+
+      const contentType = response.headers.get("content-type");
+      let responseBody;
+      if (contentType && contentType.includes("application/json")) {
+        responseBody = await response.json();
+      } else {
+        responseBody = await response.text();
+        console.error("Server responded with non-JSON:", responseBody);
+      }
+
+      if (!response.ok) {
+        let errorMessage = responseBody?.message ||
+          (typeof responseBody === 'string' ? responseBody : `Server error: ${response.status}`);
+        if (errorMessage.includes("linked to existing orders") || errorMessage.includes("foreign key")) {
+          errorMessage = "This address cannot be deleted because it has been used in past orders. You can keep it saved for future bookings.";
+        }
+        throw new Error(errorMessage);
+      }
+
+      const newAddresses = addresses.filter(addr => String(addr.address_id) !== String(addressId));
+      setAddresses(newAddresses);
+      setPickupAddresses(newAddresses);
+
+      if (selectedAddressId === String(addressId)) {
+        if (newAddresses.length > 0) {
+          setSelectedAddressId(String(newAddresses[0].address_id));
+          if (useSameAddress) {
+            setSelectedPickupAddressId(String(newAddresses[0].address_id));
+          }
+        } else {
+          setSelectedAddressId(null);
+          setSelectedPickupAddressId(null);
+        }
+      }
+      if (selectedPickupAddressId === String(addressId)) {
+        if (newAddresses.length > 0) {
+          setSelectedPickupAddressId(String(newAddresses[0].address_id));
+        } else {
+          setSelectedPickupAddressId(null);
+        }
+      }
+
+      showToast("Address deleted successfully", "success");
+    } catch (error) {
+      console.error("Delete address error:", error);
+      showToast(error.message, "warning");
+    }
+  };
+
+  // Delete card
+  const handleDeleteCard = async (paymentMethodId) => {
+    if (!window.confirm("Are you sure you want to delete this card?")) return;
+    try {
+      const token = userToken || localStorage.getItem("jwtToken");
+      if (!token) throw new Error("Authentication required");
+
+      const response = await fetch(`${API_BASE}/remove-card`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ paymentMethodId }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to delete card");
+      }
+
+      const updatedCards = savedCards.filter(
+        card => card.payment_method_id !== paymentMethodId
+      );
+      setSavedCards(updatedCards);
+      if (selectedCard === paymentMethodId) {
+        if (updatedCards.length > 0) {
+          setSelectedCard(updatedCards[0].payment_method_id);
+        } else {
+          setSelectedCard(null);
+        }
+      }
+      showToast("Card removed successfully", "success");
+    } catch (error) {
+      console.error("Delete card error:", error);
+      showToast(error.message || "Failed to delete card", "error");
+    }
+  };
+
+  // Time slot fetching
   const getPostcodeForTimeSlots = useCallback((type = 'pickup') => {
     if (type === 'pickup') {
       if (useSameAddress) {
-        // Use delivery address for pickup when same address
         if (userToken && addresses.length > 0 && selectedAddressId) {
           const selectedAddress = addresses.find(addr => String(addr.address_id) === selectedAddressId);
           return selectedAddress?.postcode || null;
         } else {
-          return addressForm.postcode || null;
+          return deliveryPostcode || null;
         }
       } else {
-        // Use pickup address
         if (userToken && pickupAddresses.length > 0 && selectedPickupAddressId && selectedPickupAddressId !== "new") {
           const selectedPickupAddress = pickupAddresses.find(addr => String(addr.address_id) === selectedPickupAddressId);
           return selectedPickupAddress?.postcode || null;
-        } else if (userToken && selectedPickupAddressId === "new") {
-          return pickupAddressForm.postcode || null;
-        } else if (!userToken) {
-          return pickupAddressForm.postcode || null;
+        } else {
+          return pickupPostcode || null;
         }
       }
-    } else if (type === 'delivery') {
-      // Always use delivery address for delivery slots
+    } else {
       if (userToken && addresses.length > 0 && selectedAddressId) {
         const selectedAddress = addresses.find(addr => String(addr.address_id) === selectedAddressId);
         return selectedAddress?.postcode || null;
       } else {
-        return addressForm.postcode || null;
+        return deliveryPostcode || null;
       }
     }
-    return null;
   }, [
-    userToken, 
-    addresses, 
-    selectedAddressId, 
-    addressForm, 
-    useSameAddress, 
-    pickupAddresses, 
-    selectedPickupAddressId, 
-    pickupAddressForm
+    userToken, addresses, selectedAddressId, deliveryPostcode,
+    useSameAddress, pickupAddresses, selectedPickupAddressId, pickupPostcode
   ]);
 
   const fetchTimeSlots = useCallback(async (dateIso, isDelivery = false) => {
@@ -2479,7 +2597,6 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
 
     const tzOffset = -new Date().getTimezoneOffset();
     const formattedDate = dateIso;
-    
     const params = new URLSearchParams({
       date: formattedDate,
       format: "24",
@@ -2488,7 +2605,6 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
 
     if (isDelivery) {
       params.set("isDelivery", "true");
-
       if (collectDate && selectedCollectSlotStart) {
         const pickupFormattedDate = collectDate;
         const h = selectedCollectSlotStart.getHours().toString().padStart(2, "0");
@@ -2498,10 +2614,7 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
       }
     }
 
-    // Get postcode based on pickup/delivery type
     const postcode = getPostcodeForTimeSlots(isDelivery ? 'delivery' : 'pickup');
-    
-    // Add postcode to params if available (remove spaces and uppercase as per Flutter code)
     if (postcode) {
       const cleanPostcode = postcode.replace(/\s/g, '').toUpperCase();
       params.set("postcode", cleanPostcode);
@@ -2510,12 +2623,9 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
     try {
       const response = await fetch(`${API_BASE}/time-slots?${params.toString()}`, {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Accept': 'application/json' },
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Server error:", errorText);
@@ -2523,7 +2633,6 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
       }
 
       const data = await response.json();
-      
       if (data.slots && Array.isArray(data.slots)) {
         return data.slots;
       } else if (Array.isArray(data)) {
@@ -2541,13 +2650,10 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
 
   const fetchCollectSlots = useCallback(async () => {
     if (!collectDate) return;
-    
     setLoadingSlots(prev => ({ ...prev, collect: true }));
-    
     try {
       const slots = await fetchTimeSlots(collectDate, false);
       setCollectSlots(slots);
-
       if (selectedCollectSlot && slots.length > 0) {
         const stillValid = slots.find(
           (s) => s.start === selectedCollectSlot.start && s.enabled
@@ -2568,16 +2674,11 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
   }, [collectDate, fetchTimeSlots, selectedCollectSlot, showToast]);
 
   const fetchDeliverySlots = useCallback(async () => {
-    if (!deliverDate || !collectDate || !selectedCollectSlotStart) {
-      return;
-    }
-    
+    if (!deliverDate || !collectDate || !selectedCollectSlotStart) return;
     setLoadingSlots(prev => ({ ...prev, deliver: true }));
-    
     try {
       const slots = await fetchTimeSlots(deliverDate, true);
       setDeliverSlots(slots);
-
       if (selectedDeliverSlot && slots.length > 0) {
         const stillValid = slots.find(
           (s) => s.start === selectedDeliverSlot.start && s.enabled
@@ -2597,283 +2698,320 @@ const checkPhoneNumberExists = useCallback(async (phone) => {
     }
   }, [deliverDate, collectDate, selectedCollectSlotStart, fetchTimeSlots, selectedDeliverSlot, showToast]);
 
-  /* ------------------------- Order Preparation ---------------------------- */
+  // Prepare order data (addresses are not yet saved)
   const prepareOrderData = useCallback(() => {
-  if (!selectedCollectSlot || !selectedDeliverSlot || !collectDate || !deliverDate) {
-    return null;
-  }
-
-  const pickupSlotText = `${formatDateDDMMYYYY(collectDate)}, ${formatTimeRange24Hour(
-    selectedCollectSlot.start,
-    selectedCollectSlot.end
-  )}`;
-
-  const deliverySlotText = `${formatDateDDMMYYYY(deliverDate)}, ${formatTimeRange24Hour(
-    selectedDeliverSlot.start,
-    selectedDeliverSlot.end
-  )}`;
-
-  /* -------------------- PICKUP ADDRESS -------------------- */
-  let pickupAddressData = {};
-
-  if (!useSameAddress) {
-    if (userToken && pickupAddresses.length > 0 && selectedPickupAddressId && selectedPickupAddressId !== "new") {
-      const selectedPickupAddress = pickupAddresses.find(
-        addr => String(addr.address_id) === selectedPickupAddressId
-      );
-
-      if (!selectedPickupAddress) return null;
-
-      pickupAddressData = {
-        pickup_street_address: selectedPickupAddress.street_address,
-        pickup_postcode: selectedPickupAddress.postcode,
-        pickup_city: selectedPickupAddress.city || "",
-        pickup_full_address: selectedPickupAddress.full_address,
-        pickup_house_number: selectedPickupAddress.house_number || "",
-        pickup_street_name: selectedPickupAddress.street_name || "",
-        pickup_latitude: selectedPickupAddress.latitude || null,
-        pickup_longitude: selectedPickupAddress.longitude || null
-      };
-    } else {
-      pickupAddressData = {
-        pickup_street_address: pickupAddressForm.street_address,
-        pickup_postcode: pickupAddressForm.postcode,
-        pickup_city: pickupAddressForm.city || "",
-        pickup_full_address: pickupAddressForm.street_address,
-        pickup_house_number: pickupAddressForm.house_number || "",
-        pickup_street_name: pickupGeoData.street_name || "",
-        pickup_latitude: pickupGeoData.latitude || null,
-        pickup_longitude: pickupGeoData.longitude || null
-      };
+    if (!selectedCollectSlot || !selectedDeliverSlot || !collectDate || !deliverDate) {
+      return null;
     }
-  } else {
-    // Same address → use delivery address for pickup
-    pickupAddressData = {
-      pickup_street_address: addressForm.street_address,
-      pickup_postcode: addressForm.postcode,
-      pickup_city: addressForm.city || "",
-      pickup_full_address: addressForm.street_address,
-      pickup_house_number: addressForm.house_number || "",
-      pickup_street_name: geoData.street_name || "",
-      pickup_latitude: geoData.latitude || null,
-      pickup_longitude: geoData.longitude || null
+
+    const pickupSlotText = `${formatDateDDMMYYYY(collectDate)}, ${formatTimeRange24Hour(
+      selectedCollectSlot.start,
+      selectedCollectSlot.end
+    )}`;
+
+    const deliverySlotText = `${formatDateDDMMYYYY(deliverDate)}, ${formatTimeRange24Hour(
+      selectedDeliverSlot.start,
+      selectedDeliverSlot.end
+    )}`;
+
+    let deliveryAddressData = {
+      street_address: deliveryAddressForm.street_address,
+      postcode: deliveryPostcode,
+      city: deliveryAddressForm.city,
+      house_number: deliveryGeoData.house_number || "",
+      street_name: deliveryGeoData.street_name || "",
+      additional_details: deliveryAddressDetails,
+      latitude: deliveryGeoData.latitude,
+      longitude: deliveryGeoData.longitude,
     };
-  }
 
-  /* -------------------- DELIVERY ADDRESS -------------------- */
-  let deliveryAddressData = {};
+    let pickupAddressData = {
+      street_address: pickupAddressForm.street_address,
+      postcode: pickupPostcode,
+      city: pickupAddressForm.city,
+      house_number: pickupGeoData.house_number || "",
+      street_name: pickupGeoData.street_name || "",
+      additional_details: pickupAddressDetails,
+      latitude: pickupGeoData.latitude,
+      longitude: pickupGeoData.longitude,
+    };
 
-if (useSameAddress) {
-  deliveryAddressData = {
-    street_address: pickupAddressData.pickup_street_address,
-    postcode: pickupAddressData.pickup_postcode,
-    city: pickupAddressData.pickup_city,
-    full_address: pickupAddressData.pickup_full_address,
-    house_number: pickupAddressData.pickup_house_number,
-    latitude: pickupAddressData.pickup_latitude,
-    longitude: pickupAddressData.pickup_longitude
-  };
-} else {
-  deliveryAddressData = {
-    street_address: addressForm.street_address,
-    postcode: addressForm.postcode,
-    city: addressForm.city || "",
-    full_address: addressForm.street_address,
-    house_number: deliveryGeoData.house_number || "",
-    latitude: deliveryGeoData.latitude,
-    longitude: deliveryGeoData.longitude
-  };
-}
+    if (useSameAddress) {
+      pickupAddressData = { ...deliveryAddressData };
+    }
 
-  return {
-    ...deliveryAddressData,
-    ...pickupAddressData,
-    use_same_address: useSameAddress,
-    name: userInfo.name,
-    email: userInfo.email,
-    phone: userInfo.phone,
-    collect_slot: pickupSlotText,
-    delivery_slot: deliverySlotText,
-    notes: notes.trim() || null,
-    images: []
-  };
+    const orderItems = (items || []).map(item => ({
+      product_id: item.id,
+      quantity: item.quantity,
+      price_at_purchase: item.price,
+    }));
 
-}, [
-  selectedCollectSlot,
-  selectedDeliverSlot,
-  collectDate,
-  deliverDate,
-  userToken,
-  addresses,
-  selectedAddressId,
-  pickupAddresses,
-  selectedPickupAddressId,
-  useSameAddress,
-  addressForm,
-  pickupAddressForm,
-  geoData,
-  pickupGeoData,
-  deliveryGeoData,
-  notes,
-  userInfo
-]);
+    return {
+      deliveryAddress: deliveryAddressData,
+      pickupAddress: pickupAddressData,
+      use_same_address: useSameAddress,
+      name: userInfo.name,
+      email: userInfo.email,
+      phone: userInfo.phone.startsWith("+")
+        ? userInfo.phone
+        : `${countryCode}${userInfo.phone}`,
+      collect_slot: pickupSlotText,
+      delivery_slot: deliverySlotText,
+      notes: notes.trim() || null,
+      items: orderItems,
+      subtotal: Number(subtotal),
+      tip: Number(tip),
+      total: Number(total),
+      is_student: isStudent,
+      student_id_image: studentIdImage,
+      change_manager_requested: changeManagerRequested,
+      discount_percent: Number(discountPercent),
+      discount_amount: Number(discountAmount),
+      topup_amount: Number(topupAmount),
+    };
+  }, [
+    selectedCollectSlot,
+    selectedDeliverSlot,
+    collectDate,
+    deliverDate,
+    useSameAddress,
+    deliveryAddressForm,
+    deliveryPostcode,
+    deliveryGeoData,
+    deliveryAddressDetails,
+    pickupAddressForm,
+    pickupPostcode,
+    pickupGeoData,
+    pickupAddressDetails,
+    userInfo,
+    countryCode,
+    notes,
+    items,
+    subtotal,
+    tip,
+    total,
+    isStudent,
+    studentIdImage,
+    changeManagerRequested,
+    discountPercent,
+    discountAmount,
+    topupAmount,
+  ]);
 
-  /* ------------------------- Main Booking Flow ---------------------------- */
-  const handleConfirmBooking = async () => {
-  if (bookingInProgress) return;
+  const validateAddresses = useCallback(() => {
+    const isDeliverySavedSelected = userToken &&
+      selectedAddressId &&
+      selectedAddressId !== "new" &&
+      addresses.some(addr => String(addr.address_id) === selectedAddressId);
 
-  setBookingInProgress(true);
-  setLoading(true);
+    const isPickupSavedSelected = userToken &&
+      selectedPickupAddressId &&
+      selectedPickupAddressId !== "new" &&
+      pickupAddresses.some(addr => String(addr.address_id) === selectedPickupAddressId);
 
-  try {
-    // Validate geo before anything
-    if (!userToken || showAddressForm) {
-      if (!geoData.latitude || !geoData.longitude) {
-        throw new Error("Please select a valid pickup address from suggestions");
+    if (useSameAddress) {
+      if (!isDeliverySavedSelected) {
+        if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
+          throw new Error("Please select a valid delivery address from suggestions");
+        }
       }
+    } else {
+      if (!isDeliverySavedSelected) {
+        if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
+          throw new Error("Please select a valid delivery address from suggestions");
+        }
+      }
+      if (!isPickupSavedSelected) {
+        if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
+          throw new Error("Please select a valid pickup address from suggestions");
+        }
+      }
+    }
+  }, [
+    useSameAddress,
+    userToken,
+    selectedAddressId,
+    selectedPickupAddressId,
+    addresses,
+    pickupAddresses,
+    deliveryGeoData,
+    pickupGeoData
+  ]);
+
+  const ensureAddressIds = useCallback(async (orderData) => {
+    let deliveryId = selectedAddressId;
+    let pickupId = selectedPickupAddressId;
+
+    if (!deliveryId || deliveryId === "new") {
+      const newId = await saveNewAddress({
+        ...orderData.deliveryAddress,
+        street_address: orderData.deliveryAddress.street_address || deliveryAddressForm.street_address,
+        postcode: orderData.deliveryAddress.postcode || deliveryPostcode,
+        city: orderData.deliveryAddress.city || deliveryAddressForm.city,
+        house_number: orderData.deliveryAddress.house_number || deliveryGeoData.house_number,
+        street_name: orderData.deliveryAddress.street_name || deliveryGeoData.street_name,
+        additional_details: orderData.deliveryAddress.additional_details || deliveryAddressDetails,
+        latitude: orderData.deliveryAddress.latitude,
+        longitude: orderData.deliveryAddress.longitude,
+      }, 'delivery');
+      if (!newId) throw new Error("Failed to save delivery address");
+      deliveryId = String(newId);
     }
 
     if (!useSameAddress) {
-      if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
-        throw new Error("Please select a valid pickup address from suggestions");
+      if (!pickupId || pickupId === "new") {
+        const newId = await saveNewAddress({
+          ...orderData.pickupAddress,
+          street_address: orderData.pickupAddress.street_address || pickupAddressForm.street_address,
+          postcode: orderData.pickupAddress.postcode || pickupPostcode,
+          city: orderData.pickupAddress.city || pickupAddressForm.city,
+          house_number: orderData.pickupAddress.house_number || pickupGeoData.house_number,
+          street_name: orderData.pickupAddress.street_name || pickupGeoData.street_name,
+          additional_details: orderData.pickupAddress.additional_details || pickupAddressDetails,
+          latitude: orderData.pickupAddress.latitude,
+          longitude: orderData.pickupAddress.longitude,
+        }, 'pickup');
+        if (!newId) throw new Error("Failed to save pickup address");
+        pickupId = String(newId);
       }
+    } else {
+      pickupId = deliveryId;
     }
 
-    const order = prepareOrderData();
-    if (!order) {
-      throw new Error("Please select pickup and delivery times");
+    return { deliveryId, pickupId };
+  }, [
+    selectedAddressId, selectedPickupAddressId, useSameAddress,
+    saveNewAddress, deliveryAddressForm, deliveryPostcode, deliveryGeoData, deliveryAddressDetails,
+    pickupAddressForm, pickupPostcode, pickupGeoData, pickupAddressDetails
+  ]);
+
+  const handleConfirmBooking = async () => {
+    if (bookingInProgress) return;
+    setBookingInProgress(true);
+    setLoading(true);
+
+    try {
+      validateAddresses();
+      const order = prepareOrderData();
+      if (!order) throw new Error("Please select pickup and delivery times");
+      setPendingBookingData(order);
+      const token = userToken || localStorage.getItem("jwtToken");
+      if (!token) throw new Error("Authentication required");
+      await initiateStripeSetup(token, customerId);
+    } catch (error) {
+      showToast(error.message || "Booking failed", "error");
+    } finally {
+      setLoading(false);
+      setBookingInProgress(false);
     }
+  };
 
-    // 🚀 DO NOT CREATE BOOKING HERE
-    // Just store order temporarily
-    setPendingBookingData(order);
-
-    showToast("Please complete card setup to confirm your booking", "info");
-
-    const token = userToken || localStorage.getItem("jwtToken");
-    if (!token) {
-      throw new Error("Authentication required");
-    }
-
-    await initiateStripeSetup(token, customerId);
-
-  } catch (error) {
-    showToast(error.message || "Booking failed", "error");
-  } finally {
-    setLoading(false);
-    setBookingInProgress(false);
-  }
-};
-
-
-
-  // Handle saved card booking for logged-in users with saved cards
   const handleSavedCardBooking = async () => {
     if (!selectedCard) {
-      showToast("Please select a card to use", "error");
+      showToast("Please select a saved card", "error");
       return;
     }
-
     setLoading(true);
-    
-    try {
-      // Validate pickup address when useSameAddress is false
-      if (!useSameAddress) {
-if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
-    throw new Error("Please select a valid delivery address from suggestions");
-  }
-}
 
-      const selectedCardData = savedCards.find(card => card.id === selectedCard);
-      if (!selectedCardData) {
-        throw new Error("Selected card not found");
+    try {
+      validateAddresses();
+      const order = prepareOrderData();
+      if (!order) throw new Error("Please select pickup and delivery times");
+
+      const { deliveryId, pickupId } = await ensureAddressIds(order);
+
+      const token = userToken || localStorage.getItem("jwtToken");
+      if (!token) throw new Error("Authentication required");
+
+      let currentCustomerId = customerId;
+      if (!currentCustomerId) {
+        currentCustomerId = await ensureStripeCustomer();
+        if (!currentCustomerId) throw new Error("Failed to set up payment customer");
       }
 
-      const order = prepareOrderData();
-      if (!order) throw new Error("Order data missing");
+      const selectedCardData = savedCards.find(
+        card => card.payment_method_id === selectedCard
+      );
+      if (!selectedCardData) throw new Error("Selected card not found");
 
-      const orderWithPayment = {
-        ...order,
+      const payload = {
+        address_id: deliveryId,
+        pickup_address_id: pickupId,
+        use_same_address: useSameAddress,
+        items: order.items,
+        subtotal: order.subtotal,
+        tip: order.tip,
+        total: order.total,
+        collect_slot: order.collect_slot,
+        delivery_slot: order.delivery_slot,
+        notes: order.notes,
+        images: [],
+        is_student: order.is_student,
+        student_id_image: order.student_id_image,
+        change_manager_requested: order.change_manager_requested,
+        discount_percent: order.discount_percent,
+        discount_amount: order.discount_amount,
+        topup_amount: order.topup_amount,
         payment_method_id: selectedCardData.payment_method_id,
-        stripe_customer_id: customerId,
+        stripe_customer_id: currentCustomerId,
       };
 
-      const response = await fetch(`${API_BASE}/express_order`, {
+      const response = await fetch(`${API_BASE}/api/orders`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${userToken}`,
-          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(orderWithPayment),
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.error || "Order creation failed");
+        throw new Error(data.message || "Booking failed");
       }
 
-      showToast("Booking confirmed with saved card!", "success");
-      
-      setTimeout(() => {
-        navigate("/thankyou", {
-          state: {
-            orderId: data.order_id,
-            paymentStatus: "card_saved",
-            paymentMethod: "saved_card",
-            pickupDate: formatDateDDMMYYYY(collectDate),
-            pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
-            deliveryDate: formatDateDDMMYYYY(deliverDate),
-            deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
-          },
-        });
-      }, 1000);
+      showToast("Booking confirmed successfully!", "success");
 
+      navigate("/thankyou", {
+        state: {
+          orderId: data.orderId,
+          paymentStatus: "saved_card",
+          paymentMethod: "saved_card",
+          pickupDate: formatDateDDMMYYYY(collectDate),
+          pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
+          deliveryDate: formatDateDDMMYYYY(deliverDate),
+          deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
+        }
+      });
     } catch (error) {
-      console.error("Saved card booking error:", error);
-      showToast(error.message || "Failed to create booking", "error");
+      console.error(error);
+      showToast(error.message || "Booking failed", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle "Use Another Card" for logged-in users
   const handleUseAnotherCard = async () => {
-  try {
-    setSetupProcessing(true);
-
-    // 🚨 DO NOT CREATE NEW BOOKING
-    if (!pendingBookingData) {
-      showToast("Please create booking first.", "error");
-      return;
+    try {
+      validateAddresses();
+      const order = prepareOrderData();
+      if (!order) throw new Error("Please complete booking details");
+      setPendingBookingData(order);
+      const token = userToken || localStorage.getItem("jwtToken");
+      if (!token) throw new Error("Authentication required");
+      await initiateStripeSetup(token, customerId);
+    } catch (err) {
+      showToast(err.message || "Failed to setup card", "error");
     }
+  };
 
-    const token = userToken || localStorage.getItem("jwtToken");
-    if (!token) throw new Error("Authentication required");
-
-    await initiateStripeSetup(
-      token,
-      pendingBookingData.stripeCustomerId
-    );
-
-  } catch (err) {
-    showToast(err.message || "Failed to setup card", "error");
-  } finally {
-    setSetupProcessing(false);
-  }
-};
-
-
-  // Initiate Stripe setup AFTER booking
   const initiateStripeSetup = async (token, stripeCustomerId) => {
     setSetupProcessing(true);
-
     try {
-      if (!token) {
-        throw new Error("Authentication token missing");
-      }
+      if (!token) throw new Error("Authentication token missing");
 
       const setupData = await createSetupIntent(token);
-      
       if (!setupData || !setupData.setupIntentClientSecret) {
         throw new Error("Stripe setup failed");
       }
@@ -2881,11 +3019,9 @@ if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
       setSetupClientSecret(setupData.setupIntentClientSecret);
       setCustomerId(setupData.customerId || stripeCustomerId);
       setShowPaymentSetup(true);
-
     } catch (error) {
       console.error("Stripe setup error:", error);
       showToast(error.message || "Failed to setup card payment", "error");
-      
       setTimeout(() => {
         showToast("Please try again to complete your booking", "error");
       }, 2000);
@@ -2894,92 +3030,99 @@ if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
     }
   };
 
-  // Handle Stripe setup success (card saved)
   const handleSetupSuccess = async (setupIntent) => {
-  setSetupProcessing(true);
+    setSetupProcessing(true);
 
-  try {
-    const token = userToken || localStorage.getItem("jwtToken");
-    if (!token) throw new Error("Authentication required");
+    try {
+      const token = userToken || localStorage.getItem("jwtToken");
+      if (!token) throw new Error("Authentication required");
+      if (!pendingBookingData) throw new Error("Booking data missing");
 
-    if (!pendingBookingData) {
-      throw new Error("Booking data missing");
-    }
+      const paymentMethodId =
+        setupIntent.payment_method ||
+        setupIntent.latest_attempt?.payment_method;
+      if (!paymentMethodId) throw new Error("Payment method not returned by Stripe");
 
-    const paymentMethodId =
-      setupIntent.payment_method ||
-      setupIntent.latest_attempt?.payment_method;
+      if (customerId) {
+        await fetch(`${API_BASE}/stripe/set-default-payment`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ customerId, paymentMethodId }),
+        });
+      }
 
-    if (!paymentMethodId) {
-      throw new Error("Payment method not returned by Stripe");
-    }
+      const { deliveryId, pickupId } = await ensureAddressIds(pendingBookingData);
 
-    // Set default payment method
-    if (customerId) {
-      await fetch(`${API_BASE}/stripe/set-default-payment`, {
+      const payload = {
+        address_id: deliveryId,
+        pickup_address_id: pickupId,
+        use_same_address: useSameAddress,
+        items: pendingBookingData.items,
+        subtotal: pendingBookingData.subtotal,
+        tip: pendingBookingData.tip,
+        total: pendingBookingData.total,
+        collect_slot: pendingBookingData.collect_slot,
+        delivery_slot: pendingBookingData.delivery_slot,
+        notes: pendingBookingData.notes,
+        images: [],
+        is_student: pendingBookingData.is_student,
+        student_id_image: pendingBookingData.student_id_image,
+        change_manager_requested: pendingBookingData.change_manager_requested,
+        discount_percent: pendingBookingData.discount_percent,
+        discount_amount: pendingBookingData.discount_amount,
+        topup_amount: pendingBookingData.topup_amount,
+        payment_method_id: paymentMethodId,
+        stripe_customer_id: customerId,
+      };
+
+      const response = await fetch(`${API_BASE}/api/orders`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          customerId,
-          paymentMethodId,
-        }),
+        body: JSON.stringify(payload)
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to create booking");
+      }
+
+      setShowPaymentSetup(false);
+      setPendingBookingData(null);
+
+      showToast("Booking confirmed successfully!", "success");
+
+      setTimeout(() => {
+        navigate("/thankyou", {
+          state: {
+            orderId: data.orderId,
+            paymentStatus: "card_saved",
+            paymentMethod: "new_card",
+            pickupDate: formatDateDDMMYYYY(collectDate),
+            pickupTime: formatTimeRange24Hour(
+              selectedCollectSlot?.start,
+              selectedCollectSlot?.end
+            ),
+            deliveryDate: formatDateDDMMYYYY(deliverDate),
+            deliveryTime: formatTimeRange24Hour(
+              selectedDeliverSlot?.start,
+              selectedDeliverSlot?.end
+            ),
+          },
+        });
+      }, 1000);
+    } catch (error) {
+      showToast(error.message || "Failed to complete booking", "error");
+    } finally {
+      setSetupProcessing(false);
     }
-
-    // 🚀 NOW CREATE ORDER (ONLY AFTER CARD SAVED)
-    const response = await fetch(`${API_BASE}/quick-booking`, {
-    method: "POST",
-    headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`,
-     },
-  body: JSON.stringify({
-    ...pendingBookingData,
-    payment_method_id: paymentMethodId,
-    stripe_customer_id: customerId
-  }),
-});
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to create booking");
-    }
-
-    setShowPaymentSetup(false);
-    setPendingBookingData(null);
-
-    showToast("Booking confirmed successfully!", "success");
-
-    setTimeout(() => {
-      navigate("/thankyou", {
-        state: {
-          orderId: data.order?.id,
-          paymentStatus: "card_saved",
-          paymentMethod: "new_card",
-          pickupDate: formatDateDDMMYYYY(collectDate),
-          pickupTime: formatTimeRange24Hour(
-            selectedCollectSlot?.start,
-            selectedCollectSlot?.end
-          ),
-          deliveryDate: formatDateDDMMYYYY(deliverDate),
-          deliveryTime: formatTimeRange24Hour(
-            selectedDeliverSlot?.start,
-            selectedDeliverSlot?.end
-          ),
-        },
-      });
-    }, 1000);
-
-  } catch (error) {
-    showToast(error.message || "Failed to complete booking", "error");
-  } finally {
-    setSetupProcessing(false);
-  }
-};
+  };
 
   const handleSetupError = (errorMessage) => {
     showToast(errorMessage || "Failed to save card. Please try again.", "error");
@@ -2988,34 +3131,21 @@ if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
   const handlePaymentModalCancel = () => {
     setShowPaymentSetup(false);
     setSetupClientSecret(null);
-    
+    setPendingBookingData(null);
+    setSetupProcessing(false);
     showToast("Booking not confirmed. Please complete card setup to confirm your booking.", "warning");
   };
 
-  /* ---------------------------- UI Handlers ------------------------------- */
-  
-  // NEW: Handle phone number change with auto-fill
   const handlePhoneChange = (e) => {
-  const newPhone = e.target.value;
-
-  setUserInfo(prev => ({
-    ...prev,
-    phone: newPhone
-  }));
-
-  // Clear previous debounce
-  if (phoneCheckTimeoutRef.current) {
-    clearTimeout(phoneCheckTimeoutRef.current);
-  }
-
-  // Debounce API call
-  if (newPhone && newPhone.trim().length >= 5) {
-    phoneCheckTimeoutRef.current = setTimeout(() => {
-      checkPhoneNumberExists(newPhone);
-    }, 1000);
-  }
-};
-
+    const newPhone = e.target.value;
+    setUserInfo(prev => ({ ...prev, phone: newPhone }));
+    if (phoneCheckTimeoutRef.current) clearTimeout(phoneCheckTimeoutRef.current);
+    if (newPhone && newPhone.trim().length >= 5) {
+      phoneCheckTimeoutRef.current = setTimeout(() => {
+        checkPhoneNumberExists(newPhone);
+      }, 1000);
+    }
+  };
 
   const handleCollectDateChange = (e) => {
     const newDate = e.target.value;
@@ -3031,12 +3161,10 @@ if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
 
   const handleDeliverDateChange = (e) => {
     const newDate = e.target.value;
-    
     if (collectDate && newDate < collectDate) {
       showToast("Delivery date cannot be before pickup date", "error");
       return;
     }
-
     setDeliverDate(newDate);
     setSelectedDeliverSlot(null);
     setSelectedDeliverSlotStart(null);
@@ -3046,15 +3174,11 @@ if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
 
   const handleCollectSlotSelect = (slot) => {
     if (!slot.enabled) return;
-    
     const start = new Date(slot.start);
     const end = slot.end ? new Date(slot.end) : null;
-    
     setSelectedCollectSlot(slot);
     setSelectedCollectSlotStart(start);
     setSelectedCollectSlotEnd(end);
-
-    // Reset delivery when pickup changes
     setSelectedDeliverSlot(null);
     setSelectedDeliverSlotStart(null);
     setSelectedDeliverSlotEnd(null);
@@ -3063,86 +3187,158 @@ if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
 
   const handleDeliverSlotSelect = (slot) => {
     if (!slot.enabled) return;
-    
     const start = new Date(slot.start);
     const end = slot.end ? new Date(slot.end) : null;
-    
     setSelectedDeliverSlot(slot);
     setSelectedDeliverSlotStart(start);
     setSelectedDeliverSlotEnd(end);
   };
 
   const handleToggleSameAddress = (e) => {
-  const checked = e.target.checked;
-  setUseSameAddress(checked);
-
-  if (checked) {
-    // Copy pickup → delivery
-    setPickupAddressForm({
-      street_address: addressForm.street_address,
-      postcode: addressForm.postcode,
-      city: addressForm.city,
-      additional_details: addressForm.additional_details,
-      house_number: addressForm.house_number
-    });
-
-    setPickupGeoData({ ...geoData });
-  }
-};
-
-
-
-  // NEW: Handle pickup address selection
-  const handlePickupAddressSelect = (addressId) => {
-    if (addressId === "new") {
-      setShowPickupAddressForm(true);
-      setSelectedPickupAddressId("new");
-    } else {
-      setSelectedPickupAddressId(addressId);
-      setShowPickupAddressForm(false);
+    const checked = e.target.checked;
+    setUseSameAddress(checked);
+    if (checked) {
+      setPickupAddressForm({ ...deliveryAddressForm });
+      setPickupPostcode(deliveryPostcode);
+      setPickupGeoData({ ...deliveryGeoData });
+      setPickupAddressDetails(deliveryAddressDetails);
+      setSelectedPickupAddressId(selectedAddressId);
     }
   };
 
-  const handleUserInfoChange = (field) => (e) => {
-    setUserInfo(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
-  };
+  useEffect(() => {
+    const checkGoogle = () => {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        setGoogleReady(true);
+      } else {
+        setTimeout(checkGoogle, 300);
+      }
+    };
+    checkGoogle();
+  }, []);
 
-  const handleAddressFormChange = (field) => (e) => {
-    setAddressForm(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
-  };
+  useEffect(() => {
+    if (!googleReady) return;
+    const clean = pickupPostcode.trim();
+    if (clean.length >= 3) {
+      const service = new window.google.maps.places.AutocompleteService();
+      service.getPlacePredictions(
+        {
+          input: clean,
+          componentRestrictions: { country: "gb" }
+        },
+        (predictions, status) => {
+          if (status !== window.google.maps.places.PlacesServiceStatus.OK || !predictions) {
+            setPickupPostcodeAddresses([]);
+            return;
+          }
+          setPickupPostcodeAddresses(
+            predictions.map(p => ({ full: p.description, place_id: p.place_id }))
+          );
+        }
+      );
+    } else {
+      setPickupPostcodeAddresses([]);
+    }
+  }, [pickupPostcode, googleReady]);
 
-  // NEW: Handle pickup address form changes
-  const handlePickupAddressFormChange = (field) => (e) => {
-    setPickupAddressForm(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
-  };
+  useEffect(() => {
+    if (!googleReady || !selectedPickupPostcodeAddress) return;
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ placeId: selectedPickupPostcodeAddress }, (results, status) => {
+      if (status !== "OK" || !results[0]) return;
+      const result = results[0];
+      let street = "", house = "", postcode = "", city = "";
+      result.address_components.forEach(c => {
+        if (c.types.includes("route")) street = c.long_name;
+        if (c.types.includes("street_number")) house = c.long_name;
+        if (c.types.includes("postal_code")) postcode = c.long_name;
+        if (c.types.includes("postal_town")) city = c.long_name;
+      });
+      setPickupGeoData({
+        latitude: result.geometry.location.lat(),
+        longitude: result.geometry.location.lng(),
+        street_name: street,
+        house_number: house
+      });
+      setPickupAddressForm({
+        street_address: result.formatted_address,
+        postcode,
+        city,
+        house_number: house,
+        additional_details: pickupAddressDetails
+      });
+    });
+  }, [selectedPickupPostcodeAddress, googleReady, pickupAddressDetails]);
 
-  const handleAddAddressClick = () => {
-  setShowAddressForm(true);
+  useEffect(() => {
+    if (!googleReady) return;
+    const clean = deliveryPostcode.trim();
+    if (clean.length >= 3) {
+      const service = new window.google.maps.places.AutocompleteService();
+      service.getPlacePredictions(
+        {
+          input: clean,
+          componentRestrictions: { country: "gb" }
+        },
+        (predictions, status) => {
+          if (status !== window.google.maps.places.PlacesServiceStatus.OK || !predictions) {
+            setDeliveryPostcodeAddresses([]);
+            return;
+          }
+          setDeliveryPostcodeAddresses(
+            predictions.map(p => ({ full: p.description, place_id: p.place_id }))
+          );
+        }
+      );
+    } else {
+      setDeliveryPostcodeAddresses([]);
+    }
+  }, [deliveryPostcode, googleReady]);
 
-  if (useSameAddress) {
-    setSelectedPickupAddressId(null);
-  }
+  useEffect(() => {
+    if (!googleReady || !selectedDeliveryPostcodeAddress) return;
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ placeId: selectedDeliveryPostcodeAddress }, (results, status) => {
+      if (status !== "OK" || !results[0]) return;
+      const result = results[0];
+      let street = "", house = "", postcode = "", city = "";
+      result.address_components.forEach(c => {
+        if (c.types.includes("route")) street = c.long_name;
+        if (c.types.includes("street_number")) house = c.long_name;
+        if (c.types.includes("postal_code")) postcode = c.long_name;
+        if (c.types.includes("postal_town")) city = c.long_name;
+      });
+      setDeliveryGeoData({
+        latitude: result.geometry.location.lat(),
+        longitude: result.geometry.location.lng(),
+        street_name: street,
+        house_number: house
+      });
+      setDeliveryAddressForm({
+        street_address: result.formatted_address,
+        postcode,
+        city,
+        house_number: house,
+        additional_details: deliveryAddressDetails
+      });
+    });
+  }, [selectedDeliveryPostcodeAddress, googleReady, deliveryAddressDetails]);
 
-  setAddressForm({
-    street_address: "",
-    postcode: "",
-    city: "",
-    additional_details: "",
-    house_number: ""
-  });
-};
+  useEffect(() => {
+    if (collectDate) {
+      const timer = setTimeout(fetchCollectSlots, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [collectDate, fetchCollectSlots]);
 
+  useEffect(() => {
+    if (deliverDate && selectedCollectSlotStart) {
+      const timer = setTimeout(fetchDeliverySlots, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [deliverDate, selectedCollectSlotStart, fetchDeliverySlots]);
 
-  /* ---------------------------- Effects ----------------------------------- */
   useEffect(() => {
     if (userToken) {
       fetchUserProfile();
@@ -3154,289 +3350,119 @@ if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
     }
   }, [userToken, fetchUserProfile, fetchAddresses, fetchSavedCards, ensureStripeCustomer]);
 
-  // 🔥 Auto-sync pickup when delivery changes and toggle is ON
-
-
- useEffect(() => {
-  if (!window.google || !addressInputRef.current) return;
-
-  const autocomplete = new window.google.maps.places.Autocomplete(
-    addressInputRef.current,
-    {
-      types: ["address"],
-      componentRestrictions: { country: "gb" }
-    }
-  );
-
-  autocomplete.addListener("place_changed", () => {
-    const place = autocomplete.getPlace();
-    if (!place.geometry) return;
-
-    const lat = place.geometry.location.lat();
-    const lng = place.geometry.location.lng();
-
-    let street = "";
-    let house = "";
-
-    place.address_components.forEach(component => {
-      if (component.types.includes("route")) {
-        street = component.long_name;
-      }
-      if (component.types.includes("street_number")) {
-        house = component.long_name;
-      }
-    });
-
-    // ✅ STORE PICKUP GEO
-    setGeoData({
-      latitude: lat,
-      longitude: lng,
-      street_name: street,
-      house_number: house
-    });
-
-    // ✅ UPDATE PICKUP FORM (NOT delivery)
-    setAddressForm(prev => ({
-      ...prev,
-      street_address: place.formatted_address,
-      postcode:
-        place.address_components.find(c =>
-          c.types.includes("postal_code")
-        )?.long_name || ""
-    }));
-
-    // ✅ If same address toggle ON → auto sync delivery
-    if (useSameAddress) {
-      setPickupAddressForm({
-        street_address: place.formatted_address,
-        postcode:
-          place.address_components.find(c =>
-            c.types.includes("postal_code")
-          )?.long_name || "",
-        city: "",
-        additional_details: "",
-        house_number: house
-      });
-
-      setPickupGeoData({
-        latitude: lat,
-        longitude: lng,
-        street_name: street,
-        house_number: house
-      });
-    }
-  });
-
-}, [useSameAddress]);
-
-useEffect(() => {
-  if (!window.google || !deliveryAddressInputRef.current) return;
-
-  const autocomplete = new window.google.maps.places.Autocomplete(
-    deliveryAddressInputRef.current,
-    {
-      types: ["address"],
-      componentRestrictions: { country: "gb" }
-    }
-  );
-
-  autocomplete.addListener("place_changed", () => {
-    const place = autocomplete.getPlace();
-    if (!place.geometry) return;
-
-    const lat = place.geometry.location.lat();
-    const lng = place.geometry.location.lng();
-
-    let street = "";
-    let house = "";
-
-    place.address_components.forEach(component => {
-      if (component.types.includes("route")) {
-        street = component.long_name;
-      }
-      if (component.types.includes("street_number")) {
-        house = component.long_name;
-      }
-    });
-
-    // ✅ STORE DELIVERY GEO
-    setDeliveryGeoData({
-  latitude: lat,
-  longitude: lng,
-  street_name: street,
-  house_number: house
-});
-
-    // ✅ UPDATE DELIVERY FORM
-    setAddressForm(prev => ({
-  ...prev,
-  street_address: place.formatted_address,
-      postcode:
-        place.address_components.find(c =>
-          c.types.includes("postal_code")
-        )?.long_name || ""
-    }));
-  });
-
-}, []);
-
-
-useEffect(() => {
-  if (!window.google || !pickupAddressInputRef.current) return;
-
-  const autocomplete = new window.google.maps.places.Autocomplete(
-    pickupAddressInputRef.current,
-    {
-      types: ["address"],
-      componentRestrictions: { country: "gb" }
-    }
-  );
-
-  autocomplete.addListener("place_changed", () => {
-  const place = autocomplete.getPlace();
-  if (!place.geometry) return;
-
-  const lat = place.geometry.location.lat();
-  const lng = place.geometry.location.lng();
-
-  let street = "";
-  let house = "";
-
-  place.address_components.forEach(component => {
-    if (component.types.includes("route")) {
-      street = component.long_name;
-    }
-    if (component.types.includes("street_number")) {
-      house = component.long_name;
-    }
-  });
-
-  setPickupGeoData({
-    latitude: lat,
-    longitude: lng,
-    street_name: street,
-    house_number: house
-  });
-
-  setPickupAddressForm(prev => ({
-    ...prev,
-    street_address: place.formatted_address,
-    postcode:
-      place.address_components.find(c =>
-        c.types.includes("postal_code")
-      )?.long_name || ""
-  }));
-});
-
-}, []);
-
-
-  // Effect to fetch collect slots when collectDate changes
   useEffect(() => {
-    if (collectDate) {
-      const timer = setTimeout(() => {
-        fetchCollectSlots();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [collectDate, fetchCollectSlots]);
-
-  // Effect to fetch delivery slots when deliverDate or pickup details change
-  useEffect(() => {
-    if (deliverDate && selectedCollectSlotStart) {
-      const timer = setTimeout(() => {
-        fetchDeliverySlots();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [deliverDate, selectedCollectSlotStart, fetchDeliverySlots]);
-
-  useEffect(() => {
-    if (showPaymentSetup) {
-      document.body.classList.add('payment-modal-open');
-    } else {
-      document.body.classList.remove('payment-modal-open');
-    }
-    
     return () => {
-      document.body.classList.remove('payment-modal-open');
+      if (phoneCheckTimeoutRef.current) clearTimeout(phoneCheckTimeoutRef.current);
     };
-  }, [showPaymentSetup]);
-  // 🔥 Auto-sync delivery when pickup changes and toggle ON
+  }, []);
 
-
-  // Calculate min delivery date
-  const minDeliveryDate = collectDate || today;
-
-  // Check if form is valid for booking
   const isBookingValid = () => {
     if (!userInfo.name.trim()) return false;
     if (!userInfo.email.trim()) return false;
     if (!userInfo.phone.trim()) return false;
     if (!selectedCollectSlot || !selectedDeliverSlot) return false;
-    
-    // Delivery address validation
-    if (userToken && addresses.length > 0 && !showAddressForm) {
-      if (!selectedAddressId) return false;
-    } else {
-      if (!addressForm.street_address.trim()) return false;
-      if (!addressForm.postcode.trim()) return false;
-    }
-    
-    // Pickup address validation (when useSameAddress is false)
-    if (!useSameAddress) {
-      if (userToken) {
-        if (!selectedPickupAddressId) return false;
-        if (selectedPickupAddressId === "new" && showPickupAddressForm) {
-          if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
-        }
+
+    if (userToken && pickupAddresses.length > 0 && !showPickupAddressForm) {
+      if (useSameAddress) {
+        if (!selectedAddressId) return false;
       } else {
-        if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
+        if (!selectedPickupAddressId) return false;
+      }
+    } else {
+      if (!pickupPostcode.trim() || !selectedPickupPostcodeAddress) return false;
+      if (!pickupGeoData.latitude || !pickupGeoData.longitude) return false;
+    }
+
+    if (!useSameAddress) {
+      if (userToken && addresses.length > 0 && !showAddressForm) {
+        if (!selectedAddressId) return false;
+      } else {
+        if (!deliveryPostcode.trim() || !selectedDeliveryPostcodeAddress) return false;
+        if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) return false;
       }
     }
-    
+
     return true;
   };
-
-  /* ------------------------------ Render ---------------------------------- */
-  
 
   return (
     <div className="qb-page">
       <div className="qb-container">
-
         {/* Title Section */}
-        {/* Title Section */}
-<div className="qb-title-section">
+        <div className="qb-title-section">
+          <button
+            className="qb-back-btn"
+            onClick={() => navigate(-1)}
+            aria-label="Go back"
+          >
+            <i className="fas fa-arrow-left"></i>
+          </button>
+          <h1 className="qb-title">
+            <i className="fas fa-calendar-check qb-title-icon"></i>
+            Checkout
+          </h1>
+          <p className="qb-subtitle">
+            Confirm your items, address, and payment
+          </p>
+          {userToken && (
+            <div className="qb-user-info">
+              <i className="fas fa-user-check"></i>
+              <span>
+                Welcome back, {userInfo.name || user?.email}! Your info is pre-filled.
+              </span>
+            </div>
+          )}
+        </div>
 
-  {/* Back Button */}
-  <button
-    className="qb-back-btn"
-    onClick={() => navigate(-1)}
-    aria-label="Go back"
-  >
-    <i className="fas fa-arrow-left"></i>
-  </button>
+         {/* Order Summary Card (new) */}
+        {/* <div className="qb-card">
+          <div className="qb-card-header">
+            <div className="qb-section-icon">
+              <i className="fas fa-shopping-bag"></i>
+            </div>
+            <div>
+              <h2 className="qb-section-title">Order Summary</h2>
+              <p className="qb-section-subtitle">Review your items before confirming</p>
+            </div>
+          </div>
 
-  <h1 className="qb-title">
-    <i className="fas fa-calendar-check qb-title-icon"></i>
-    Book Laundry Service
-  </h1>
+          <div className="qb-cards-list" style={{ marginBottom: '16px' }}>
+            {items.map(item => (
+              <div key={item.id} className="qb-card-option" style={{ cursor: 'default', padding: '12px' }}>
+                <div className="qb-card-option-icon" style={{ fontSize: '1.8rem' }}>
+                  {item.emoji || '🧺'}
+                </div>
+                <div className="qb-card-option-details">
+                  <div className="qb-card-brand">{item.name}</div>
+                  <div className="qb-card-number">Qty: {item.quantity} × £{Number(item.price).toFixed(2)}</div>
+                </div>
+                <div className="qb-card-selected" style={{ fontSize: '1.1rem' }}>
+                  £{(item.price * item.quantity).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
 
-  <p className="qb-subtitle">
-    Fill in your details, choose pickup & delivery times, and we'll handle the rest
-  </p>
-
-  {userToken && (
-    <div className="qb-user-info">
-      <i className="fas fa-user-check"></i>
-      <span>
-        Welcome back, {userInfo.name || user?.email}! Your info is pre-filled.
-      </span>
-    </div>
-  )}
-</div>
-
+          <div className="qb-payment-info" style={{ marginTop: '8px' }}>
+            <div className="qb-payment-info-icon">
+              <i className="fas fa-calculator"></i>
+            </div>
+            <div className="qb-payment-info-text">
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Subtotal:</span>
+                <span>£{Number(subtotal).toFixed(2)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Tip:</span>
+                <span>£{Number(tip).toFixed(2)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', marginTop: '8px' }}>
+                <span>Total:</span>
+                <span>£{Number(total).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        </div> */}
 
         {/* Personal Information Card */}
         <div className="qb-card">
@@ -3459,7 +3485,7 @@ useEffect(() => {
                   type="text"
                   className="qb-form-input"
                   value={userInfo.name}
-                  onChange={handleUserInfoChange("name")}
+                  onChange={(e) => setUserInfo(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="John Smith"
                   required
                 />
@@ -3474,234 +3500,302 @@ useEffect(() => {
                   type="email"
                   className="qb-form-input"
                   value={userInfo.email}
-                  onChange={handleUserInfoChange("email")}
+                  onChange={(e) => setUserInfo(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="john@example.com"
                   required
                 />
               </label>
             </div>
 
-            <div className="qb-form-group">
-              <label className="qb-form-label">
-                <i className="fas fa-phone"></i>
-                Phone Number
-                <input
-                  type="tel"
-                  className="qb-form-input"
-                  value={userInfo.phone}
-                  onChange={handlePhoneChange}
-                  placeholder="+44 20 1234 5678"
-                  required
-                />
-                {/* <div className="qb-phone-hint">
-                  <i className="fas fa-info-circle"></i>
-                  Enter phone number to check for existing account
-                </div> */}
-              </label>
+            <div className="qb-phone-group">
+              <select
+                className="qb-country-code"
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+              >
+                {countryCodes.map(c => (
+                  <option key={c.code} value={c.code}>{c.code}</option>
+                ))}
+              </select>
+              <input
+                type="tel"
+                className="qb-form-input"
+                value={userInfo.phone}
+                onChange={handlePhoneChange}
+                placeholder="Phone Number"
+                required
+              />
             </div>
           </div>
         </div>
 
-        {/* Address Section */}
-        {/* ---------------------- ADDRESS SECTION (FIXED) ---------------------- */}
-<div className="qb-card">
-  <div className="qb-card-header">
-    <div className="qb-section-icon">
-      <i className="fas fa-map-marker-alt"></i>
-    </div>
-    <div>
-      <h2 className="qb-section-title">Pickup Address</h2>
-      <p className="qb-section-subtitle">Where should we collect your laundry?</p>
-    </div>
-  </div>
+       
 
-  {/* ---------- Logged-in user with saved addresses ---------- */}
-  {userToken && addresses.length > 0 && !showAddressForm ? (
-    <>
-      <div className="qb-address-selection">
-        <h3 className="qb-address-selection-title">Select a Saved Address</h3>
-        <div className="qb-address-grid">
-          {addresses.map((addr) => (
-            <div
-              key={addr.address_id}
-              className={`qb-address-option ${
-                selectedAddressId === String(addr.address_id) ? "selected" : ""
-              }`}
-              onClick={() => {
-                const id = String(addr.address_id);
-                setSelectedAddressId(id);
+        {/* Pickup Address Card */}
+        <div className="qb-card">
+          <div className="qb-card-header">
+            <div className="qb-section-icon">
+              <i className="fas fa-map-marker-alt"></i>
+            </div>
+            <div>
+              <h2 className="qb-section-title">Pickup Address</h2>
+              <p className="qb-section-subtitle">Where should we collect your laundry?</p>
+            </div>
+          </div>
 
-                if (useSameAddress) {
-                  setSelectedPickupAddressId(id);
-                }
-              }}
-            >
-              <div className="qb-address-option-header">
-                <div className="qb-address-type">
-                  <i className="fas fa-home"></i>
-                  <span>{addr.name || "Home"}</span>
+          {userToken && pickupAddresses.length > 0 && !showPickupAddressForm ? (
+            <>
+              <div className="qb-address-selection">
+                <h3 className="qb-address-selection-title">Select a Saved Pickup Address</h3>
+                <div className="qb-address-grid">
+                  {pickupAddresses.map(addr => (
+                    <div
+                      key={addr.address_id}
+                      className={`qb-address-option ${selectedPickupAddressId === String(addr.address_id) ? "selected" : ""}`}
+                    >
+                      <div className="qb-address-option-content" onClick={() => {
+                        setSelectedPickupAddressId(String(addr.address_id));
+                        if (useSameAddress) {
+                          setSelectedAddressId(String(addr.address_id));
+                        }
+                      }}>
+                        <div className="qb-address-option-header">
+                          <div className="qb-address-type">
+                            <i className="fas fa-home"></i>
+                            <span>{addr.name || "Home"}</span>
+                          </div>
+                          {addr.is_selected && (
+                            <span className="qb-default-badge">
+                              <i className="fas fa-star"></i> Default
+                            </span>
+                          )}
+                        </div>
+                        <div className="qb-address-option-details">
+                          <p className="qb-address-text">{addr.full_address}</p>
+                          <p className="qb-address-postcode">
+                            <i className="fas fa-map-pin"></i> {addr.postcode}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        className="qb-address-delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteAddress(addr.address_id);
+                        }}
+                        aria-label="Delete address"
+                      >
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  ))}
+
+                  <div className="qb-add-address-option" onClick={() => {
+                    setShowPickupAddressForm(true);
+                    setSelectedPickupAddressId("new");
+                  }}>
+                    <div className="qb-add-address-icon">
+                      <i className="fas fa-plus-circle"></i>
+                    </div>
+                    <div className="qb-add-address-text">
+                      <h4>Add New Pickup Address</h4>
+                      <p>Enter a different pickup address</p>
+                    </div>
+                  </div>
                 </div>
-                {addr.is_selected && (
-                  <span className="qb-default-badge">
-                    <i className="fas fa-star"></i>
-                    Default
-                  </span>
-                )}
               </div>
-              <div className="qb-address-option-details">
-                <p className="qb-address-text">{addr.full_address}</p>
-                <p className="qb-address-postcode">
-                  <i className="fas fa-map-pin"></i>
-                  {addr.postcode}
-                </p>
+
+              <div className="qb-address-toggle">
+                <label className="qb-toggle-container">
+                  <div className="qb-toggle-switch">
+                    <input type="checkbox" checked={useSameAddress} onChange={handleToggleSameAddress} />
+                    <span className="qb-toggle-slider"></span>
+                  </div>
+                  <div className="qb-toggle-label">
+                    <span className="qb-toggle-title">Use same address for delivery</span>
+                    <span className="qb-toggle-description">Deliver back to pickup location</span>
+                  </div>
+                </label>
               </div>
+            </>
+          ) : (
+            <div className="qb-address-form-section">
+              <div className="qb-form-grid">
+                <div className="qb-form-group">
+                  <label className="qb-form-label">
+                    Postcode *
+                    <input
+                      type="text"
+                      className="qb-form-input"
+                      value={pickupPostcode}
+                      onChange={(e) => setPickupPostcode(e.target.value.toUpperCase())}
+                      placeholder="SW1A2AA"
+                    />
+                  </label>
+                </div>
+
+                <div className="qb-form-group">
+                  <label className="qb-form-label">
+                    Select Address *
+                    <select
+                      className="qb-form-input"
+                      value={selectedPickupPostcodeAddress}
+                      onChange={(e) => setSelectedPickupPostcodeAddress(e.target.value)}
+                    >
+                      <option value="">Select address</option>
+                      {pickupPostcodeAddresses.map((addr, idx) => (
+                        <option key={idx} value={addr.place_id}>{addr.full}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="qb-form-group">
+                  <label className="qb-form-label">
+                    Address details
+                    <input
+                      type="text"
+                      className="qb-address-details-input"
+                      placeholder="Flat / Door / Floor"
+                      value={pickupAddressDetails}
+                      onChange={(e) => setPickupAddressDetails(e.target.value)}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {userToken && (
+                <div className="qb-save-address-checkbox">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={savePickupAddress}
+                      onChange={(e) => setSavePickupAddress(e.target.checked)}
+                    />
+                    <span>Save this address to my account</span>
+                  </label>
+                </div>
+              )}
+
+              {userToken && pickupAddresses.length > 0 && showPickupAddressForm && (
+                <button className="qb-secondary-btn" onClick={() => setShowPickupAddressForm(false)}>
+                  <i className="fas fa-arrow-left"></i> Back to Saved Addresses
+                </button>
+              )}
+
+              {(!userToken || showPickupAddressForm) && (
+                <div className="qb-address-toggle" style={{ marginTop: "20px" }}>
+                  <label className="qb-toggle-container">
+                    <div className="qb-toggle-switch">
+                      <input type="checkbox" checked={useSameAddress} onChange={handleToggleSameAddress} />
+                      <span className="qb-toggle-slider"></span>
+                    </div>
+                    <div className="qb-toggle-label">
+                      <span className="qb-toggle-title">Use same address for delivery</span>
+                      <span className="qb-toggle-description">Deliver back to pickup location</span>
+                    </div>
+                  </label>
+                </div>
+              )}
             </div>
-          ))}
+          )}
 
-          {/* ADD NEW ADDRESS */}
-          <div className="qb-add-address-option" onClick={handleAddAddressClick}>
-            <div className="qb-add-address-icon">
-              <i className="fas fa-plus-circle"></i>
+          {/* Delivery Address Section (only if different) */}
+          {!useSameAddress && (
+            <div className="qb-address-section" style={{ marginTop: "24px" }}>
+              <h3 className="qb-address-section-title">
+                <i className="fas fa-truck"></i> Delivery Address
+                <span className="qb-required-badge">Required</span>
+              </h3>
+
+              {userToken && addresses.length > 0 && !showAddressForm ? (
+                <div className="qb-address-selection">
+                  <h4>Select a Saved Delivery Address</h4>
+                  <div className="qb-address-grid">
+                    {addresses.map(addr => (
+                      <div
+                        key={addr.address_id}
+                        className={`qb-address-option ${selectedAddressId === String(addr.address_id) ? "selected" : ""}`}
+                        onClick={() => setSelectedAddressId(String(addr.address_id))}
+                      >
+                        <p className="qb-address-text">{addr.full_address}</p>
+                        <p className="qb-address-postcode">{addr.postcode}</p>
+                      </div>
+                    ))}
+                    <div className="qb-add-address-option" onClick={() => {
+                      setShowAddressForm(true);
+                      setSelectedAddressId("new");
+                    }}>
+                      <div className="qb-add-address-icon"><i className="fas fa-plus-circle"></i></div>
+                      <div className="qb-add-address-text">
+                        <h4>New Delivery Address</h4>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="qb-form-grid">
+                  <div className="qb-form-group">
+                    <label className="qb-form-label">
+                      Postcode *
+                      <input
+                        type="text"
+                        className="qb-form-input"
+                        value={deliveryPostcode}
+                        onChange={(e) => setDeliveryPostcode(e.target.value.toUpperCase())}
+                        placeholder="SW1A2AA"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="qb-form-group">
+                    <label className="qb-form-label">
+                      Select Address *
+                      <select
+                        className="qb-form-input"
+                        value={selectedDeliveryPostcodeAddress}
+                        onChange={(e) => setSelectedDeliveryPostcodeAddress(e.target.value)}
+                      >
+                        <option value="">Select address</option>
+                        {deliveryPostcodeAddresses.map((addr, idx) => (
+                          <option key={idx} value={addr.place_id}>{addr.full}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className="qb-form-group">
+                    <label className="qb-form-label">
+                      Address details
+                      <input
+                        type="text"
+                        className="qb-address-details-input"
+                        placeholder="Flat / Door / Floor"
+                        value={deliveryAddressDetails}
+                        onChange={(e) => setDeliveryAddressDetails(e.target.value)}
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {userToken && showAddressForm && (
+                <div className="qb-save-address-checkbox">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={saveDeliveryAddress}
+                      onChange={(e) => setSaveDeliveryAddress(e.target.checked)}
+                    />
+                    <span>Save this delivery address to my account</span>
+                  </label>
+                </div>
+              )}
             </div>
-            <div className="qb-add-address-text">
-              <h4>Add New Address</h4>
-              <p>Enter a different delivery address</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Toggle: Same Address or Different */}
-      <div className="qb-address-toggle">
-        <label className="qb-toggle-container">
-          <div className="qb-toggle-switch">
-            <input type="checkbox" checked={useSameAddress} onChange={handleToggleSameAddress} />
-            <span className="qb-toggle-slider"></span>
-          </div>
-          <div className="qb-toggle-label">
-            <span className="qb-toggle-title">Use same address for delivery</span>
-            <span className="qb-toggle-description">Deliver back to pickup location</span>
-          </div>
-        </label>
-      </div>
-    </>
-  ) : (
-    /* ---------- Manual Address Form (Guest or Adding New) ---------- */
-    <div className="qb-address-form-section">
-      <div className="qb-form-grid">
-        <div className="qb-form-group full-width">
-          <label className="qb-form-label">
-            <i className="fas fa-road"></i>
-            Full Address *
-            <input
-              type="text"
-              ref={addressInputRef}
-              className="qb-form-input"
-              value={addressForm.street_address}
-              onChange={(e) => {
-                setAddressForm(prev => ({ ...prev, street_address: e.target.value }));
-                setGeoData({ latitude: null, longitude: null, street_name: "", house_number: "" });
-              }}
-              placeholder="Start typing address..."
-              required
-            />
-          </label>
+          )}
         </div>
 
-        <div className="qb-form-group">
-          <label className="qb-form-label">
-            <i className="fas fa-map-pin"></i>
-            Postcode *
-            <input
-              type="text"
-              className="qb-form-input"
-              value={addressForm.postcode}
-              onChange={handleAddressFormChange("postcode")}
-              placeholder="SW1A 1AA"
-              required
-            />
-          </label>
-        </div>
-      </div>
-
-      {userToken && addresses.length > 0 && showAddressForm && (
-        <button className="qb-secondary-btn" onClick={() => setShowAddressForm(false)}>
-          <i className="fas fa-arrow-left"></i>
-          Back to Saved Addresses
-        </button>
-      )}
-
-      {/* Toggle shown for Guest users or when manually adding new address */}
-      {(!userToken || showAddressForm) && (
-        <div className="qb-address-toggle" style={{ marginTop: "20px" }}>
-          <label className="qb-toggle-container">
-            <div className="qb-toggle-switch">
-              <input type="checkbox" checked={useSameAddress} onChange={handleToggleSameAddress} />
-              <span className="qb-toggle-slider"></span>
-            </div>
-            <div className="qb-toggle-label">
-              <span className="qb-toggle-title">Use same address for delivery</span>
-              <span className="qb-toggle-description">Deliver back to pickup location</span>
-            </div>
-          </label>
-        </div>
-      )}
-    </div>
-  )}
-
-  {/* ------------ DELIVERY ADDRESS (ONLY IF DIFFERENT) ------------ */}
-  {!useSameAddress && (
-    <div className="qb-address-section" style={{ marginTop: "24px" }}>
-      <h3 className="qb-address-section-title">
-        <i className="fas fa-truck"></i>
-        Delivery Address
-        <span className="qb-required-badge">Required</span>
-      </h3>
-
-      <div className="qb-form-grid">
-        <div className="qb-form-group full-width">
-          <label className="qb-form-label">
-            <i className="fas fa-road"></i>
-            Full Address *
-            <input
-              type="text"
-              ref={deliveryAddressInputRef}
-              className="qb-form-input"
-              value={pickupAddressForm.street_address}
-              onChange={(e) => {
-                setPickupAddressForm(prev => ({ ...prev, street_address: e.target.value }));
-                setPickupGeoData({
-                  latitude: null,
-                  longitude: null,
-                  street_name: "",
-                  house_number: ""
-                });
-              }}
-              placeholder="Start typing delivery address..."
-              required
-            />
-          </label>
-        </div>
-
-        <div className="qb-form-group">
-          <label className="qb-form-label">
-            <i className="fas fa-map-pin"></i>
-            Postcode *
-            <input
-              type="text"
-              className="qb-form-input"
-              value={pickupAddressForm.postcode}
-              onChange={(e) => setPickupAddressForm(prev => ({ ...prev, postcode: e.target.value }))}
-              required
-            />
-          </label>
-        </div>
-      </div>
-    </div>
-  )}
-</div>
-
-        {/* Pickup & Delivery Schedule */}
+        {/* Schedule Card */}
         <div className="qb-card">
           <div className="qb-card-header">
             <div className="qb-section-icon">
@@ -3728,8 +3822,7 @@ useEffect(() => {
 
               <div className="qb-date-section">
                 <label className="qb-date-label">
-                  <i className="fas fa-calendar-day"></i>
-                  Pickup Date
+                  <i className="fas fa-calendar-day"></i> Pickup Date
                 </label>
                 <div className="qb-date-input-container">
                   <input
@@ -3739,7 +3832,6 @@ useEffect(() => {
                     onChange={handleCollectDateChange}
                     min={today}
                   />
-                  {/* <i className="fas fa-calendar-alt qb-date-icon"></i> */}
                 </div>
                 {collectDate && (
                   <p className="qb-date-display">
@@ -3752,10 +3844,9 @@ useEffect(() => {
               {collectDate && (
                 <div className="qb-time-slots-section">
                   <label className="qb-time-label">
-                    <i className="fas fa-clock"></i>
-                    Available Pickup Times
+                    <i className="fas fa-clock"></i> Available Pickup Times
                   </label>
-                  
+
                   {loadingSlots.collect ? (
                     <div className="qb-loading-state">
                       <div className="qb-loading-spinner"></div>
@@ -3816,8 +3907,7 @@ useEffect(() => {
 
               <div className="qb-date-section">
                 <label className="qb-date-label">
-                  <i className="fas fa-calendar-day"></i>
-                  Delivery Date
+                  <i className="fas fa-calendar-day"></i> Delivery Date
                 </label>
                 <div className="qb-date-input-container">
                   <input
@@ -3825,10 +3915,9 @@ useEffect(() => {
                     className="qb-date-input"
                     value={deliverDate}
                     onChange={handleDeliverDateChange}
-                    min={minDeliveryDate}
+                    min={collectDate || today}
                     disabled={!collectDate}
                   />
-                  {/* <i className="fas fa-calendar-alt qb-date-icon"></i> */}
                 </div>
                 {!collectDate && (
                   <p className="qb-date-hint">
@@ -3847,10 +3936,9 @@ useEffect(() => {
               {deliverDate && (
                 <div className="qb-time-slots-section">
                   <label className="qb-time-label">
-                    <i className="fas fa-clock"></i>
-                    Available Delivery Times
+                    <i className="fas fa-clock"></i> Available Delivery Times
                   </label>
-                  
+
                   {loadingSlots.deliver ? (
                     <div className="qb-loading-state">
                       <div className="qb-loading-spinner"></div>
@@ -3934,7 +4022,7 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Payment Section - ALWAYS SHOW PAYMENT */}
+        {/* Payment Section */}
         {!showPaymentSetup && (
           <div className="qb-card">
             <div className="qb-card-header">
@@ -3951,6 +4039,15 @@ useEffect(() => {
               </div>
             </div>
 
+            <div className="qb-payment-notice">
+              <div className="qb-notice-icon">
+                <i className="fas fa-info-circle"></i>
+              </div>
+              <div className="qb-notice-content">
+                <strong>No payment taken now</strong> – Save your payment method to confirm your booking. You won't be charged now. We'll send an invoice after the pickup and only take payment once you're happy to proceed.
+              </div>
+            </div>
+
             {userToken && loadingCards ? (
               <div className="qb-loading-cards">
                 <div className="qb-loading-spinner"></div>
@@ -3960,19 +4057,18 @@ useEffect(() => {
               <>
                 <div className="qb-saved-cards-section">
                   <h3 className="qb-saved-cards-title">
-                    <i className="fas fa-credit-card"></i>
-                    Your Saved Cards
+                    <i className="fas fa-credit-card"></i> Your Saved Cards
                   </h3>
                   <p className="qb-saved-cards-subtitle">Select a card or add a new one</p>
-                  
+
                   <div className="qb-cards-list">
                     {savedCards.map((card) => (
                       <div
-                        key={card.id}
+                        key={card.payment_method_id}
                         className={`qb-card-option ${
-                          selectedCard === card.id ? "selected" : ""
+                          selectedCard === card.payment_method_id ? "selected" : ""
                         }`}
-                        onClick={() => setSelectedCard(card.id)}
+                        onClick={() => setSelectedCard(card.payment_method_id)}
                       >
                         <div className="qb-card-option-icon">
                           <i className={`${getCardBrandIcon(card.brand)} ${getCardBrandClass(card.brand)}`}></i>
@@ -3982,16 +4078,25 @@ useEffect(() => {
                           <div className="qb-card-number">•••• {card.last4}</div>
                           {card.is_default && (
                             <div className="qb-card-default">
-                              <i className="fas fa-check-circle"></i>
-                              Default Card
+                              <i className="fas fa-check-circle"></i> Default Card
                             </div>
                           )}
                         </div>
-                        {selectedCard === card.id && (
+                        {selectedCard === card.payment_method_id && (
                           <div className="qb-card-selected">
                             <i className="fas fa-check-circle"></i>
                           </div>
                         )}
+                        <button
+                          className="qb-card-delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCard(card.payment_method_id);
+                          }}
+                          aria-label="Delete card"
+                        >
+                          <i className="fas fa-trash"></i>
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -4010,28 +4115,20 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="qb-payment-info">
+                <div className="qb-payment-info" style={{ marginTop: '12px' }}>
                   <div className="qb-payment-info-icon">
                     <i className="fas fa-info-circle"></i>
                   </div>
                   <div className="qb-payment-info-text">
-                    Your card will only be charged after your laundry manager sends the invoice. 
-                    No charges will be made now.
+                    <strong>No payment taken now:</strong> We'll send an invoice after inspection. You approve payment only after reviewing.
                   </div>
                 </div>
 
                 <div className="qb-payment-actions">
-                  <button 
-                    className="qb-primary-btn qb-book-btn" 
+                  <button
+                    className="qb-primary-btn qb-book-btn"
                     onClick={handleSavedCardBooking}
-                    disabled={
-  !isBookingValid() ||
-  loading ||
-  setupProcessing ||
-  bookingInProgress ||
-  pendingBookingData?.order?.id
-}
-
+                    disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
                   >
                     {loading ? (
                       <>
@@ -4057,7 +4154,7 @@ useEffect(() => {
                     <div className="qb-payment-content">
                       <h3 className="qb-payment-title">Save Card for Faster Checkout</h3>
                       <p className="qb-payment-description">
-                        Securely save your card with Stripe. No charges until your laundry manager sends the invoice.
+                        Securely save your card with Stripe. No charges now.
                       </p>
                     </div>
                     <div className="qb-payment-toggle">
@@ -4078,22 +4175,15 @@ useEffect(() => {
                     <i className="fas fa-info-circle"></i>
                   </div>
                   <div className="qb-payment-info-text">
-                    <strong>No payment taken now:</strong> Save your payment method to confirm your booking. You won't be charged now. We'll send an invoice after the pickup and only take payment once you're happy to proceed.
+                    <strong>Payment Required:</strong> A valid card must be saved to confirm your booking.
                   </div>
                 </div>
 
                 <div className="qb-payment-actions">
-                  <button 
-                    className="qb-primary-btn qb-book-btn" 
+                  <button
+                    className="qb-primary-btn qb-book-btn"
                     onClick={handleConfirmBooking}
-                    disabled={
-  !isBookingValid() ||
-  loading ||
-  setupProcessing ||
-  bookingInProgress ||
-  pendingBookingData?.order?.id
-}
-
+                    disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
                   >
                     {loading || setupProcessing ? (
                       <>
@@ -4129,7 +4219,7 @@ useEffect(() => {
           <div className="qb-summary-content">
             <div className="qb-summary-info">
               <div className="qb-summary-item">
-                { <i className="fas fa-calendar"></i> }
+                <i className="fas fa-calendar"></i>
                 <span>Pickup: {selectedCollectSlot ? formatDateDDMMYYYY(collectDate) : "Not selected"}</span>
               </div>
               <div className="qb-summary-item">
@@ -4138,17 +4228,10 @@ useEffect(() => {
               </div>
             </div>
             <div className="qb-summary-action">
-              <button 
+              <button
                 className="qb-primary-btn qb-confirm-btn"
                 onClick={userToken && savedCards.length > 0 ? handleSavedCardBooking : handleConfirmBooking}
-                disabled={
-  !isBookingValid() ||
-  loading ||
-  setupProcessing ||
-  bookingInProgress ||
-  pendingBookingData?.order?.id
-}
-
+                disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
               >
                 {loading ? (
                   <>
