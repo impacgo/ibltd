@@ -416,14 +416,14 @@ const PersonalInfo = () => {
             <div className="booking-info-icon">
               <i className="fas fa-shopping-bag"></i>
             </div>
-            {/* <div className="booking-info-details">
+             <div className="booking-info-details">
               <h4>Booking Information Found</h4>
               <p>Your details from your recent booking have been pre-filled below. You can edit them or create an account to save them.</p>
               {quickBookingData.bookingId && (
                 <div className="booking-id">
                   <i className="fas fa-receipt"></i>
                   <span>Booking ID: {quickBookingData.bookingId}</span>
-                </div> */}
+                </div>
               )}
             </div>
             <div className="booking-info-actions">
