@@ -6289,4 +6289,3 @@ const updateProfileField = useCallback(async (field, value) => {
   );
 }
 
-}
