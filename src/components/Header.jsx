@@ -409,6 +409,7 @@ const Header = () => {
 </li>
 
                 <li><Link className={`nav-link ${isActive("/pricing")}`} to="/pricing">Pricing</Link></li>
+                <li><Link className={`nav-link ${isActive("/reviews")}`} to="/reviews">Reviews</Link></li>
                 <li><Link className={`nav-link ${isActive("/how-it-works")}`} to="/how-it-works">How It Works</Link></li>
                 <li><Link className={`nav-link ${isActive("/faq")}`} to="/faq">FAQ</Link></li>
               </ul>
@@ -601,6 +602,14 @@ const Header = () => {
                     <i className="fas fa-tag"></i>
                   </span>
                   <span className="menu-item-text">Pricing</span>
+                </Link>
+              </li>
+              <li>
+                <Link className="mobile-menu-item" to="/reviews" onClick={closeMenu}>
+                  <span className="menu-item-icon">
+                    <i className="fas fa-star"></i>
+                  </span>
+                  <span className="menu-item-text">Reviews</span>
                 </Link>
               </li>
               <li>

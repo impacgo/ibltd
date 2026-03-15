@@ -106,6 +106,26 @@
   text-align: center;
 }
 
+.reviewability-widget-wrap {
+  margin-top: 24px;
+  width: 100%;
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), #fff7f0);
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  border-radius: var(--testimonials-radius-xl);
+  box-shadow: var(--testimonials-shadow-md);
+  overflow: hidden;
+}
+
+.reviewability-widget-wrap > div {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 /* Mobile Progress Indicator */
 .mobile-progress {
   display: none;
@@ -608,6 +628,11 @@
     padding: 0 16px;
     line-height: 1.5;
   }
+
+  .reviewability-widget-wrap {
+    margin-top: 20px;
+    padding: 14px;
+  }
   
   /* Show mobile elements */
   .mobile-progress {
@@ -729,6 +754,11 @@
   .testimonials-subtitle {
     font-size: 0.9rem;
     padding: 0;
+  }
+
+  .reviewability-widget-wrap {
+    margin-top: 18px;
+    padding: 10px;
   }
   
   /* Adjust card padding */

@@ -1,6 +1,7 @@
 // src/components/Testimonials.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReviewabilityAdvancedWidget from './ReviewabilityAdvancedWidget';
 import './Testimonials.css';
 
 const testimonials = [
@@ -165,6 +166,12 @@ const Testimonials = () => {
           <p className="testimonials-subtitle">
             Don't just take our word for it - hear from our satisfied customers across the UK
           </p>
+          <ReviewabilityAdvancedWidget
+            className="reviewability-widget-wrap"
+            bid="164019"
+            url="https://app.revu.cloud"
+            aid="27069"
+          />
         </div>
 
         {/* Mobile Progress Indicator */}
