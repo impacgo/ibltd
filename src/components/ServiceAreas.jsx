@@ -14,7 +14,8 @@ const AREAS = [
   { name: "Fulham", slug: "fulham", postcodes: ["SW6"], position: { top: "55%", left: "47%" }, icon: "fas fa-futbol" },
   { name: "Hammersmith", slug: "hammersmith", postcodes: ["W6"], position: { top: "52%", left: "42%" }, icon: "fas fa-hammer" },
   { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"], position: { top: "48%", left: "40%" }, icon: "fas fa-tree" },
-  { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2","OX3","OX4"], position: { top: "35%", left: "30%" }, icon: "fas fa-graduation-cap" },
+  // { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2","OX3","OX4"], position: { top: "35%", left: "30%" }, icon: "fas fa-graduation-cap" },
+  { name: "Oxford — Ironing & Laundry Service", slug: "oxford", postcodes: ["OX1", "OX2", "OX3", "OX4"], position: { top: "35%", left: "30%" }, icon: "fas fa-graduation-cap" },
 ];
 
 export default function ServiceAreas() {
@@ -78,13 +79,16 @@ const filteredAreas = AREAS.filter(area => {
             </div>
             
             <h1 className="hero-title">
-              We Serve 
-              <span className="hero-highlight"> London & Oxford</span> Areas
+              {/* We Serve 
+              <span className="hero-highlight"> London & Oxford</span> Areas */}
+              Professional Ironing & Laundry Service in
+<span className="hero-highlight"> Oxford & London</span>
             </h1>
             
             <p className="hero-subtitle">
-              Professional laundry & dry cleaning services delivered to your doorstep. 
-              Click any area to view detailed service information.
+              Oxford's trusted ironing & laundry service. We offer shirt ironing, 
+bedding ironing, wash & fold, and free collection & delivery across 
+Oxford (OX1–OX4) and London. Click any area to view service details.
             </p>
 
             {/* Stats */}
@@ -289,10 +293,10 @@ const filteredAreas = AREAS.filter(area => {
                 </div>
                 
                 <div className="list-footer">
-                  <div className="footer-note">
-                    <i className="fas fa-clock"></i>
-                    <span>Same-day collection available in all areas</span>
-                  </div>
+                 <div className="footer-note">
+  <i className="fas fa-clock"></i>
+  <span>Same-day collection available in all areas — including Oxford Bedding Ironing, Business Shirt Service Oxford & Wash and Fold Oxford</span>
+</div>
                   <button 
                     className="book-all-btn"
                     onClick={handleBookCollection}
