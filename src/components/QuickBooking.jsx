@@ -1,5 +1,5 @@
 
-// src/components/QuickBooking.jsx
+// // src/components/QuickBooking.jsx
 // import React, { useEffect, useState, useCallback, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { useAuth } from "../context/AuthContext";
@@ -17,6 +17,28 @@
 
 // // Initialize Stripe
 // const stripePromise = loadStripe("pk_live_51SUiy73fSKIcHb6THsEQatj2g1tJOjUhzaym490HNFobNn6gOtdzpelQnV2knmKkXPiqxKqJjwEQ6dtSNRKuO4yx00HFqYnkEI");
+
+// // Known country codes
+// const countryCodes = [
+//   { code: "+44", label: "UK" },
+//   { code: "+91", label: "IN" },
+//   { code: "+1", label: "US" },
+//   { code: "+61", label: "AU" },
+//   { code: "+971", label: "UAE" },
+// ];
+
+// // Helper to extract country code and local number from full phone
+// const parsePhone = (fullPhone) => {
+//   if (!fullPhone) return { code: "+44", local: "" };
+//   for (const { code } of countryCodes) {
+//     if (fullPhone.startsWith(code)) {
+//       return { code, local: fullPhone.slice(code.length) };
+//     }
+//   }
+//   // If no match, assume +44 and treat whole as local
+//   const withoutPlus = fullPhone.replace(/^\+/, "");
+//   return { code: "+44", local: withoutPlus };
+// };
 
 // /* -------------------------------------------------------------------------- */
 // /*                       Stripe SetupIntent Form (UI)                         */
@@ -251,17 +273,22 @@
 //       phone: "",
 //     };
 //   });
-//   // Country code state
-//   const [countryCode, setCountryCode] = useState("+44");
 
-//   const countryCodes = [
-//     { code: "+44", label: "UK" },
-//     { code: "+91", label: "IN" },
-//     { code: "+1", label: "US" },
-//     { code: "+61", label: "AU" },
-//     { code: "+971", label: "UAE" },
-//   ];
-  
+//   // New state for phone input split
+//   const [localPhone, setLocalPhone] = useState("");
+//   const [selectedCountryCode, setSelectedCountryCode] = useState("+44");
+
+//   // Parse userInfo.phone into localPhone and selectedCountryCode
+//   useEffect(() => {
+//     if (userInfo.phone) {
+//       const { code, local } = parsePhone(userInfo.phone);
+//       setSelectedCountryCode(code);
+//       setLocalPhone(local);
+//     } else {
+//       setLocalPhone("");
+//     }
+//   }, [userInfo.phone]);
+
 //   const [addresses, setAddresses] = useState([]);
 //   const [selectedAddressId, setSelectedAddressId] = useState(null);
 //   const [useSameAddress, setUseSameAddress] = useState(true);
@@ -287,12 +314,12 @@
 //     house_number: ""
 //   });
 //   const [deliveryAddressForm, setDeliveryAddressForm] = useState({
-//   street_address: "",
-//   postcode: "",
-//   city: "",
-//   additional_details: "",
-//   house_number: ""
-// });
+//     street_address: "",
+//     postcode: "",
+//     city: "",
+//     additional_details: "",
+//     house_number: ""
+//   });
 
 //   // Flags to control saving new addresses
 //   const [saveDeliveryAddress, setSaveDeliveryAddress] = useState(false);
@@ -309,10 +336,45 @@
 //   const [loadingPostcode, setLoadingPostcode] = useState(false);
 //   const [googleReady, setGoogleReady] = useState(false);
 //   const [deliveryPostcode, setDeliveryPostcode] = useState("");
-// const [deliveryPostcodeAddresses, setDeliveryPostcodeAddresses] = useState([]);
-// const [selectedDeliveryPostcodeAddress, setSelectedDeliveryPostcodeAddress] = useState("");
-// const [deliveryAddressDetails, setDeliveryAddressDetails] = useState("");
-// const [guideStep, setGuideStep] = useState(1);
+//   const [deliveryPostcodeAddresses, setDeliveryPostcodeAddresses] = useState([]);
+//   const [selectedDeliveryPostcodeAddress, setSelectedDeliveryPostcodeAddress] = useState("");
+//   const [deliveryAddressDetails, setDeliveryAddressDetails] = useState("");
+//   const [guideStep, setGuideStep] = useState(1);
+
+//   // Token validation function
+//   const validateToken = useCallback(async () => {
+//     const token = localStorage.getItem("jwtToken");
+//     if (!token) {
+//       setUserToken(null);
+//       return false;
+//     }
+//     try {
+//       const res = await fetch(`${API_BASE}/profile`, {
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+//       if (res.status === 401) {
+//         // Token invalid or expired
+//         localStorage.removeItem("jwtToken");
+//         setUserToken(null);
+//         return false;
+//       }
+//       return true;
+//     } catch (error) {
+//       console.error("Token validation error:", error);
+//       return false;
+//     }
+//   }, []);
+
+//   // Validate token on mount
+//   useEffect(() => {
+//     validateToken().then((isValid) => {
+//       if (!isValid) {
+//         // Token cleared, ensure user is logged out
+//         login(null); // if your login accepts null to clear
+//       }
+//     });
+//   }, [validateToken, login]);
+
 //   useEffect(() => {
 //     const checkGoogle = () => {
 //       if (window.google && window.google.maps && window.google.maps.places) {
@@ -325,74 +387,55 @@
 //   }, []);
 
 //   useEffect(() => {
-
-//   if (guideStep === 1 && userInfo.name.trim().length > 1) {
-//     setGuideStep(2);
-//   }
-
-//   if (guideStep === 2 && userInfo.email.trim().length > 3) {
-//     setGuideStep(3);
-//   }
-
-//   if (guideStep === 3 && userInfo.phone.trim().length > 5) {
-//     setGuideStep(4);
-//   }
-
-//   if (guideStep === 4 && addressForm.street_address) {
-//     setGuideStep(5);
-//   }
-
-//   if (guideStep === 5 && collectDate) {
-//     setGuideStep(6);
-//   }
-
-//   if (guideStep === 6 && selectedCollectSlot) {
-//     setGuideStep(7);
-//   }
-
-//   if (guideStep === 7 && deliverDate) {
-//     setGuideStep(8);
-//   }
-
-//   if (guideStep === 8 && selectedDeliverSlot) {
-//     setGuideStep(9);
-//   }
-
-// }, [
-//   userInfo,
-//   addressForm,
-//   collectDate,
-//   selectedCollectSlot,
-//   deliverDate,
-//   selectedDeliverSlot,
-//   guideStep
-// ]);
+//     if (guideStep === 1 && userInfo.name.trim().length > 1) {
+//       setGuideStep(2);
+//     }
+//     if (guideStep === 2 && userInfo.email.trim().length > 3) {
+//       setGuideStep(3);
+//     }
+//     if (guideStep === 3 && userInfo.phone.trim().length > 5) {
+//       setGuideStep(4);
+//     }
+//     if (guideStep === 4 && addressForm.street_address) {
+//       setGuideStep(5);
+//     }
+//     if (guideStep === 5 && collectDate) {
+//       setGuideStep(6);
+//     }
+//     if (guideStep === 6 && selectedCollectSlot) {
+//       setGuideStep(7);
+//     }
+//     if (guideStep === 7 && deliverDate) {
+//       setGuideStep(8);
+//     }
+//     if (guideStep === 8 && selectedDeliverSlot) {
+//       setGuideStep(9);
+//     }
+//   }, [
+//     userInfo,
+//     addressForm,
+//     collectDate,
+//     selectedCollectSlot,
+//     deliverDate,
+//     selectedDeliverSlot,
+//     guideStep
+//   ]);
 
 //   useEffect(() => {
+//     if (!googleReady) return;
+//     const clean = deliveryPostcode.trim();
+//     if (clean.length >= 3) {
+//       fetchDeliveryAddressesByPostcode(clean);
+//     } else {
+//       setDeliveryPostcodeAddresses([]);
+//     }
+//   }, [deliveryPostcode, googleReady]);
 
-//   if (!googleReady) return;
-
-//   const clean = deliveryPostcode.trim();
-
-//   if (clean.length >= 3) {
-
-//     fetchDeliveryAddressesByPostcode(clean);
-
-//   } else {
-
-//     setDeliveryPostcodeAddresses([]);
-
-//   }
-
-// }, [deliveryPostcode, googleReady]);
-
-// useEffect(() => {
-
-//   if (selectedDeliveryPostcodeAddress) {
-//     geocodeDeliveryAddress(selectedDeliveryPostcodeAddress);
-//   }
-
-// }, [selectedDeliveryPostcodeAddress]);
+//   useEffect(() => {
+//     if (selectedDeliveryPostcodeAddress) {
+//       geocodeDeliveryAddress(selectedDeliveryPostcodeAddress);
+//     }
+//   }, [selectedDeliveryPostcodeAddress]);
 
 //   // Constants
 //   const today = new Date().toISOString().split("T")[0];
@@ -402,6 +445,7 @@
 //     setToast({ msg, type });
 //     setTimeout(() => setToast(null), 3000);
 //   }, []);
+
 //   useEffect(() => {
 //     if (!googleReady) return;
 //     const clean = postcode.trim();
@@ -425,6 +469,7 @@
 //       return timeString;
 //     }
 //   };
+
 //   const fetchAddressesByPostcode = (postcode) => {
 //     if (!window.google || !window.google.maps || !window.google.maps.places) {
 //       setPostcodeAddresses([]);
@@ -452,87 +497,68 @@
 //       }
 //     );
 //   };
+
 //   const fetchDeliveryAddressesByPostcode = (postcode) => {
-
-//   if (!window.google || !window.google.maps || !window.google.maps.places) {
-//     setDeliveryPostcodeAddresses([]);
-//     return;
-//   }
-
-//   const service = new window.google.maps.places.AutocompleteService();
-
-//   service.getPlacePredictions(
-//     {
-//       input: postcode,
-//       componentRestrictions: { country: "gb" }
-//     },
-//     (predictions, status) => {
-
-//       if (
-//         status !== window.google.maps.places.PlacesServiceStatus.OK ||
-//         !predictions
-//       ) {
-//         setDeliveryPostcodeAddresses([]);
-//         return;
-//       }
-
-//       const results = predictions.map((p) => ({
-//         full: p.description,
-//         place_id: p.place_id
-//       }));
-
-//       setDeliveryPostcodeAddresses(results);
-
+//     if (!window.google || !window.google.maps || !window.google.maps.places) {
+//       setDeliveryPostcodeAddresses([]);
+//       return;
 //     }
-//   );
-// };
-// const geocodeDeliveryAddress = (placeId) => {
+//     const service = new window.google.maps.places.AutocompleteService();
+//     service.getPlacePredictions(
+//       {
+//         input: postcode,
+//         componentRestrictions: { country: "gb" }
+//       },
+//       (predictions, status) => {
+//         if (
+//           status !== window.google.maps.places.PlacesServiceStatus.OK ||
+//           !predictions
+//         ) {
+//           setDeliveryPostcodeAddresses([]);
+//           return;
+//         }
+//         const results = predictions.map((p) => ({
+//           full: p.description,
+//           place_id: p.place_id
+//         }));
+//         setDeliveryPostcodeAddresses(results);
+//       }
+//     );
+//   };
 
-//   if (!window.google || !placeId) return;
-
-//   const geocoder = new window.google.maps.Geocoder();
-
-//   geocoder.geocode({ placeId: placeId }, (results, status) => {
-
-//     if (status !== "OK" || !results[0]) return;
-
-//     const result = results[0];
-
-//     const lat = result.geometry.location.lat();
-//     const lng = result.geometry.location.lng();
-
-//     let postcode = "";
-//     let house = "";
-//     let street = "";
-//     let city = "";
-
-//     result.address_components.forEach((c) => {
-
-//       if (c.types.includes("postal_code")) postcode = c.long_name;
-//       if (c.types.includes("street_number")) house = c.long_name;
-//       if (c.types.includes("route")) street = c.long_name;
-//       if (c.types.includes("postal_town")) city = c.long_name;
-
+//   const geocodeDeliveryAddress = (placeId) => {
+//     if (!window.google || !placeId) return;
+//     const geocoder = new window.google.maps.Geocoder();
+//     geocoder.geocode({ placeId: placeId }, (results, status) => {
+//       if (status !== "OK" || !results[0]) return;
+//       const result = results[0];
+//       const lat = result.geometry.location.lat();
+//       const lng = result.geometry.location.lng();
+//       let postcode = "";
+//       let house = "";
+//       let street = "";
+//       let city = "";
+//       result.address_components.forEach((c) => {
+//         if (c.types.includes("postal_code")) postcode = c.long_name;
+//         if (c.types.includes("street_number")) house = c.long_name;
+//         if (c.types.includes("route")) street = c.long_name;
+//         if (c.types.includes("postal_town")) city = c.long_name;
+//       });
+//       setDeliveryGeoData({
+//         latitude: lat,
+//         longitude: lng,
+//         street_name: street,
+//         house_number: house
+//       });
+//       setDeliveryAddressForm({
+//         street_address: result.formatted_address,
+//         postcode: postcode,
+//         city: city,
+//         house_number: house,
+//         additional_details: ""
+//       });
 //     });
-
-//     setDeliveryGeoData({
-//       latitude: lat,
-//       longitude: lng,
-//       street_name: street,
-//       house_number: house
-//     });
-
-//     setDeliveryAddressForm({
-//       street_address: result.formatted_address,
-//       postcode: postcode,
-//       city: city,
-//       house_number: house,
-//       additional_details: ""
-//     });
-
-//   });
-
-// };
+//   };
 
 //   const formatTimeRange24Hour = (startTime, endTime) => {
 //     const start = formatTime24Hour(startTime);
@@ -593,11 +619,16 @@
 //           email: data.email || "",
 //           phone: data.phone || "",
 //         });
+//       } else if (response.status === 401) {
+//         // Token invalid – clear it
+//         localStorage.removeItem("jwtToken");
+//         setUserToken(null);
+//         showToast("Session expired. Please log in again.", "warning");
 //       }
 //     } catch (error) {
 //       console.error("Error fetching user profile:", error);
 //     }
-//   }, [userToken]);
+//   }, [userToken, showToast]);
 
 //   const fetchAddresses = useCallback(async () => {
 //     if (!userToken) return;
@@ -622,6 +653,9 @@
 //             setSelectedPickupAddressId(id);
 //           }
 //         }
+//       } else if (response.status === 401) {
+//         localStorage.removeItem("jwtToken");
+//         setUserToken(null);
 //       }
 //     } catch (error) {
 //       console.error("Error fetching addresses:", error);
@@ -652,6 +686,10 @@
 //             setSelectedCard(data.cards[0].payment_method_id);
 //           }
 //         }
+//       } else if (response.status === 401) {
+//         localStorage.removeItem("jwtToken");
+//         setUserToken(null);
+//         setSavedCards([]);
 //       }
 //     } catch (error) {
 //       console.error("Error fetching saved cards:", error);
@@ -676,14 +714,94 @@
 //       if (response.ok) {
 //         const data = await response.json();
 //         setCustomerId(data.customerId);
+//       } else if (response.status === 401) {
+//         localStorage.removeItem("jwtToken");
+//         setUserToken(null);
 //       }
 //     } catch (error) {
 //       console.error("Error creating Stripe customer:", error);
 //     }
 //   }, [userToken]);
 
-//   const checkPhoneNumberExists = useCallback(async (phone) => {
-//     if (!phone || phone.trim().length < 5) return;
+//   // Ensure user exists (create or retrieve) and return token
+//   const ensureUserExists = useCallback(async () => {
+//     const fullPhone = `${selectedCountryCode}${localPhone}`;
+//     if (!fullPhone || fullPhone.trim().length < 5) {
+//       throw new Error("Please enter a valid phone number");
+//     }
+
+//     const response = await fetch(`${API_BASE}/auth/access`, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         phone: fullPhone,
+//         name: userInfo.name || "User",
+//         email: userInfo.email || null
+//       }),
+//     });
+
+//     if (!response.ok) {
+//       const err = await response.json();
+//       throw new Error(err.message || "Failed to authenticate");
+//     }
+
+//     const data = await response.json();
+
+//     if (data.success && data.user) {
+//       // Update userInfo with any server-provided data
+//       setUserInfo(prev => ({
+//         name: data.user.name || prev.name,
+//         email: data.user.email || prev.email,
+//         phone: data.user.phone || prev.phone,
+//       }));
+
+//       if (data.token) {
+//         localStorage.setItem("jwtToken", data.token);
+//         setUserToken(data.token);
+
+//         login({
+//           id: data.user.id,
+//           name: data.user.name,
+//           email: data.user.email,
+//           phone: data.user.phone,
+//         });
+
+//         // Fetch additional data after login (don't await – let them run in background)
+//         fetchUserProfile();
+//         fetchAddresses();
+//         fetchSavedCards();
+//         ensureStripeCustomer();
+//       }
+
+//       showToast(
+//         data.isNewUser
+//           ? "Account created successfully!"
+//           : "Welcome back!",
+//         "success"
+//       );
+
+//       return data.token;
+//     } else {
+//       throw new Error("Authentication failed");
+//     }
+//   }, [
+//     selectedCountryCode,
+//     localPhone,
+//     userInfo.name,
+//     userInfo.email,
+//     login,
+//     fetchUserProfile,
+//     fetchAddresses,
+//     fetchSavedCards,
+//     ensureStripeCustomer,
+//     showToast
+//   ]);
+
+//   // Phone existence check (triggered on typing)
+//   const checkPhoneNumberExists = useCallback(async (fullPhone) => {
+//     if (!fullPhone || fullPhone.trim().length < 5) return;
 
 //     try {
 //       const response = await fetch(`${API_BASE}/auth/access`, {
@@ -692,7 +810,7 @@
 //           "Content-Type": "application/json",
 //         },
 //         body: JSON.stringify({
-//           phone: `${countryCode}${phone.trim()}`,
+//           phone: fullPhone,
 //           name: userInfo.name || "User",
 //           email: userInfo.email || null
 //         }),
@@ -738,7 +856,6 @@
 //       console.error("Auth access error:", error);
 //     }
 //   }, [
-//     countryCode,
 //     userInfo.name,
 //     userInfo.email,
 //     login,
@@ -774,126 +891,122 @@
 
 //   // Save a new address (delivery or pickup)
 //   const saveNewAddress = useCallback(async (addressData, type = "delivery") => {
-//   if (!userToken) {
-//     showToast("Please log in to save address", "error");
-//     return null;
-//   }
-
-//   try {
-
-//    const normalize = (value) =>
-//   value?.replace(/\s/g, "").toLowerCase();
- 
-// const existing = addresses.find(addr =>
-//   normalize(addr.postcode) === normalize(addressData.postcode)
-// );
-
-//     if (existing) {
-//       // Address already exists → don't create duplicate
-//       return existing.address_id;
+//     if (!userToken) {
+//       showToast("Please log in to save address", "error");
+//       return null;
 //     }
 
-//     // 🚀 Save new address
-//     const response = await fetch(`${API_BASE}/addresses`, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${userToken}`,
-//       },
-//       body: JSON.stringify({
-//         street_address: addressData.street_address,
-//         postcode: addressData.postcode,
-//         city: addressData.city || "",
-//         additional_details: addressData.additional_details || "",
-//         house_number: addressData.house_number || "",
-//         name: type === "pickup" ? "Pickup Location" : "Delivery Address",
-//         is_selected: false,
-//       }),
-//     });
+//     try {
+//       const normalize = (value) => value?.replace(/\s/g, "").toLowerCase();
+//       const existing = addresses.find(addr =>
+//         normalize(addr.postcode) === normalize(addressData.postcode)
+//       );
 
-//     if (!response.ok) {
-//       const errorData = await response.json();
-//       throw new Error(errorData.message || "Failed to save address");
+//       if (existing) {
+//         // Address already exists → don't create duplicate
+//         return existing.address_id;
+//       }
+
+//       // 🚀 Save new address
+//       const response = await fetch(`${API_BASE}/addresses`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${userToken}`,
+//         },
+//         body: JSON.stringify({
+//           street_address: addressData.street_address,
+//           postcode: addressData.postcode,
+//           city: addressData.city || "",
+//           additional_details: addressData.additional_details || "",
+//           house_number: addressData.house_number || "",
+//           name: type === "pickup" ? "Pickup Location" : "Delivery Address",
+//           is_selected: false,
+//         }),
+//       });
+
+//       if (!response.ok) {
+//         const errorData = await response.json();
+//         throw new Error(errorData.message || "Failed to save address");
+//       }
+
+//       const data = await response.json();
+
+//       showToast(
+//         `${type === "pickup" ? "Pickup" : "Delivery"} address saved`,
+//         "success"
+//       );
+
+//       await fetchAddresses();
+
+//       return data.address_id;
+//     } catch (error) {
+//       console.error("Error saving address:", error);
+//       showToast(error.message || "Failed to save address", "error");
+//       return null;
 //     }
-
-//     const data = await response.json();
-
-//     showToast(
-//       `${type === "pickup" ? "Pickup" : "Delivery"} address saved`,
-//       "success"
-//     );
-
-//     await fetchAddresses();
-
-//     return data.address_id;
-
-//   } catch (error) {
-//     console.error("Error saving address:", error);
-//     showToast(error.message || "Failed to save address", "error");
-//     return null;
-//   }
-// }, [userToken, addresses, showToast, fetchAddresses]);
+//   }, [userToken, addresses, showToast, fetchAddresses]);
 
 //   // Delete an address
-// const handleDeleteAddress = async (addressId) => {
-//   if (!window.confirm("Are you sure you want to delete this address?")) return;
+//   const handleDeleteAddress = async (addressId) => {
+//     if (!window.confirm("Are you sure you want to delete this address?")) return;
 
-//   try {
-//     const token = userToken || localStorage.getItem("jwtToken");
-//     if (!token) throw new Error("Authentication required");
+//     try {
+//       const token = userToken || localStorage.getItem("jwtToken");
+//       if (!token) throw new Error("Authentication required");
 
-//     const response = await fetch(`${API_BASE}/addresses/${addressId}`, {
-//       method: "DELETE",
-//       headers: {
-//         "Authorization": `Bearer ${token}`,
-//       },
-//     });
+//       const response = await fetch(`${API_BASE}/addresses/${addressId}`, {
+//         method: "DELETE",
+//         headers: {
+//           "Authorization": `Bearer ${token}`,
+//         },
+//       });
 
-//     const contentType = response.headers.get("content-type");
-//     let responseBody;
-    
-//     if (contentType && contentType.includes("application/json")) {
-//       responseBody = await response.json();
-//     } else {
-//       responseBody = await response.text();
-//       console.error("Server responded with non-JSON:", responseBody);
-//     }
-
-//     if (!response.ok) {
-//       let errorMessage = responseBody?.message || 
-//                          (typeof responseBody === 'string' ? responseBody : `Server error: ${response.status}`);
+//       const contentType = response.headers.get("content-type");
+//       let responseBody;
       
-//       // Make the foreign‑key violation message more friendly
-//       if (errorMessage.includes("linked to existing orders") || errorMessage.includes("foreign key")) {
-//         errorMessage = "This address cannot be deleted because it has been used in past orders. You can keep it saved for future bookings.";
-//       }
-      
-//       throw new Error(errorMessage);
-//     }
-
-//     // Success – update state
-//     const newAddresses = addresses.filter(addr => String(addr.address_id) !== String(addressId));
-//     setAddresses(newAddresses);
-//     setPickupAddresses(newAddresses);
-
-//     if (selectedAddressId === String(addressId)) {
-//       if (newAddresses.length > 0) {
-//         setSelectedAddressId(String(newAddresses[0].address_id));
-//         if (useSameAddress) {
-//           setSelectedPickupAddressId(String(newAddresses[0].address_id));
-//         }
+//       if (contentType && contentType.includes("application/json")) {
+//         responseBody = await response.json();
 //       } else {
-//         setSelectedAddressId(null);
-//         setSelectedPickupAddressId(null);
+//         responseBody = await response.text();
+//         console.error("Server responded with non-JSON:", responseBody);
 //       }
-//     }
 
-//     showToast("Address deleted successfully", "success");
-//   } catch (error) {
-//     console.error("Delete address error:", error);
-//     showToast(error.message, "warning"); // use "warning" for a less alarming appearance
-//   }
-// };
+//       if (!response.ok) {
+//         let errorMessage = responseBody?.message || 
+//                            (typeof responseBody === 'string' ? responseBody : `Server error: ${response.status}`);
+        
+//         // Make the foreign‑key violation message more friendly
+//         if (errorMessage.includes("linked to existing orders") || errorMessage.includes("foreign key")) {
+//           errorMessage = "This address cannot be deleted because it has been used in past orders. You can keep it saved for future bookings.";
+//         }
+        
+//         throw new Error(errorMessage);
+//       }
+
+//       // Success – update state
+//       const newAddresses = addresses.filter(addr => String(addr.address_id) !== String(addressId));
+//       setAddresses(newAddresses);
+//       setPickupAddresses(newAddresses);
+
+//       if (selectedAddressId === String(addressId)) {
+//         if (newAddresses.length > 0) {
+//           setSelectedAddressId(String(newAddresses[0].address_id));
+//           if (useSameAddress) {
+//             setSelectedPickupAddressId(String(newAddresses[0].address_id));
+//           }
+//         } else {
+//           setSelectedAddressId(null);
+//           setSelectedPickupAddressId(null);
+//         }
+//       }
+
+//       showToast("Address deleted successfully", "success");
+//     } catch (error) {
+//       console.error("Delete address error:", error);
+//       showToast(error.message, "warning");
+//     }
+//   };
 
 //   /* -------------------------- UPDATED TIME SLOT FUNCTIONS ------------------------- */
 //   // Helper function to get postcode for time slot fetching
@@ -1124,37 +1237,31 @@
 
 //     /* ---------------- DELIVERY ADDRESS ---------------- */
 
-// /* ---------------- DELIVERY ADDRESS ---------------- */
+//     let deliveryAddressData = {};
 
-// let deliveryAddressData = {};
-
-// if (useSameAddress) {
-
-//   deliveryAddressData = {
-//     street_address: addressForm.street_address,
-//     postcode: addressForm.postcode,
-//     city: addressForm.city || "",
-//     full_address: addressForm.street_address,
-//     house_number: geoData.house_number || "",
-//     latitude: geoData.latitude || null,
-//     longitude: geoData.longitude || null,
-//     additional_details: addressDetails || ""
-//   };
-
-// } else {
-
-//   deliveryAddressData = {
-//     street_address: deliveryAddressForm.street_address,
-//     postcode: deliveryAddressForm.postcode,
-//     city: deliveryAddressForm.city || "",
-//     full_address: deliveryAddressForm.street_address,
-//     house_number: deliveryGeoData.house_number || "",
-//     latitude: deliveryGeoData.latitude || null,
-//     longitude: deliveryGeoData.longitude || null,
-//     additional_details: deliveryAddressDetails || ""
-//   };
-
-// }
+//     if (useSameAddress) {
+//       deliveryAddressData = {
+//         street_address: addressForm.street_address,
+//         postcode: addressForm.postcode,
+//         city: addressForm.city || "",
+//         full_address: addressForm.street_address,
+//         house_number: geoData.house_number || "",
+//         latitude: geoData.latitude || null,
+//         longitude: geoData.longitude || null,
+//         additional_details: addressDetails || ""
+//       };
+//     } else {
+//       deliveryAddressData = {
+//         street_address: deliveryAddressForm.street_address,
+//         postcode: deliveryAddressForm.postcode,
+//         city: deliveryAddressForm.city || "",
+//         full_address: deliveryAddressForm.street_address,
+//         house_number: deliveryGeoData.house_number || "",
+//         latitude: deliveryGeoData.latitude || null,
+//         longitude: deliveryGeoData.longitude || null,
+//         additional_details: deliveryAddressDetails || ""
+//       };
+//     }
 
 //     /* ---------------- FINAL ORDER ---------------- */
 
@@ -1167,9 +1274,7 @@
 //       use_same_address: useSameAddress,
 //       name: userInfo.name,
 //       email: userInfo.email,
-//       phone: userInfo.phone.startsWith("+")
-//         ? userInfo.phone
-//         : `${countryCode}${userInfo.phone}`,
+//       phone: `${selectedCountryCode}${localPhone}`, // Full phone with code
 
 //       collect_slot: pickupSlotText,
 //       delivery_slot: deliverySlotText,
@@ -1192,11 +1297,131 @@
 //     pickupGeoData,
 //     deliveryGeoData,
 //     addressDetails,
-// deliveryAddressForm,
-// deliveryAddressDetails,
-// notes,
-// userInfo
+//     deliveryAddressForm,
+//     deliveryAddressDetails,
+//     notes,
+//     userInfo,
+//     selectedCountryCode,
+//     localPhone
 //   ]);
+
+//   /* ------------------------- Profile Update (for logged-in users) ------------------------- */
+//   // Update this function inside QuickBooking.jsx (around line 1250)
+
+// const updateProfileField = useCallback(async (field, value) => {
+//   if (!userToken) return;
+
+//   try {
+//     const response = await fetch(`${API_BASE}/profile`, {
+//       method: "PUT",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${userToken}`,
+//       },
+//       body: JSON.stringify({ [field]: value }),
+//     });
+
+//     if (!response.ok) {
+//       // Try to parse error as JSON, fallback to text
+//       let errorMessage;
+//       const contentType = response.headers.get("content-type");
+//       if (contentType && contentType.includes("application/json")) {
+//         const err = await response.json();
+//         errorMessage = err.message || `Failed to update ${field}`;
+//       } else {
+//         // For 500 errors, provide a generic message
+//         errorMessage = `Could not update ${field}. Please try again later.`;
+//       }
+
+//       if (response.status === 401) {
+//         // Token invalid – clear it
+//         localStorage.removeItem("jwtToken");
+//         setUserToken(null);
+//         showToast("Session expired. Please log in again.", "warning");
+//         return;
+//       }
+
+//       throw new Error(errorMessage);
+//     }
+
+//     showToast(`${field} updated successfully`, "success");
+//   } catch (error) {
+//     console.error(`Error updating ${field}:`, error);
+//     showToast(error.message, "error");
+//   }
+// }, [userToken, showToast]);
+
+//   // Debounced profile update for name/email
+//   const debouncedProfileUpdate = useRef({});
+//   const triggerProfileUpdate = (field, value) => {
+//     if (debouncedProfileUpdate.current[field]) {
+//       clearTimeout(debouncedProfileUpdate.current[field]);
+//     }
+//     debouncedProfileUpdate.current[field] = setTimeout(() => {
+//       updateProfileField(field, value);
+//     }, 1000);
+//   };
+
+//   // Handlers for name/email (update local state + debounced backend)
+//   const handleNameChange = (e) => {
+//     const newName = e.target.value;
+//     setUserInfo((prev) => ({ ...prev, name: newName }));
+//     if (userToken) {
+//       triggerProfileUpdate("name", newName);
+//     }
+//   };
+
+//   const handleEmailChange = (e) => {
+//     const newEmail = e.target.value;
+//     setUserInfo((prev) => ({ ...prev, email: newEmail }));
+//     if (userToken) {
+//       triggerProfileUpdate("email", newEmail);
+//     }
+//   };
+
+//   // Phone change handler
+//   const handlePhoneChange = (e) => {
+//     const newLocal = e.target.value;
+//     setLocalPhone(newLocal);
+//     const fullPhone = `${selectedCountryCode}${newLocal}`;
+//     setUserInfo((prev) => ({ ...prev, phone: fullPhone }));
+
+//     if (phoneCheckTimeoutRef.current) {
+//       clearTimeout(phoneCheckTimeoutRef.current);
+//     }
+
+//     if (newLocal.trim().length >= 5) {
+//       phoneCheckTimeoutRef.current = setTimeout(() => {
+//         if (userToken) {
+//           // Logged in: update profile
+//           updateProfileField("phone", fullPhone);
+//         } else {
+//           // Not logged in: check if phone exists
+//           checkPhoneNumberExists(fullPhone);
+//         }
+//       }, 1000);
+//     }
+//   };
+
+//   // Country code change
+//   const handleCountryCodeChange = (e) => {
+//     const newCode = e.target.value;
+//     setSelectedCountryCode(newCode);
+//     const fullPhone = `${newCode}${localPhone}`;
+//     setUserInfo((prev) => ({ ...prev, phone: fullPhone }));
+
+//     if (userToken && localPhone.trim().length >= 5) {
+//       if (phoneCheckTimeoutRef.current) clearTimeout(phoneCheckTimeoutRef.current);
+//       phoneCheckTimeoutRef.current = setTimeout(() => {
+//         updateProfileField("phone", fullPhone);
+//       }, 1000);
+//     } else if (!userToken && localPhone.trim().length >= 5) {
+//       if (phoneCheckTimeoutRef.current) clearTimeout(phoneCheckTimeoutRef.current);
+//       phoneCheckTimeoutRef.current = setTimeout(() => {
+//         checkPhoneNumberExists(fullPhone);
+//       }, 1000);
+//     }
+//   };
 
 //   /* ------------------------- Main Booking Flow ---------------------------- */
 //   const handleConfirmBooking = async () => {
@@ -1206,30 +1431,19 @@
 //     setLoading(true);
 
 //     try {
-//    // Validate pickup address
-// if (useSameAddress) {
-
-//   if (userToken && selectedAddressId) {
-//     // using saved address → skip geo check
-//   } else {
-//     if (!geoData.latitude || !geoData.longitude) {
-//       throw new Error("Please select address from suggestions");
-//     }
-//   }
-
-// } else {
-
-//   if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
-//     throw new Error("Please select delivery address from suggestions");
-//   }
-
-//   if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
-//     throw new Error("Please select pickup address from suggestions");
-//   }
-
-// }
-
-//       if (!useSameAddress) {
+//       // Validate pickup address
+//       if (useSameAddress) {
+//         if (userToken && selectedAddressId) {
+//           // using saved address → skip geo check
+//         } else {
+//           if (!geoData.latitude || !geoData.longitude) {
+//             throw new Error("Please select address from suggestions");
+//           }
+//         }
+//       } else {
+//         if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
+//           throw new Error("Please select delivery address from suggestions");
+//         }
 //         if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
 //           throw new Error("Please select pickup address from suggestions");
 //         }
@@ -1238,11 +1452,14 @@
 //       const order = prepareOrderData();
 //       if (!order) throw new Error("Please select pickup and delivery times");
 
-
 //       setPendingBookingData(order);
 
-//       const token = userToken || localStorage.getItem("jwtToken");
-//       if (!token) throw new Error("Authentication required");
+//       // Ensure we have a valid token (create/retrieve if guest)
+//       let token = userToken || localStorage.getItem("jwtToken");
+//       if (!token) {
+//         token = await ensureUserExists();
+//         if (!token) throw new Error("Failed to authenticate. Please try again.");
+//       }
 
 //       await initiateStripeSetup(token, customerId);
 //     } catch (error) {
@@ -1263,6 +1480,13 @@
 //     setLoading(true);
 
 //     try {
+//       // Ensure we have a valid token (should already exist for logged-in)
+//       let token = userToken || localStorage.getItem("jwtToken");
+//       if (!token) {
+//         token = await ensureUserExists();
+//         if (!token) throw new Error("Authentication required");
+//       }
+
 //       // Same address saving logic as above
 //       if (userToken && !useSameAddress && saveDeliveryAddress) {
 //         const newAddressId = await saveNewAddress({
@@ -1292,9 +1516,6 @@
 //         setSelectedPickupAddressId(String(newPickupId));
 //       }
 
-//       const token = userToken || localStorage.getItem("jwtToken");
-//       if (!token) throw new Error("Authentication required");
-
 //       const selectedCardData = savedCards.find(
 //         card => card.payment_method_id === selectedCard
 //       );
@@ -1306,11 +1527,11 @@
 //       if (!order) throw new Error("Please select pickup and delivery times");
 
 //       const payload = {
-//   ...order,
-//   address_id: selectedAddressId, // ADD THIS
-//   payment_method_id: selectedCardData.payment_method_id,
-//   stripe_customer_id: customerId
-// };
+//         ...order,
+//         address_id: selectedAddressId,
+//         payment_method_id: selectedCardData.payment_method_id,
+//         stripe_customer_id: customerId
+//       };
 
 //       const response = await fetch(`${API_BASE}/quick-booking`, {
 //         method: "POST",
@@ -1500,189 +1721,119 @@
 
 //   /* ---------------------------- DELETE CARD FUNCTIONALITY ---------------------------- */
 //   const handleDeleteCard = async (paymentMethodId) => {
+//     if (!window.confirm("Are you sure you want to delete this card?")) return;
 
-//   if (!window.confirm("Are you sure you want to delete this card?")) return;
+//     try {
+//       const token = userToken || localStorage.getItem("jwtToken");
+//       if (!token) throw new Error("Authentication required");
 
-//   try {
+//       const response = await fetch(`${API_BASE}/remove-card`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           "Authorization": `Bearer ${token}`
+//         },
+//         body: JSON.stringify({
+//           paymentMethodId: paymentMethodId
+//         })
+//       });
 
-//     const token = userToken || localStorage.getItem("jwtToken");
-//     if (!token) throw new Error("Authentication required");
+//       const data = await response.json();
 
-//     const response = await fetch(`${API_BASE}/remove-card`, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         "Authorization": `Bearer ${token}`
-//       },
-//       body: JSON.stringify({
-//         paymentMethodId: paymentMethodId
-//       })
-//     });
-
-//     const data = await response.json();
-
-//     if (!response.ok || !data.success) {
-//       throw new Error(data.message || "Failed to delete card");
-//     }
-
-//     // ✅ Remove card from UI
-//     const updatedCards = savedCards.filter(
-//       card => card.payment_method_id !== paymentMethodId
-//     );
-
-//     setSavedCards(updatedCards);
-
-//     // ✅ Reset selected card if deleted
-//     if (selectedCard === paymentMethodId) {
-//       if (updatedCards.length > 0) {
-//         setSelectedCard(updatedCards[0].payment_method_id);
-//       } else {
-//         setSelectedCard(null);
+//       if (!response.ok || !data.success) {
+//         throw new Error(data.message || "Failed to delete card");
 //       }
-//     }
 
-//     showToast("Card removed successfully", "success");
+//       // ✅ Remove card from UI
+//       const updatedCards = savedCards.filter(
+//         card => card.payment_method_id !== paymentMethodId
+//       );
 
-//   } catch (error) {
-//     console.error("Delete card error:", error);
-//     showToast(error.message || "Failed to delete card", "error");
-//   }
+//       setSavedCards(updatedCards);
 
-// };
+//       // ✅ Reset selected card if deleted
+//       if (selectedCard === paymentMethodId) {
+//         if (updatedCards.length > 0) {
+//           setSelectedCard(updatedCards[0].payment_method_id);
+//         } else {
+//           setSelectedCard(null);
+//         }
+//       }
 
-//   const handleSaveAddress = async () => {
-
-//   try {
-
-//     const token = userToken || localStorage.getItem("jwtToken");
-
-//     if (!token) {
-
-//       showToast("Please login to save address", "error");
-
-//       return;
-
-//     }
- 
-//     if (!addressForm.street_address || !addressForm.postcode) {
-
-//       showToast("Please enter a valid address", "error");
-
-//       return;
-
-//     }
- 
-//     // Prevent duplicates
-
-//     const normalize = (v) => v?.replace(/\s/g, "").toLowerCase();
- 
-//     const existing = addresses.find(
-
-//       (addr) =>
-
-//         normalize(addr.postcode) === normalize(addressForm.postcode)
-
-//     );
- 
-//     if (existing) {
-
-//       showToast("Address already saved", "info");
-
-//       setSelectedAddressId(String(existing.address_id));
-
-//       setShowAddressForm(false);
-
-//       return;
-
-//     }
- 
-//     const response = await fetch(`${API_BASE}/addresses`, {
-
-//   method: "POST",
-
-//   headers: {
-
-//     "Content-Type": "application/json",
-
-//     Authorization: `Bearer ${token}`,
-
-//   },
-
-//   body: JSON.stringify({
-
-//     address_type: "pickup", // required
-
-//     full_address: addressForm.street_address, // required
-
-//     additional_details: addressDetails || "",
-
-//     pincode: addressForm.postcode || "",
-
-//     latitude: geoData.latitude, // required
-
-//     longitude: geoData.longitude, // required
-
-//     house_number: geoData.house_number || "",
-
-//     street_name: geoData.street_name || "",
-
-//     postcode: addressForm.postcode || ""
-
-//   }),
-
-// });
- 
- 
-//     if (!response.ok) {
-
-//       const err = await response.json();
-
-//       throw new Error(err.message || "Failed to save address");
-
-//     }
- 
-//     const data = await response.json();
- 
-//     showToast("Address saved successfully", "success");
- 
-//     await fetchAddresses();
- 
-//     setSelectedAddressId(String(data.address_id));
-
-//     setShowAddressForm(false);
- 
-//   } catch (error) {
-
-//     console.error(error);
-
-//     showToast(error.message || "Failed to save address", "error");
-
-//   }
-
-// };
- 
-
-//   /* ---------------------------- UI Handlers ------------------------------- */
-  
-//   const handlePhoneChange = (e) => {
-//     const newPhone = e.target.value;
-
-//     setUserInfo(prev => ({
-//       ...prev,
-//       phone: newPhone
-//     }));
-
-//     if (phoneCheckTimeoutRef.current) {
-//       clearTimeout(phoneCheckTimeoutRef.current);
-//     }
-
-//     if (newPhone && newPhone.trim().length >= 5) {
-//       phoneCheckTimeoutRef.current = setTimeout(() => {
-//         checkPhoneNumberExists(newPhone);
-//       }, 1000);
+//       showToast("Card removed successfully", "success");
+//     } catch (error) {
+//       console.error("Delete card error:", error);
+//       showToast(error.message || "Failed to delete card", "error");
 //     }
 //   };
 
+//   const handleSaveAddress = async () => {
+//     try {
+//       const token = userToken || localStorage.getItem("jwtToken");
+//       if (!token) {
+//         showToast("Please login to save address", "error");
+//         return;
+//       }
+ 
+//       if (!addressForm.street_address || !addressForm.postcode) {
+//         showToast("Please enter a valid address", "error");
+//         return;
+//       }
+ 
+//       // Prevent duplicates
+//       const normalize = (v) => v?.replace(/\s/g, "").toLowerCase();
+//       const existing = addresses.find(
+//         (addr) =>
+//           normalize(addr.postcode) === normalize(addressForm.postcode)
+//       );
+ 
+//       if (existing) {
+//         showToast("Address already saved", "info");
+//         setSelectedAddressId(String(existing.address_id));
+//         setShowAddressForm(false);
+//         return;
+//       }
+ 
+//       const response = await fetch(`${API_BASE}/addresses`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify({
+//           address_type: "pickup",
+//           full_address: addressForm.street_address,
+//           additional_details: addressDetails || "",
+//           pincode: addressForm.postcode || "",
+//           latitude: geoData.latitude,
+//           longitude: geoData.longitude,
+//           house_number: geoData.house_number || "",
+//           street_name: geoData.street_name || "",
+//           postcode: addressForm.postcode || ""
+//         }),
+//       });
+ 
+//       if (!response.ok) {
+//         const err = await response.json();
+//         throw new Error(err.message || "Failed to save address");
+//       }
+ 
+//       const data = await response.json();
+ 
+//       showToast("Address saved successfully", "success");
+ 
+//       await fetchAddresses();
+ 
+//       setSelectedAddressId(String(data.address_id));
+//       setShowAddressForm(false);
+//     } catch (error) {
+//       console.error(error);
+//       showToast(error.message || "Failed to save address", "error");
+//     }
+//   };
+
+//   /* ---------------------------- UI Handlers ------------------------------- */
+  
 //   const handleCollectDateChange = (e) => {
 //     const newDate = e.target.value;
 //     setCollectDate(newDate);
@@ -1762,27 +1913,6 @@
 //       setSelectedPickupAddressId(addressId);
 //       setShowPickupAddressForm(false);
 //     }
-//   };
-
-//   const handleUserInfoChange = (field) => (e) => {
-//     setUserInfo(prev => ({
-//       ...prev,
-//       [field]: e.target.value
-//     }));
-//   };
-
-//   const handleAddressFormChange = (field) => (e) => {
-//     setAddressForm(prev => ({
-//       ...prev,
-//       [field]: e.target.value
-//     }));
-//   };
-
-//   const handlePickupAddressFormChange = (field) => (e) => {
-//     setPickupAddressForm(prev => ({
-//       ...prev,
-//       [field]: e.target.value
-//     }));
 //   };
 
 //   const handleAddAddressClick = () => {
@@ -2093,6 +2223,7 @@
 //       }));
 //     });
 //   };
+
 //   useEffect(() => {
 //     if (selectedPostcodeAddress) {
 //       geocodeAddress(selectedPostcodeAddress);
@@ -2152,82 +2283,69 @@
 //           </div>
 
 //           <div className="qb-form-grid">
-//             <div className="qb-form-group" style={{position:"relative"}}>
-
-// {guideStep === 1 && (
-//   <div className="qb-guide">
-//     Enter your full name
-//   </div>
-// )}
-
-// <label className="qb-form-label">
-//   <i className="fas fa-user-tag"></i>
-//   Full Name
-//   <input
-//     type="text"
-//     className="qb-form-input"
-//     value={userInfo.name}
-//     onChange={handleUserInfoChange("name")}
-//     placeholder="John Smith"
-//     required
-//   />
-// </label>
-
-// </div>
-
+//             {/* Name */}
 //             <div className="qb-form-group" style={{ position: "relative" }}>
+//               {guideStep === 1 && (
+//                 <div className="qb-guide">Enter your full name</div>
+//               )}
+//               <label className="qb-form-label">
+//                 <i className="fas fa-user-tag"></i>
+//                 Full Name
+//                 <input
+//                   type="text"
+//                   className="qb-form-input"
+//                   value={userInfo.name}
+//                   onChange={handleNameChange}
+//                   placeholder="John Smith"
+//                   required
+//                 />
+//               </label>
+//             </div>
 
-//   {guideStep === 2 && (
-//     <div className="qb-guide-tooltip">
-//       Enter your email address
-//     </div>
-//   )}
+//             {/* Email */}
+//             <div className="qb-form-group" style={{ position: "relative" }}>
+//               {guideStep === 2 && (
+//                 <div className="qb-guide-tooltip">Enter your email address</div>
+//               )}
+//               <label className="qb-form-label">
+//                 <i className="fas fa-envelope"></i>
+//                 Email Address
+//                 <input
+//                   type="email"
+//                   className="qb-form-input"
+//                   value={userInfo.email}
+//                   onChange={handleEmailChange}
+//                   placeholder="john@example.com"
+//                   required
+//                 />
+//               </label>
+//             </div>
 
-//   <label className="qb-form-label">
-//     <i className="fas fa-envelope"></i>
-//     Email Address
-//     <input
-//       type="email"
-//       className="qb-form-input"
-//       value={userInfo.email}
-//       onChange={handleUserInfoChange("email")}
-//       placeholder="john@example.com"
-//       required
-//     />
-//   </label>
-
-// </div>
-
+//             {/* Phone with country code */}
 //             <div className="qb-phone-group" style={{ position: "relative" }}>
-
-//   {guideStep === 3 && (
-//     <div className="qb-guide-tooltip">
-//       Enter your phone number
-//     </div>
-//   )}
-
-//   <select
-//     className="qb-country-code"
-//     value={countryCode}
-//     onChange={(e) => setCountryCode(e.target.value)}
-//   >
-//     {countryCodes.map((c) => (
-//       <option key={c.code} value={c.code}>
-//         {c.code}
-//       </option>
-//     ))}
-//   </select>
-
-//   <input
-//     type="tel"
-//     className="qb-form-input"
-//     value={userInfo.phone}
-//     onChange={handlePhoneChange}
-//     placeholder="Phone Number"
-//     required
-//   />
-
-// </div>
+//               {guideStep === 3 && (
+//                 <div className="qb-guide-tooltip">Enter your phone number</div>
+//               )}
+//               <select
+//                 className="qb-country-code"
+//                 value={selectedCountryCode}
+//                 onChange={handleCountryCodeChange}
+//               >
+//                 {countryCodes.map((c) => (
+//                   <option key={c.code} value={c.code}>
+//                     {c.code}
+//                   </option>
+//                 ))}
+//               </select>
+//               <input
+//                 type="tel"
+//                 className="qb-form-input"
+//                 value={localPhone}
+//                 onChange={handlePhoneChange}
+//                 placeholder="Phone Number"
+//                 required
+//               />
+//             </div>
 //           </div>
 //         </div>
 
@@ -2389,25 +2507,18 @@
 //                 </div>
 //               )}
 //               {/* Save Address Button */}
-
-// {userToken && saveDeliveryAddress && (
-// <div style={{ marginTop: "12px" }}>
-// <button
-
-//       type="button"
-
-//       className="qb-primary-btn"
-
-//       onClick={handleSaveAddress}
-// >
-// <i className="fas fa-save"></i>
-
-//       Save Address
-// </button>
-// </div>
-
-// )}
- 
+//               {userToken && saveDeliveryAddress && (
+//                 <div style={{ marginTop: "12px" }}>
+//                   <button
+//                     type="button"
+//                     className="qb-primary-btn"
+//                     onClick={handleSaveAddress}
+//                   >
+//                     <i className="fas fa-save"></i>
+//                     Save Address
+//                   </button>
+//                 </div>
+//               )}
 
 //               {userToken && addresses.length > 0 && showAddressForm && (
 //                 <button className="qb-secondary-btn" onClick={() => setShowAddressForm(false)}>
@@ -2436,85 +2547,77 @@
 
 //           {/* ------------ DELIVERY ADDRESS (ONLY IF DIFFERENT) ------------ */}
 //           {!useSameAddress && (
+//             <div className="qb-address-section" style={{ marginTop: "24px" }}>
+//               <h3 className="qb-address-section-title">
+//                 <i className="fas fa-truck"></i>
+//                 Delivery Address
+//                 <span className="qb-required-badge">Required</span>
+//               </h3>
 
-//   <div className="qb-address-section" style={{ marginTop: "24px" }}>
+//               <div className="qb-form-grid">
+//                 <div className="qb-form-group">
+//                   <label className="qb-form-label">
+//                     Postcode *
+//                     <input
+//                       type="text"
+//                       className="qb-form-input"
+//                       value={deliveryPostcode}
+//                       onChange={(e) => setDeliveryPostcode(e.target.value.toUpperCase())}
+//                       placeholder="SW1A2AA"
+//                     />
+//                   </label>
+//                 </div>
 
-//     <h3 className="qb-address-section-title">
-//       <i className="fas fa-truck"></i>
-//       Delivery Address
-//       <span className="qb-required-badge">Required</span>
-//     </h3>
+//                 <div className="qb-form-group">
+//                   <label className="qb-form-label">
+//                     Select Address *
+//                     <select
+//                       className="qb-form-input"
+//                       value={selectedDeliveryPostcodeAddress}
+//                       onChange={(e) =>
+//                         setSelectedDeliveryPostcodeAddress(e.target.value)
+//                       }
+//                     >
+//                       <option value="">Select address</option>
+//                       {deliveryPostcodeAddresses.map((addr, index) => (
+//                         <option key={index} value={addr.place_id}>
+//                           {addr.full}
+//                         </option>
+//                       ))}
+//                     </select>
+//                   </label>
+//                 </div>
 
-//     <div className="qb-form-grid">
+//                 <div className="qb-form-group">
+//                   <label className="qb-form-label">
+//                     Address details
+//                     <input
+//                       type="text"
+//                       className="qb-address-details-input"
+//                       placeholder="Flat / Door / Floor"
+//                       value={deliveryAddressDetails}
+//                       onChange={(e) =>
+//                         setDeliveryAddressDetails(e.target.value)
+//                       }
+//                     />
+//                   </label>
+//                 </div>
+//               </div>
 
-//       <div className="qb-form-group">
-//         <label className="qb-form-label">
-//           Postcode *
-//           <input
-//             type="text"
-//             className="qb-form-input"
-//             value={deliveryPostcode}
-//             onChange={(e) => setDeliveryPostcode(e.target.value.toUpperCase())}
-//             placeholder="SW1A2AA"
-//           />
-//         </label>
-//       </div>
-
-//       <div className="qb-form-group">
-//         <label className="qb-form-label">
-//           Select Address *
-//           <select
-//             className="qb-form-input"
-//             value={selectedDeliveryPostcodeAddress}
-//             onChange={(e) =>
-//               setSelectedDeliveryPostcodeAddress(e.target.value)
-//             }
-//           >
-//             <option value="">Select address</option>
-
-//             {deliveryPostcodeAddresses.map((addr, index) => (
-//               <option key={index} value={addr.place_id}>
-//                 {addr.full}
-//               </option>
-//             ))}
-
-//           </select>
-//         </label>
-//       </div>
-
-//       <div className="qb-form-group">
-//         <label className="qb-form-label">
-//           Address details
-//           <input
-//             type="text"
-//             className="qb-address-details-input"
-//             placeholder="Flat / Door / Floor"
-//             value={deliveryAddressDetails}
-//             onChange={(e) =>
-//               setDeliveryAddressDetails(e.target.value)
-//             }
-//           />
-//         </label>
-//       </div>
-
-//     </div>
-
-//     {userToken && (
-//       <div className="qb-save-address-checkbox">
-//         <label>
-//           <input
-//             type="checkbox"
-//             checked={saveDeliveryAddress}
-//             onChange={(e) => setSaveDeliveryAddress(e.target.checked)}
-//           />
-//           <span>Save this delivery address to my account</span>
-//         </label>
-//       </div>
-//     )}
-
-//   </div>
-
-// )}
+//               {userToken && (
+//                 <div className="qb-save-address-checkbox">
+//                   <label>
+//                     <input
+//                       type="checkbox"
+//                       checked={saveDeliveryAddress}
+//                       onChange={(e) => setSaveDeliveryAddress(e.target.checked)}
+//                     />
+//                     <span>Save this delivery address to my account</span>
+//                   </label>
+//                 </div>
+//               )}
+//             </div>
+//           )}
 
 //           {/* ------------ PICKUP ADDRESS FORM (WHEN DIFFERENT) ------------ */}
 //           {!useSameAddress && showPickupAddressForm && (
@@ -3091,6 +3194,7 @@
 //       )}
 //     </div>
 //   );
+// }
 
 // src/components/QuickBooking.jsx
 import React, { useEffect, useState, useCallback, useRef } from "react";
@@ -3308,6 +3412,9 @@ export default function QuickBooking() {
   const [showPickupAddressForm, setShowPickupAddressForm] = useState(false);
   const [pendingBookingData, setPendingBookingData] = useState(null);
   const phoneCheckTimeoutRef = useRef(null);
+
+  // ---------- NEW: Referral Code State ----------
+  const [referralCode, setReferralCode] = useState("");
 
   const addressInputRef = useRef(null);
   const pickupAddressInputRef = useRef(null);
@@ -4516,6 +4623,114 @@ const updateProfileField = useCallback(async (field, value) => {
     }
   };
 
+  /* ------------------------- NEW: Referral Booking Flow ---------------------------- */
+  const handleReferralBooking = async () => {
+    if (bookingInProgress) return;
+    setBookingInProgress(true);
+    setLoading(true);
+
+    try {
+      // Validate addresses (same as in handleConfirmBooking)
+      if (useSameAddress) {
+        if (userToken && selectedAddressId) {
+          // using saved address → skip geo check
+        } else {
+          if (!geoData.latitude || !geoData.longitude) {
+            throw new Error("Please select address from suggestions");
+          }
+        }
+      } else {
+        if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
+          throw new Error("Please select delivery address from suggestions");
+        }
+        if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
+          throw new Error("Please select pickup address from suggestions");
+        }
+      }
+
+      // Ensure user exists (get token)
+      let token = userToken || localStorage.getItem("jwtToken");
+      if (!token) {
+        token = await ensureUserExists();
+        if (!token) throw new Error("Failed to authenticate. Please try again.");
+      }
+
+      // Save addresses if user is logged in and opted to save them
+      if (userToken && !useSameAddress && saveDeliveryAddress) {
+        const newAddressId = await saveNewAddress({
+          street_address: addressForm.street_address,
+          postcode: addressForm.postcode,
+          city: addressForm.city,
+          additional_details: addressDetails,
+          house_number: deliveryGeoData.house_number,
+        }, 'delivery');
+        if (!newAddressId) {
+          throw new Error("Failed to save delivery address. Please try again.");
+        }
+        setSelectedAddressId(String(newAddressId));
+      }
+
+      if (userToken && !useSameAddress && savePickupAddress && showPickupAddressForm) {
+        const newPickupId = await saveNewAddress({
+          street_address: pickupAddressForm.street_address,
+          postcode: pickupAddressForm.postcode,
+          city: pickupAddressForm.city,
+          additional_details: "",
+          house_number: pickupGeoData.house_number,
+        }, 'pickup');
+        if (!newPickupId) {
+          throw new Error("Failed to save pickup address. Please try again.");
+        }
+        setSelectedPickupAddressId(String(newPickupId));
+      }
+
+      const order = prepareOrderData();
+      if (!order) throw new Error("Please select pickup and delivery times");
+
+      // Build payload with referral code
+      const payload = {
+        ...order,
+        address_id: selectedAddressId,
+        referral_code: "IB100",  // send the code to backend
+      };
+
+      const response = await fetch(`${API_BASE}/quick-booking`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Booking failed");
+      }
+
+      showToast("Booking confirmed successfully with referral!", "success");
+
+      navigate("/thankyou", {
+        state: {
+          orderId: data.order?.id,
+          paymentStatus: "referral",
+          paymentMethod: "referral_code",
+          pickupDate: formatDateDDMMYYYY(collectDate),
+          pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
+          deliveryDate: formatDateDDMMYYYY(deliverDate),
+          deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || "Referral booking failed", "error");
+    } finally {
+      setLoading(false);
+      setBookingInProgress(false);
+    }
+  };
+
   /* ------------------------- Main Booking Flow ---------------------------- */
   const handleConfirmBooking = async () => {
     if (bookingInProgress) return;
@@ -5331,6 +5546,19 @@ const updateProfileField = useCallback(async (field, value) => {
     };
   }, []);
 
+  /* ------------------------- Unified Booking Action ---------------------- */
+  const handleBookingAction = () => {
+    if (referralCode === "IB100") {
+      handleReferralBooking();
+    } else {
+      if (userToken && savedCards.length > 0) {
+        handleSavedCardBooking();
+      } else {
+        handleConfirmBooking();
+      }
+    }
+  };
+
   /* ------------------------------ Render ---------------------------------- */
   
   return (
@@ -6034,6 +6262,26 @@ const updateProfileField = useCallback(async (field, value) => {
               </div>
             </div>
 
+            {/* ---------- NEW: Referral Code Input ---------- */}
+            <div className="qb-referral-section" style={{ marginBottom: "20px", padding: "15px", background: "#f9f9f9", borderRadius: "8px" }}>
+              <label className="qb-form-label" style={{ fontWeight: "bold" }}>
+                <i className="fas fa-gift"></i> Referral Code (Optional)
+              </label>
+              <input
+                type="text"
+                className="qb-form-input"
+                placeholder="Enter code "
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase().trim())}
+                style={{ marginTop: "5px" }}
+              />
+              {referralCode === "IB100" && (
+                <div style={{ marginTop: "8px", color: "#28a745", fontSize: "0.9rem" }}>
+                  <i className="fas fa-check-circle"></i> Referral code applied – payment will be skipped.
+                </div>
+              )}
+            </div>
+
             <div className="qb-payment-notice">
               <div className="qb-notice-icon">
                 <i className="fas fa-info-circle"></i>
@@ -6126,7 +6374,7 @@ const updateProfileField = useCallback(async (field, value) => {
                   <button 
                     className="qb-primary-btn qb-book-btn" 
                     onClick={handleSavedCardBooking}
-                    disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
+                    disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress || referralCode === "IB100"}
                   >
                     {loading ? (
                       <>
@@ -6181,7 +6429,7 @@ const updateProfileField = useCallback(async (field, value) => {
                   <button 
                     className="qb-primary-btn qb-book-btn" 
                     onClick={handleConfirmBooking}
-                    disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
+                    disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress || referralCode === "IB100"}
                   >
                     {loading || setupProcessing ? (
                       <>
@@ -6228,7 +6476,7 @@ const updateProfileField = useCallback(async (field, value) => {
             <div className="qb-summary-action">
               <button 
                 className="qb-primary-btn qb-confirm-btn"
-                onClick={userToken && savedCards.length > 0 ? handleSavedCardBooking : handleConfirmBooking}
+                onClick={handleBookingAction}
                 disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
               >
                 {loading ? (
