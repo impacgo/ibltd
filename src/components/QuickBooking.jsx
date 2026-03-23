@@ -4625,113 +4625,111 @@ const updateProfileField = useCallback(async (field, value) => {
 
   /* ------------------------- NEW: Referral Booking Flow ---------------------------- */
   const handleReferralBooking = async () => {
-  if (bookingInProgress) return;
-  setBookingInProgress(true);
-  setLoading(true);
+    if (bookingInProgress) return;
+    setBookingInProgress(true);
+    setLoading(true);
 
-  try {
-    // Validate addresses (same as in handleConfirmBooking)
-    if (useSameAddress) {
-      if (userToken && selectedAddressId) {
-        // using saved address → skip geo check
+    try {
+      // Validate addresses (same as in handleConfirmBooking)
+      if (useSameAddress) {
+        if (userToken && selectedAddressId) {
+          // using saved address → skip geo check
+        } else {
+          if (!geoData.latitude || !geoData.longitude) {
+            throw new Error("Please select address from suggestions");
+          }
+        }
       } else {
-        if (!geoData.latitude || !geoData.longitude) {
-          throw new Error("Please select address from suggestions");
+        if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
+          throw new Error("Please select delivery address from suggestions");
+        }
+        if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
+          throw new Error("Please select pickup address from suggestions");
         }
       }
-    } else {
-      if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
-        throw new Error("Please select delivery address from suggestions");
+
+      // Ensure user exists (get token)
+      let token = userToken || localStorage.getItem("jwtToken");
+      if (!token) {
+        token = await ensureUserExists();
+        if (!token) throw new Error("Failed to authenticate. Please try again.");
       }
-      if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
-        throw new Error("Please select pickup address from suggestions");
+
+      // Save addresses if user is logged in and opted to save them
+      if (userToken && !useSameAddress && saveDeliveryAddress) {
+        const newAddressId = await saveNewAddress({
+          street_address: addressForm.street_address,
+          postcode: addressForm.postcode,
+          city: addressForm.city,
+          additional_details: addressDetails,
+          house_number: deliveryGeoData.house_number,
+        }, 'delivery');
+        if (!newAddressId) {
+          throw new Error("Failed to save delivery address. Please try again.");
+        }
+        setSelectedAddressId(String(newAddressId));
       }
-    }
 
-    // Ensure user exists (get token)
-    let token = userToken || localStorage.getItem("jwtToken");
-    if (!token) {
-      token = await ensureUserExists();
-      if (!token) throw new Error("Failed to authenticate. Please try again.");
-    }
-
-    // Save addresses if user is logged in and opted to save them
-    if (userToken && !useSameAddress && saveDeliveryAddress) {
-      const newAddressId = await saveNewAddress({
-        street_address: addressForm.street_address,
-        postcode: addressForm.postcode,
-        city: addressForm.city,
-        additional_details: addressDetails,
-        house_number: deliveryGeoData.house_number,
-      }, 'delivery');
-      if (!newAddressId) {
-        throw new Error("Failed to save delivery address. Please try again.");
+      if (userToken && !useSameAddress && savePickupAddress && showPickupAddressForm) {
+        const newPickupId = await saveNewAddress({
+          street_address: pickupAddressForm.street_address,
+          postcode: pickupAddressForm.postcode,
+          city: pickupAddressForm.city,
+          additional_details: "",
+          house_number: pickupGeoData.house_number,
+        }, 'pickup');
+        if (!newPickupId) {
+          throw new Error("Failed to save pickup address. Please try again.");
+        }
+        setSelectedPickupAddressId(String(newPickupId));
       }
-      setSelectedAddressId(String(newAddressId));
-    }
 
-    if (userToken && !useSameAddress && savePickupAddress && showPickupAddressForm) {
-      const newPickupId = await saveNewAddress({
-        street_address: pickupAddressForm.street_address,
-        postcode: pickupAddressForm.postcode,
-        city: pickupAddressForm.city,
-        additional_details: "",
-        house_number: pickupGeoData.house_number,
-      }, 'pickup');
-      if (!newPickupId) {
-        throw new Error("Failed to save pickup address. Please try again.");
+      const order = prepareOrderData();
+      if (!order) throw new Error("Please select pickup and delivery times");
+
+      // Build payload with referral code
+      const payload = {
+        ...order,
+        address_id: selectedAddressId,
+        referral_code: "IB100",  // send the code to backend
+      };
+
+      const response = await fetch(`${API_BASE}/quick-booking`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Booking failed");
       }
-      setSelectedPickupAddressId(String(newPickupId));
+
+      showToast("Booking confirmed successfully with referral!", "success");
+
+      navigate("/thankyou", {
+        state: {
+          orderId: data.order?.id,
+          paymentStatus: "referral",
+          paymentMethod: "referral_code",
+          pickupDate: formatDateDDMMYYYY(collectDate),
+          pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
+          deliveryDate: formatDateDDMMYYYY(deliverDate),
+          deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || "Referral booking failed", "error");
+    } finally {
+      setLoading(false);
+      setBookingInProgress(false);
     }
-
-    const order = prepareOrderData();
-    if (!order) throw new Error("Please select pickup and delivery times");
-
-    // Build payload with referral code – only include address_id if it exists
-    const payload = {
-      ...order,
-      referral_code: "IB100",
-    };
-    if (selectedAddressId) {
-      payload.address_id = selectedAddressId;
-    }
-
-    const response = await fetch(`${API_BASE}/quick-booking`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Booking failed");
-    }
-
-    showToast("Booking confirmed successfully with referral!", "success");
-
-    navigate("/thankyou", {
-      state: {
-        orderId: data.order?.id,
-        paymentStatus: "referral",
-        paymentMethod: "referral_code",
-        pickupDate: formatDateDDMMYYYY(collectDate),
-        pickupTime: formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end),
-        deliveryDate: formatDateDDMMYYYY(deliverDate),
-        deliveryTime: formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end),
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    showToast(error.message || "Referral booking failed", "error");
-  } finally {
-    setLoading(false);
-    setBookingInProgress(false);
-  }
-};
+  };
 
   /* ------------------------- Main Booking Flow ---------------------------- */
   const handleConfirmBooking = async () => {
@@ -4927,89 +4925,91 @@ const updateProfileField = useCallback(async (field, value) => {
   };
 
   // Handle Stripe setup success (card saved)
- const handleSetupSuccess = async (setupIntent) => {
-  setSetupProcessing(true);
+  const handleSetupSuccess = async (setupIntent) => {
+    setSetupProcessing(true);
 
-  try {
-    const token = userToken || localStorage.getItem("jwtToken");
-    if (!token) throw new Error("Authentication required");
-    if (!pendingBookingData) throw new Error("Booking data missing");
+    try {
+      const token = userToken || localStorage.getItem("jwtToken");
+      if (!token) throw new Error("Authentication required");
 
-    const paymentMethodId =
-      setupIntent.payment_method ||
-      setupIntent.latest_attempt?.payment_method;
-    if (!paymentMethodId) throw new Error("Payment method not returned by Stripe");
+      if (!pendingBookingData) {
+        throw new Error("Booking data missing");
+      }
 
-    // Set default payment method
-    if (customerId) {
-      await fetch(`${API_BASE}/stripe/set-default-payment`, {
+      const paymentMethodId =
+        setupIntent.payment_method ||
+        setupIntent.latest_attempt?.payment_method;
+
+      if (!paymentMethodId) {
+        throw new Error("Payment method not returned by Stripe");
+      }
+
+      // Set default payment method
+      if (customerId) {
+        await fetch(`${API_BASE}/stripe/set-default-payment`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            customerId,
+            paymentMethodId,
+          }),
+        });
+      }
+
+      // 🚀 NOW CREATE ORDER (ONLY AFTER CARD SAVED)
+      const response = await fetch(`${API_BASE}/quick-booking`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          customerId,
-          paymentMethodId,
+          ...pendingBookingData,
+          address_id: selectedAddressId,
+          payment_method_id: paymentMethodId,
+          stripe_customer_id: customerId
         }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to create booking");
+      }
+
+      setShowPaymentSetup(false);
+      setPendingBookingData(null);
+
+      showToast("Booking confirmed successfully!", "success");
+
+      setTimeout(() => {
+        navigate("/thankyou", {
+          state: {
+            orderId: data.order?.id,
+            paymentStatus: "card_saved",
+            paymentMethod: "new_card",
+            pickupDate: formatDateDDMMYYYY(collectDate),
+            pickupTime: formatTimeRange24Hour(
+              selectedCollectSlot?.start,
+              selectedCollectSlot?.end
+            ),
+            deliveryDate: formatDateDDMMYYYY(deliverDate),
+            deliveryTime: formatTimeRange24Hour(
+              selectedDeliverSlot?.start,
+              selectedDeliverSlot?.end
+            ),
+          },
+        });
+      }, 1000);
+    } catch (error) {
+      showToast(error.message || "Failed to complete booking", "error");
+    } finally {
+      setSetupProcessing(false);
     }
-
-    // Build order payload – only include address_id if it exists
-    const orderPayload = {
-      ...pendingBookingData,
-      payment_method_id: paymentMethodId,
-      stripe_customer_id: customerId
-    };
-    if (selectedAddressId) {
-      orderPayload.address_id = selectedAddressId;
-    }
-
-    const response = await fetch(`${API_BASE}/quick-booking`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(orderPayload),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to create booking");
-    }
-
-    setShowPaymentSetup(false);
-    setPendingBookingData(null);
-
-    showToast("Booking confirmed successfully!", "success");
-
-    setTimeout(() => {
-      navigate("/thankyou", {
-        state: {
-          orderId: data.order?.id,
-          paymentStatus: "card_saved",
-          paymentMethod: "new_card",
-          pickupDate: formatDateDDMMYYYY(collectDate),
-          pickupTime: formatTimeRange24Hour(
-            selectedCollectSlot?.start,
-            selectedCollectSlot?.end
-          ),
-          deliveryDate: formatDateDDMMYYYY(deliverDate),
-          deliveryTime: formatTimeRange24Hour(
-            selectedDeliverSlot?.start,
-            selectedDeliverSlot?.end
-          ),
-        },
-      });
-    }, 1000);
-  } catch (error) {
-    showToast(error.message || "Failed to complete booking", "error");
-  } finally {
-    setSetupProcessing(false);
-  }
-};
+  };
 
   const handleSetupError = (errorMessage) => {
     showToast(errorMessage || "Failed to save card. Please try again.", "error");
@@ -5253,166 +5253,159 @@ const updateProfileField = useCallback(async (field, value) => {
   }, [userToken, fetchUserProfile, fetchAddresses, fetchSavedCards, ensureStripeCustomer]);
 
   useEffect(() => {
-  if (!window.google || !addressInputRef.current) return;
+    if (!window.google || !addressInputRef.current) return;
 
-  const autocomplete = new window.google.maps.places.Autocomplete(
-    addressInputRef.current,
-    {
-      types: ["address"],
-      componentRestrictions: { country: "gb" }
-    }
-  );
+    const autocomplete = new window.google.maps.places.Autocomplete(
+      addressInputRef.current,
+      {
+        types: ["address"],
+        componentRestrictions: { country: "gb" }
+      }
+    );
 
-  const listener = autocomplete.addListener("place_changed", () => {
-    const place = autocomplete.getPlace();
-    if (!place.geometry) return;
+    const listener = autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      if (!place.geometry) return;
 
-    let street = "";
-    let houseNumber = "";
-    let postcode = "";
-    let city = "";
+      let street = "";
+      let houseNumber = "";
+      let postcode = "";
+      let city = "";
 
-    place.address_components.forEach(component => {
-      if (component.types.includes("route")) {
-        street = component.long_name;
-      }
-      if (component.types.includes("street_number")) {
-        houseNumber = component.long_name;
-      }
-      if (component.types.includes("postal_code")) {
-        postcode = component.long_name;
-      }
-      if (component.types.includes("postal_town")) {
-        city = component.long_name;
-      }
+      place.address_components.forEach(component => {
+        if (component.types.includes("route")) {
+          street = component.long_name;
+        }
+        if (component.types.includes("street_number")) {
+          houseNumber = component.long_name;
+        }
+        if (component.types.includes("postal_code")) {
+          postcode = component.long_name;
+        }
+        if (component.types.includes("postal_town")) {
+          city = component.long_name;
+        }
+      });
+
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
+
+      setGeoData({
+        latitude: lat,
+        longitude: lng,
+        street_name: street,
+        house_number: houseNumber
+      });
+
+      setAddressForm(prev => ({
+        ...prev,
+        street_address: place.formatted_address,
+        postcode: postcode,
+        city: city,
+        house_number: houseNumber
+      }));
     });
 
-    const lat = place.geometry.location.lat();
-    const lng = place.geometry.location.lng();
-
-    setGeoData({
-      latitude: lat,
-      longitude: lng,
-      street_name: street,
-      house_number: houseNumber
-    });
-
-    setAddressForm(prev => ({
-      ...prev,
-      street_address: place.formatted_address,
-      postcode: postcode,
-      city: city,
-      house_number: houseNumber
-    }));
-  });
-
-  return () => {
-    if (window.google && window.google.maps && window.google.maps.event) {
+    return () => {
       window.google.maps.event.removeListener(listener);
-    }
-  };
-}, []);
+    };
+  }, []);
 
-useEffect(() => {
-  // Only run if delivery address input exists AND we are not using same address
-  if (!window.google || !deliveryAddressInputRef.current || useSameAddress) return;
-
-  const autocomplete = new window.google.maps.places.Autocomplete(
-    deliveryAddressInputRef.current,
-    {
-      types: ["address"],
-      componentRestrictions: { country: "gb" }
-    }
-  );
-
-  const listener = autocomplete.addListener("place_changed", () => {
-    const place = autocomplete.getPlace();
-    if (!place.geometry) return;
-
-    const lat = place.geometry.location.lat();
-    const lng = place.geometry.location.lng();
-
-    let street = "";
-    let house = "";
-
-    place.address_components.forEach(component => {
-      if (component.types.includes("route")) street = component.long_name;
-      if (component.types.includes("street_number")) house = component.long_name;
-    });
-
-    setDeliveryGeoData({
-      latitude: lat,
-      longitude: lng,
-      street_name: street,
-      house_number: house
-    });
-
-    setAddressForm(prev => ({
-      ...prev,
-      street_address: place.formatted_address,
-      postcode:
-        place.address_components.find(c =>
-          c.types.includes("postal_code")
-        )?.long_name || ""
-    }));
-  });
-
-  return () => {
-    if (window.google && window.google.maps && window.google.maps.event) {
-      window.google.maps.event.removeListener(listener);
-    }
-  };
-}, [useSameAddress]); // Re-run when toggle changes
   useEffect(() => {
-  // Only run if pickup input exists, not using same address, and pickup form is shown
-  if (!window.google || !pickupAddressInputRef.current || useSameAddress || !showPickupAddressForm) return;
+    if (!window.google || !deliveryAddressInputRef.current) return;
 
-  const autocomplete = new window.google.maps.places.Autocomplete(
-    pickupAddressInputRef.current,
-    {
-      types: ["address"],
-      componentRestrictions: { country: "gb" }
-    }
-  );
+    const autocomplete = new window.google.maps.places.Autocomplete(
+      deliveryAddressInputRef.current,
+      {
+        types: ["address"],
+        componentRestrictions: { country: "gb" }
+      }
+    );
 
-  const listener = autocomplete.addListener("place_changed", () => {
-    const place = autocomplete.getPlace();
-    if (!place.geometry) return;
+    const listener = autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      if (!place.geometry) return;
 
-    const lat = place.geometry.location.lat();
-    const lng = place.geometry.location.lng();
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
 
-    let street = "";
-    let house = "";
+      let street = "";
+      let house = "";
 
-    place.address_components.forEach(component => {
-      if (component.types.includes("route")) street = component.long_name;
-      if (component.types.includes("street_number")) house = component.long_name;
+      place.address_components.forEach(component => {
+        if (component.types.includes("route")) street = component.long_name;
+        if (component.types.includes("street_number")) house = component.long_name;
+      });
+
+      setDeliveryGeoData({
+        latitude: lat,
+        longitude: lng,
+        street_name: street,
+        house_number: house
+      });
+
+      setAddressForm(prev => ({
+        ...prev,
+        street_address: place.formatted_address,
+        postcode:
+          place.address_components.find(c =>
+            c.types.includes("postal_code")
+          )?.long_name || ""
+      }));
     });
 
-    setPickupGeoData({
-      latitude: lat,
-      longitude: lng,
-      street_name: street,
-      house_number: house
-    });
-
-    setPickupAddressForm(prev => ({
-      ...prev,
-      street_address: place.formatted_address,
-      postcode:
-        place.address_components.find(c =>
-          c.types.includes("postal_code")
-        )?.long_name || ""
-    }));
-  });
-
-  return () => {
-    if (window.google && window.google.maps && window.google.maps.event) {
+    return () => {
       window.google.maps.event.removeListener(listener);
-    }
-  };
-}, [useSameAddress, showPickupAddressForm]); // Re-run when these change
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!window.google || !pickupAddressInputRef.current) return;
+
+    const autocomplete = new window.google.maps.places.Autocomplete(
+      pickupAddressInputRef.current,
+      {
+        types: ["address"],
+        componentRestrictions: { country: "gb" }
+      }
+    );
+
+    const listener = autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      if (!place.geometry) return;
+
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
+
+      let street = "";
+      let house = "";
+
+      place.address_components.forEach(component => {
+        if (component.types.includes("route")) street = component.long_name;
+        if (component.types.includes("street_number")) house = component.long_name;
+      });
+
+      setPickupGeoData({
+        latitude: lat,
+        longitude: lng,
+        street_name: street,
+        house_number: house
+      });
+
+      setPickupAddressForm(prev => ({
+        ...prev,
+        street_address: place.formatted_address,
+        postcode:
+          place.address_components.find(c =>
+            c.types.includes("postal_code")
+          )?.long_name || ""
+      }));
+    });
+
+    return () => {
+      window.google.maps.event.removeListener(listener);
+    };
+  }, []);
 
   useEffect(() => {
     if (collectDate) {
@@ -5546,22 +5539,12 @@ useEffect(() => {
   }, [selectedPostcodeAddress]);
 
   useEffect(() => {
-  return () => {
-    if (phoneCheckTimeoutRef.current) {
-      clearTimeout(phoneCheckTimeoutRef.current);
-    }
-  };
-}, []);
-
-useEffect(() => {
-  // Add a class to the body when the component mounts
-  document.body.classList.add('hide-reviewability-popup');
-  
-  // Remove the class when the component unmounts
-  return () => {
-    document.body.classList.remove('hide-reviewability-popup');
-  };
-}, []);
+    return () => {
+      if (phoneCheckTimeoutRef.current) {
+        clearTimeout(phoneCheckTimeoutRef.current);
+      }
+    };
+  }, []);
 
   /* ------------------------- Unified Booking Action ---------------------- */
   const handleBookingAction = () => {
