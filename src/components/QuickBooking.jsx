@@ -34,7 +34,6 @@ const parsePhone = (fullPhone) => {
       return { code, local: fullPhone.slice(code.length) };
     }
   }
-  // If no match, assume +44 and treat whole as local
   const withoutPlus = fullPhone.replace(/^\+/, "");
   return { code: "+44", local: withoutPlus };
 };
@@ -57,14 +56,11 @@ const StripeSetupForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!consent) {
       setError("You must consent to save your card for future payments");
       return;
     }
-    
     if (!stripe || !elements) return;
-    
     setSubmitting(true);
     setError(null);
 
@@ -105,8 +101,8 @@ const StripeSetupForm = ({
             <h3>Save Card to Complete Booking</h3>
             <p>Your booking will be confirmed after you save your card securely.</p>
           </div>
-          <button 
-            className="stripe-modal-close" 
+          <button
+            className="stripe-modal-close"
             onClick={onCancel}
             disabled={submitting || setupProcessing}
           >
@@ -127,7 +123,7 @@ const StripeSetupForm = ({
             </div>
 
             <div className="stripe-element-container">
-              <PaymentElement 
+              <PaymentElement
                 options={{
                   layout: {
                     type: 'tabs',
@@ -140,7 +136,7 @@ const StripeSetupForm = ({
                 }}
               />
             </div>
-            
+
             <div className="stripe-consent-section">
               <div className="stripe-consent-checkbox">
                 <input
@@ -158,7 +154,7 @@ const StripeSetupForm = ({
                 </label>
               </div>
             </div>
-            
+
             {error && (
               <div className="stripe-error-message">
                 <i className="fas fa-exclamation-triangle"></i>
@@ -320,6 +316,8 @@ export default function QuickBooking() {
     house_number: ""
   });
 
+  // State for address details (main address)
+  const [addressDetails, setAddressDetails] = useState("");
   // State for pickup address details (flat/door/floor)
   const [pickupAddressDetails, setPickupAddressDetails] = useState("");
   // State for delivery address details
@@ -338,13 +336,20 @@ export default function QuickBooking() {
   const [postcode, setPostcode] = useState("");
   const [postcodeAddresses, setPostcodeAddresses] = useState([]);
   const [selectedPostcodeAddress, setSelectedPostcodeAddress] = useState("");
-  const [addressDetails, setAddressDetails] = useState("");
   const [loadingPostcode, setLoadingPostcode] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
   const [deliveryPostcode, setDeliveryPostcode] = useState("");
   const [deliveryPostcodeAddresses, setDeliveryPostcodeAddresses] = useState([]);
   const [selectedDeliveryPostcodeAddress, setSelectedDeliveryPostcodeAddress] = useState("");
   const [guideStep, setGuideStep] = useState(1);
+
+  // Delay for auto‑save (milliseconds)
+  const AUTO_SAVE_DELAY_MS = 1000; // 1 second
+
+  // Refs for debounce timers
+  const mainAddressSaveTimerRef = useRef(null);
+  const deliveryAddressSaveTimerRef = useRef(null);
+  const pickupAddressSaveTimerRef = useRef(null);
 
   // Token validation function
   const validateToken = useCallback(async () => {
@@ -392,30 +397,14 @@ export default function QuickBooking() {
   }, []);
 
   useEffect(() => {
-    if (guideStep === 1 && userInfo.name.trim().length > 1) {
-      setGuideStep(2);
-    }
-    if (guideStep === 2 && userInfo.email.trim().length > 3) {
-      setGuideStep(3);
-    }
-    if (guideStep === 3 && userInfo.phone.trim().length > 5) {
-      setGuideStep(4);
-    }
-    if (guideStep === 4 && addressForm.street_address) {
-      setGuideStep(5);
-    }
-    if (guideStep === 5 && collectDate) {
-      setGuideStep(6);
-    }
-    if (guideStep === 6 && selectedCollectSlot) {
-      setGuideStep(7);
-    }
-    if (guideStep === 7 && deliverDate) {
-      setGuideStep(8);
-    }
-    if (guideStep === 8 && selectedDeliverSlot) {
-      setGuideStep(9);
-    }
+    if (guideStep === 1 && userInfo.name.trim().length > 1) setGuideStep(2);
+    if (guideStep === 2 && userInfo.email.trim().length > 3) setGuideStep(3);
+    if (guideStep === 3 && userInfo.phone.trim().length > 5) setGuideStep(4);
+    if (guideStep === 4 && addressForm.street_address) setGuideStep(5);
+    if (guideStep === 5 && collectDate) setGuideStep(6);
+    if (guideStep === 6 && selectedCollectSlot) setGuideStep(7);
+    if (guideStep === 7 && deliverDate) setGuideStep(8);
+    if (guideStep === 8 && selectedDeliverSlot) setGuideStep(9);
   }, [
     userInfo,
     addressForm,
@@ -1462,6 +1451,63 @@ export default function QuickBooking() {
     }
   };
 
+  /* ------------------------- Address Saving Helper ------------------------- */
+  const ensureAddressSaved = useCallback(async () => {
+    // If we already have a selected address ID, just return it
+    if (selectedAddressId) return selectedAddressId;
+
+    // Determine which address we need to save based on the current UI state
+    if (useSameAddress) {
+      // Main address form (same for pickup and delivery)
+      // Validate that all required fields are filled
+      if (!addressForm.street_address.trim() || !addressForm.postcode.trim() ||
+          !geoData.latitude || !geoData.longitude || !addressDetails.trim()) {
+        throw new Error("Please complete all address fields");
+      }
+      const newId = await saveNewAddress({
+        street_address: addressForm.street_address,
+        postcode: addressForm.postcode,
+        additional_details: addressDetails,
+        house_number: geoData.house_number,
+        latitude: geoData.latitude,
+        longitude: geoData.longitude,
+        street_name: geoData.street_name,
+      }, 'delivery');
+      if (!newId) throw new Error("Failed to save address");
+      setSelectedAddressId(String(newId));
+      return newId;
+    } else {
+      // Different addresses: we need the delivery address (the one used in the order)
+      // Validate delivery address fields
+      if (!deliveryAddressForm.street_address.trim() || !deliveryAddressForm.postcode.trim() ||
+          !deliveryGeoData.latitude || !deliveryGeoData.longitude || !deliveryAddressDetails.trim()) {
+        throw new Error("Please complete all delivery address fields");
+      }
+      const newId = await saveNewAddress({
+        street_address: deliveryAddressForm.street_address,
+        postcode: deliveryAddressForm.postcode,
+        additional_details: deliveryAddressDetails,
+        house_number: deliveryGeoData.house_number,
+        latitude: deliveryGeoData.latitude,
+        longitude: deliveryGeoData.longitude,
+        street_name: deliveryGeoData.street_name,
+      }, 'delivery');
+      if (!newId) throw new Error("Failed to save delivery address");
+      setSelectedAddressId(String(newId));
+      return newId;
+    }
+  }, [
+    selectedAddressId,
+    useSameAddress,
+    addressForm,
+    geoData,
+    addressDetails,
+    deliveryAddressForm,
+    deliveryGeoData,
+    deliveryAddressDetails,
+    saveNewAddress
+  ]);
+
   /* ------------------------- Main Booking Flow ---------------------------- */
   const handleConfirmBooking = async () => {
     if (bookingInProgress) return;
@@ -1506,6 +1552,9 @@ export default function QuickBooking() {
         if (!token) throw new Error("Failed to authenticate. Please try again.");
       }
 
+      // Make sure the address is saved (so we have an address_id)
+      await ensureAddressSaved();
+
       await initiateStripeSetup(token, customerId);
     } catch (error) {
       showToast(error.message || "Booking failed", "error");
@@ -1531,6 +1580,9 @@ export default function QuickBooking() {
         token = await ensureUserExists();
         if (!token) throw new Error("Authentication required");
       }
+
+      // Make sure the address is saved
+      await ensureAddressSaved();
 
       const selectedCardData = savedCards.find(
         card => card.payment_method_id === selectedCard
@@ -1595,6 +1647,9 @@ export default function QuickBooking() {
       if (!order) throw new Error("Please complete booking details");
 
       setPendingBookingData(order);
+
+      // Ensure address is saved before Stripe setup
+      await ensureAddressSaved();
 
       await initiateStripeSetup(token, customerId);
     } catch (err) {
@@ -1783,7 +1838,88 @@ export default function QuickBooking() {
     }
   };
 
-  // Auto-save delivery address when all required fields are filled
+  // ====================== AUTO-SAVE ADDRESSES WITH DEBOUNCE ======================
+
+  // Reset function for the manual address form
+  const resetManualAddressForm = useCallback(() => {
+    setPostcode('');
+    setSelectedPostcodeAddress('');
+    setAddressDetails('');
+    setGeoData({ latitude: null, longitude: null, street_name: '', house_number: '' });
+    setAddressForm({
+      street_address: '',
+      postcode: '',
+      city: '',
+      additional_details: '',
+      house_number: ''
+    });
+    setIsDeliveryAddressSaved(false);
+  }, []);
+
+  // Reset function for the manual pickup address form
+  const resetManualPickupForm = useCallback(() => {
+    setPickupAddressForm({
+      street_address: '',
+      postcode: '',
+      city: '',
+      additional_details: '',
+      house_number: ''
+    });
+    setPickupGeoData({ latitude: null, longitude: null, street_name: '', house_number: '' });
+    setPickupAddressDetails('');
+    setHasEnteredPickupDetails(false);
+    setIsPickupAddressSaved(false);
+  }, []);
+
+  // Auto-save main address when using same address (manual form) with debounce
+  useEffect(() => {
+    if (!userToken) return;
+    if (!useSameAddress) return;
+    if (!showAddressForm) return; // Only auto-save when manual form is visible
+
+    const hasAddress = addressForm.street_address.trim() !== "" &&
+                       addressForm.postcode.trim() !== "" &&
+                       geoData.latitude !== null &&
+                       geoData.longitude !== null &&
+                       addressDetails.trim() !== "";
+
+    // Clear any pending timer
+    if (mainAddressSaveTimerRef.current) {
+      clearTimeout(mainAddressSaveTimerRef.current);
+    }
+
+    if (hasAddress && !isDeliveryAddressSaved) {
+      mainAddressSaveTimerRef.current = setTimeout(() => {
+        const save = async () => {
+          const newId = await saveNewAddress({
+            street_address: addressForm.street_address,
+            postcode: addressForm.postcode,
+            additional_details: addressDetails,
+            house_number: geoData.house_number,
+            latitude: geoData.latitude,
+            longitude: geoData.longitude,
+            street_name: geoData.street_name,
+          }, 'delivery');
+          if (newId) {
+            setSelectedAddressId(String(newId));
+            setIsDeliveryAddressSaved(true);
+            // After save, reset form and go back to saved addresses list
+            resetManualAddressForm();
+            setShowAddressForm(false);
+          }
+        };
+        save();
+      }, AUTO_SAVE_DELAY_MS);
+    }
+
+    return () => {
+      if (mainAddressSaveTimerRef.current) {
+        clearTimeout(mainAddressSaveTimerRef.current);
+      }
+    };
+  }, [userToken, useSameAddress, showAddressForm, addressForm, geoData, addressDetails, isDeliveryAddressSaved, saveNewAddress, resetManualAddressForm]);
+
+  // Auto-save delivery address (when not using same address) with debounce
   useEffect(() => {
     if (!userToken) return;
     if (useSameAddress) return;
@@ -1795,27 +1931,40 @@ export default function QuickBooking() {
       deliveryGeoData.longitude !== null &&
       deliveryAddressDetails.trim() !== "";
 
-    if (hasAddress && !isDeliveryAddressSaved) {
-      const saveDelivery = async () => {
-        const newId = await saveNewAddress({
-          street_address: deliveryAddressForm.street_address,
-          postcode: deliveryAddressForm.postcode,
-          additional_details: deliveryAddressDetails,
-          house_number: deliveryGeoData.house_number,
-          latitude: deliveryGeoData.latitude,
-          longitude: deliveryGeoData.longitude,
-          street_name: deliveryGeoData.street_name,
-        }, 'delivery');
-        if (newId) {
-          setSelectedAddressId(String(newId));
-          setIsDeliveryAddressSaved(true);
-        }
-      };
-      saveDelivery();
+    // Clear any pending timer
+    if (deliveryAddressSaveTimerRef.current) {
+      clearTimeout(deliveryAddressSaveTimerRef.current);
     }
+
+    if (hasAddress && !isDeliveryAddressSaved) {
+      deliveryAddressSaveTimerRef.current = setTimeout(() => {
+        const saveDelivery = async () => {
+          const newId = await saveNewAddress({
+            street_address: deliveryAddressForm.street_address,
+            postcode: deliveryAddressForm.postcode,
+            additional_details: deliveryAddressDetails,
+            house_number: deliveryGeoData.house_number,
+            latitude: deliveryGeoData.latitude,
+            longitude: deliveryGeoData.longitude,
+            street_name: deliveryGeoData.street_name,
+          }, 'delivery');
+          if (newId) {
+            setSelectedAddressId(String(newId));
+            setIsDeliveryAddressSaved(true);
+          }
+        };
+        saveDelivery();
+      }, AUTO_SAVE_DELAY_MS);
+    }
+
+    return () => {
+      if (deliveryAddressSaveTimerRef.current) {
+        clearTimeout(deliveryAddressSaveTimerRef.current);
+      }
+    };
   }, [userToken, useSameAddress, deliveryAddressForm, deliveryGeoData, deliveryAddressDetails, isDeliveryAddressSaved, saveNewAddress]);
 
-  // Auto-save pickup address ONLY when all fields are filled AND user has entered details AND collectDate is selected
+  // Auto-save pickup address (when different) with debounce
   useEffect(() => {
     if (!userToken) return;
     if (useSameAddress) return;
@@ -1827,27 +1976,43 @@ export default function QuickBooking() {
       pickupAddressForm.postcode.trim() !== "" &&
       pickupGeoData.latitude !== null &&
       pickupGeoData.longitude !== null &&
-      hasEnteredPickupDetails &&              // user must have typed something in details
+      hasEnteredPickupDetails &&
       pickupAddressDetails.trim() !== "";
 
-    if (hasAddress && collectDate && !isPickupAddressSaved) {
-      const savePickup = async () => {
-        const newId = await saveNewAddress({
-          street_address: pickupAddressForm.street_address,
-          postcode: pickupAddressForm.postcode,
-          additional_details: pickupAddressDetails,
-          house_number: pickupGeoData.house_number,
-          latitude: pickupGeoData.latitude,
-          longitude: pickupGeoData.longitude,
-          street_name: pickupGeoData.street_name,
-        }, 'pickup');
-        if (newId) {
-          setSelectedPickupAddressId(String(newId));
-          setIsPickupAddressSaved(true);
-        }
-      };
-      savePickup();
+    // Clear any pending timer
+    if (pickupAddressSaveTimerRef.current) {
+      clearTimeout(pickupAddressSaveTimerRef.current);
     }
+
+    if (hasAddress && !isPickupAddressSaved) {
+      pickupAddressSaveTimerRef.current = setTimeout(() => {
+        const savePickup = async () => {
+          const newId = await saveNewAddress({
+            street_address: pickupAddressForm.street_address,
+            postcode: pickupAddressForm.postcode,
+            additional_details: pickupAddressDetails,
+            house_number: pickupGeoData.house_number,
+            latitude: pickupGeoData.latitude,
+            longitude: pickupGeoData.longitude,
+            street_name: pickupGeoData.street_name,
+          }, 'pickup');
+          if (newId) {
+            setSelectedPickupAddressId(String(newId));
+            setIsPickupAddressSaved(true);
+            // After save, reset pickup form and go back to saved pickup list
+            resetManualPickupForm();
+            setShowPickupAddressForm(false);
+          }
+        };
+        savePickup();
+      }, AUTO_SAVE_DELAY_MS);
+    }
+
+    return () => {
+      if (pickupAddressSaveTimerRef.current) {
+        clearTimeout(pickupAddressSaveTimerRef.current);
+      }
+    };
   }, [
     userToken,
     useSameAddress,
@@ -1857,47 +2022,18 @@ export default function QuickBooking() {
     pickupGeoData,
     pickupAddressDetails,
     hasEnteredPickupDetails,
-    collectDate,
     isPickupAddressSaved,
-    saveNewAddress
+    saveNewAddress,
+    resetManualPickupForm
   ]);
 
-  // Reset auto-save flag when user edits the street address (so new address can be saved)
+  // Reset pickup form when editing street address
   useEffect(() => {
-    setHasEnteredPickupDetails(false);
-    setIsPickupAddressSaved(false);
-  }, [pickupAddressForm.street_address]);
-
-  // Auto-save address when using same address (delivery = pickup) and the address is filled
-  useEffect(() => {
-    if (!userToken) return;
-    if (!useSameAddress) return;
-    if (showAddressForm) return; // Only auto-save when not in "add new address" mode
-
-    const hasAddress = addressForm.street_address.trim() !== "" &&
-                       addressForm.postcode.trim() !== "" &&
-                       geoData.latitude !== null &&
-                       geoData.longitude !== null;
-
-    if (hasAddress && !isDeliveryAddressSaved) {
-      const save = async () => {
-        const newId = await saveNewAddress({
-          street_address: addressForm.street_address,
-          postcode: addressForm.postcode,
-          additional_details: addressDetails,
-          house_number: geoData.house_number,
-          latitude: geoData.latitude,
-          longitude: geoData.longitude,
-          street_name: geoData.street_name,
-        }, 'delivery');
-        if (newId) {
-          setSelectedAddressId(String(newId));
-          setIsDeliveryAddressSaved(true);
-        }
-      };
-      save();
+    if (!useSameAddress && showPickupAddressForm) {
+      setHasEnteredPickupDetails(false);
+      setIsPickupAddressSaved(false);
     }
-  }, [userToken, useSameAddress, showAddressForm, addressForm, geoData, addressDetails, isDeliveryAddressSaved, saveNewAddress]);
+  }, [pickupAddressForm.street_address, useSameAddress, showPickupAddressForm]);
 
   /* ---------------------------- UI Handlers ------------------------------- */
   
@@ -1983,16 +2119,8 @@ export default function QuickBooking() {
   };
 
   const handleAddAddressClick = () => {
+    resetManualAddressForm(); // Clear any leftover data
     setShowAddressForm(true);
-    setAddressForm({
-      street_address: "",
-      postcode: "",
-      city: "",
-      additional_details: "",
-      house_number: ""
-    });
-    // Reset auto-save flags for the new address
-    setIsDeliveryAddressSaved(false);
   };
 
   const handlePickupDetailsChange = (e) => {
@@ -2004,6 +2132,18 @@ export default function QuickBooking() {
       setHasEnteredPickupDetails(false);
     }
     setIsPickupAddressSaved(false);
+  };
+
+  // Handler for address details (main address)
+  const handleAddressDetailsChange = (e) => {
+    setAddressDetails(e.target.value);
+    // If this is a new address being filled, reset the saved flag
+    setIsDeliveryAddressSaved(false);
+  };
+
+  const handleBackToSavedAddresses = () => {
+    resetManualAddressForm();
+    setShowAddressForm(false);
   };
 
   /* ---------------------------- Effects ----------------------------------- */
@@ -2567,8 +2707,8 @@ export default function QuickBooking() {
                     <input
                       type="text"
                       placeholder="Flat / Door / Floor / Landmark"
-                      value={pickupAddressDetails}
-                      onChange={handlePickupDetailsChange}
+                      value={addressDetails}
+                      onChange={handleAddressDetailsChange}
                       className="qb-input"
                     />
                   </label>
@@ -2593,7 +2733,7 @@ export default function QuickBooking() {
               )}
 
               {userToken && addresses.length > 0 && showAddressForm && (
-                <button className="qb-secondary-btn" onClick={() => setShowAddressForm(false)}>
+                <button className="qb-secondary-btn" onClick={handleBackToSavedAddresses}>
                   <i className="fas fa-arrow-left"></i>
                   Back to Saved Addresses
                 </button>
@@ -2776,7 +2916,7 @@ export default function QuickBooking() {
                       style={{ display: 'none' }}
                     />
                     <span style={{ color: '#666', fontSize: '0.9rem' }}>
-                      Address will be saved automatically when all fields are filled and you pick a date.
+                      Address will be saved automatically when all fields are filled.
                     </span>
                   </label>
                 </div>
