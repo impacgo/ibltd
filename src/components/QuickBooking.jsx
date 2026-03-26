@@ -342,6 +342,7 @@
 //   const [deliveryPostcodeAddresses, setDeliveryPostcodeAddresses] = useState([]);
 //   const [selectedDeliveryPostcodeAddress, setSelectedDeliveryPostcodeAddress] = useState("");
 //   const [guideStep, setGuideStep] = useState(1);
+//   const [confirmedAddressId, setConfirmedAddressId] = useState(null);
 
 //   // Delay for auto‑save (milliseconds)
 //   const AUTO_SAVE_DELAY_MS = 1000; // 1 second
@@ -942,10 +943,12 @@
 
 //       const data = await response.json();
 
-//       showToast(
-//         `${type === "pickup" ? "Pickup" : "Delivery"} address saved`,
-//         "success"
-//       );
+//       if (!bookingInProgress) {
+//   showToast(
+//     `${type === "pickup" ? "Pickup" : "Delivery"} address saved`,
+//     "success"
+//   );
+// }
 
 //       await fetchAddresses();
 
@@ -1472,29 +1475,38 @@
 
 //   /* ------------------------- Address Saving Helper ------------------------- */
 //   const ensureAddressSaved = useCallback(async () => {
-//     if (selectedAddressId) {
-//   return selectedAddressId;
-// }
-
-// // 🔥 NEW: check if already auto-saved recently
-// if (isDeliveryAddressSaved) {
-//   // Wait a bit to ensure state is updated
-//   await new Promise(resolve => setTimeout(resolve, 300));
-
+//   // ✅ 1. If already available → return immediately
 //   if (selectedAddressId) {
 //     return selectedAddressId;
 //   }
-// }
 
-//     // Determine which address we need to save based on the current UI state
-//     if (useSameAddress) {
-//       // Main address form (same for pickup and delivery)
-//       // Validate that all required fields are filled
-//       if (!addressForm.street_address.trim() || !addressForm.postcode.trim() ||
-//           !geoData.latitude || !geoData.longitude || !addressDetails.trim()) {
-//         throw new Error("Please complete all address fields");
-//       }
-//       const newId = await saveNewAddress({
+//   // ✅ 2. Wait for auto-save (fix first-click issue)
+//   let retries = 5;
+
+//   while (retries > 0) {
+//     if (selectedAddressId) {
+//       return selectedAddressId;
+//     }
+
+//     await new Promise(resolve => setTimeout(resolve, 300));
+//     retries--;
+//   }
+
+//   // ✅ 3. Manual save fallback
+
+//   if (useSameAddress) {
+//     if (
+//       !addressForm.street_address.trim() ||
+//       !addressForm.postcode.trim() ||
+//       !geoData.latitude ||
+//       !geoData.longitude ||
+//       !addressDetails.trim()
+//     ) {
+//       throw new Error("Please complete all address fields");
+//     }
+
+//     const newId = await saveNewAddress(
+//       {
 //         street_address: addressForm.street_address,
 //         postcode: addressForm.postcode,
 //         additional_details: addressDetails,
@@ -1502,18 +1514,30 @@
 //         latitude: geoData.latitude,
 //         longitude: geoData.longitude,
 //         street_name: geoData.street_name,
-//       }, 'delivery');
-//       if (!newId) throw new Error("Failed to save address");
-//       setSelectedAddressId(String(newId));
-//       return newId;
-//     } else {
-//       // Different addresses: we need the delivery address (the one used in the order)
-//       // Validate delivery address fields
-//       if (!deliveryAddressForm.street_address.trim() || !deliveryAddressForm.postcode.trim() ||
-//           !deliveryGeoData.latitude || !deliveryGeoData.longitude || !deliveryAddressDetails.trim()) {
-//         throw new Error("Please complete all delivery address fields");
-//       }
-//       const newId = await saveNewAddress({
+//       },
+//       "delivery"
+//     );
+
+//     if (!newId) throw new Error("Failed to save address");
+
+//     const finalId = String(newId);
+
+//     setSelectedAddressId(finalId);
+
+//     return finalId;
+//   } else {
+//     if (
+//       !deliveryAddressForm.street_address.trim() ||
+//       !deliveryAddressForm.postcode.trim() ||
+//       !deliveryGeoData.latitude ||
+//       !deliveryGeoData.longitude ||
+//       !deliveryAddressDetails.trim()
+//     ) {
+//       throw new Error("Please complete all delivery address fields");
+//     }
+
+//     const newId = await saveNewAddress(
+//       {
 //         street_address: deliveryAddressForm.street_address,
 //         postcode: deliveryAddressForm.postcode,
 //         additional_details: deliveryAddressDetails,
@@ -1521,83 +1545,95 @@
 //         latitude: deliveryGeoData.latitude,
 //         longitude: deliveryGeoData.longitude,
 //         street_name: deliveryGeoData.street_name,
-//       }, 'delivery');
-//       if (!newId) throw new Error("Failed to save delivery address");
-//       setSelectedAddressId(String(newId));
-//       return newId;
-//     }
-//   }, [
-//     selectedAddressId,
-//     useSameAddress,
-//     addressForm,
-//     geoData,
-//     addressDetails,
-//     deliveryAddressForm,
-//     deliveryGeoData,
-//     deliveryAddressDetails,
-//     saveNewAddress
-//   ]);
+//       },
+//       "delivery"
+//     );
+
+//     if (!newId) throw new Error("Failed to save delivery address");
+
+//     const finalId = String(newId);
+
+//     setSelectedAddressId(finalId);
+
+//     return finalId;
+//   }
+// }, [
+//   selectedAddressId,
+//   useSameAddress,
+//   addressForm,
+//   geoData,
+//   addressDetails,
+//   deliveryAddressForm,
+//   deliveryGeoData,
+//   deliveryAddressDetails,
+//   saveNewAddress,
+// ]);
 
 //   /* ------------------------- Main Booking Flow ---------------------------- */
 //   const handleConfirmBooking = async () => {
-//     if (bookingInProgress) return;
+//   if (bookingInProgress) return;
 
-//     setBookingInProgress(true);
-//     setLoading(true);
+//   setBookingInProgress(true);
+//   setLoading(true);
 
-//     try {
-//       // Validate pickup address
-//       if (useSameAddress) {
-//         if (userToken && selectedAddressId) {
-//           // using saved address → skip geo check
-//         } else {
-//           if (!geoData.latitude || !geoData.longitude) {
-//             throw new Error("Please select address from suggestions");
-//           }
-//         }
-//       } else {
-//         // Delivery address validation
-//         if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
-//           throw new Error("Please select delivery address from suggestions");
-//         }
-//         // Pickup address validation
-//         if (userToken && pickupAddresses.length > 0 && selectedPickupAddressId && selectedPickupAddressId !== "new") {
-//           // using saved pickup address – skip geo check
-//         } else {
-//           if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
-//             throw new Error("Please select pickup address from suggestions");
-//           }
-//         }
+//   try {
+//     // ✅ Validate addresses (keep your logic same)
+//     if (useSameAddress) {
+//       if (!userToken && (!geoData.latitude || !geoData.longitude)) {
+//         throw new Error("Please select address from suggestions");
+//       }
+//     } else {
+//       if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
+//         throw new Error("Please select delivery address from suggestions");
 //       }
 
-//       const order = prepareOrderData();
-//       if (!order) throw new Error("Please select pickup and delivery times");
-
-//       setPendingBookingData(order);
-
-//       // Ensure we have a valid token (create/retrieve if guest)
-//       let token = userToken || localStorage.getItem("jwtToken");
-//       if (!token) {
-//         token = await ensureUserExists();
-//         if (!token) throw new Error("Failed to authenticate. Please try again.");
+//       if (
+//         !userToken ||
+//         selectedPickupAddressId === "new" ||
+//         !pickupGeoData.latitude ||
+//         !pickupGeoData.longitude
+//       ) {
+//         if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
+//           throw new Error("Please select pickup address from suggestions");
+//         }
 //       }
-//       // 🔥 Wait for auto-save to complete (if running)
-//       await new Promise(resolve => setTimeout(resolve, 500));
-//       // Make sure the address is saved (so we have an address_id)
-//       await ensureAddressSaved();
-
-//       await initiateStripeSetup(token, customerId);
-//     } catch (error) {
-//       if (!error.message?.toLowerCase().includes("address")) {
-//     if (!error.message?.toLowerCase().includes("address")) {
-//   showToast(error.message || "Booking failed", "error");
-// }
-// }
-//     } finally {
-//       setLoading(false);
-//       setBookingInProgress(false);
 //     }
-//   };
+
+//     const order = prepareOrderData();
+//     if (!order) throw new Error("Please select pickup and delivery times");
+
+//     setPendingBookingData(order);
+
+//     // ✅ Ensure token
+//     let token = userToken || localStorage.getItem("jwtToken");
+//     if (!token) {
+//       token = await ensureUserExists();
+//       if (!token) throw new Error("Authentication failed");
+//     }
+
+//     // 🔥 CORE FIX: get addressId directly (NO DELAY, NO STATE DEPENDENCY)
+//     const addressId = await ensureAddressSaved();
+
+//     if (!addressId) {
+//       throw new Error("Address not saved properly");
+//     }
+
+//     // ✅ Store for Stripe step
+//     setConfirmedAddressId(String(addressId));
+//     setSelectedAddressId(String(addressId)); // optional UI sync
+
+//     // 🚀 Continue immediately
+//     await initiateStripeSetup(token, customerId);
+
+//   } catch (error) {
+//     if (!error.message?.toLowerCase().includes("address")) {
+//       showToast(error.message || "Booking failed", "error");
+//     }
+//   } finally {
+//     setLoading(false);
+//     setBookingInProgress(false);
+//   }
+// };
 
 //   // Handle saved card booking for logged-in users with saved cards
 //   const handleSavedCardBooking = async () => {
@@ -1768,7 +1804,7 @@
 //         },
 //         body: JSON.stringify({
 //           ...pendingBookingData,
-//           address_id: selectedAddressId,
+//            address_id: confirmedAddressId || selectedAddressId,
 //           payment_method_id: paymentMethodId,
 //           stripe_customer_id: customerId
 //         }),
@@ -1782,6 +1818,7 @@
 
 //       setShowPaymentSetup(false);
 //       setPendingBookingData(null);
+//       setConfirmedAddressId(null);
 
 //       showToast("Booking confirmed successfully!", "success");
 
@@ -1925,25 +1962,31 @@
 //       clearTimeout(mainAddressSaveTimerRef.current);
 //     }
 
-//     if (hasAddress && !isDeliveryAddressSaved && !selectedAddressId) {
+//      if (hasAddress && !isDeliveryAddressSaved) {
 //       mainAddressSaveTimerRef.current = setTimeout(() => {
 //         const save = async () => {
-//           const newId = await saveNewAddress({
-//             street_address: addressForm.street_address,
-//             postcode: addressForm.postcode,
-//             additional_details: addressDetails,
-//             house_number: geoData.house_number,
-//             latitude: geoData.latitude,
-//             longitude: geoData.longitude,
-//             street_name: geoData.street_name,
-//           }, 'delivery');
-//           if (newId) {
-//             setSelectedAddressId(String(newId));
-//             setIsDeliveryAddressSaved(true);
-//             // After save, reset form and go back to saved addresses list
-//             resetManualAddressForm();
-//             setShowAddressForm(false);
-//           }
+//           const newId = await saveNewAddress(
+//   {
+//     street_address: addressForm.street_address,
+//     postcode: addressForm.postcode,
+//     additional_details: addressDetails,
+//     house_number: geoData.house_number,
+//     latitude: geoData.latitude,
+//     longitude: geoData.longitude,
+//     street_name: geoData.street_name,
+//   },
+//   "delivery"
+// );
+
+// if (!newId) throw new Error("Failed to save address");
+
+// // ✅ IMPORTANT FIX
+// const finalId = String(newId);
+
+// setSelectedAddressId(finalId);
+
+// // 🔥 RETURN IMMEDIATELY (this is what fixes double click)
+// return finalId;
 //         };
 //         save();
 //       }, AUTO_SAVE_DELAY_MS);
@@ -1973,22 +2016,31 @@
 //       clearTimeout(deliveryAddressSaveTimerRef.current);
 //     }
 
-//     if (hasAddress && !isDeliveryAddressSaved && !selectedAddressId) {
+//     if (hasAddress && !isDeliveryAddressSaved) {
 //       deliveryAddressSaveTimerRef.current = setTimeout(() => {
 //         const saveDelivery = async () => {
-//           const newId = await saveNewAddress({
-//             street_address: deliveryAddressForm.street_address,
-//             postcode: deliveryAddressForm.postcode,
-//             additional_details: deliveryAddressDetails,
-//             house_number: deliveryGeoData.house_number,
-//             latitude: deliveryGeoData.latitude,
-//             longitude: deliveryGeoData.longitude,
-//             street_name: deliveryGeoData.street_name,
-//           }, 'delivery');
-//           if (newId) {
-//             setSelectedAddressId(String(newId));
-//             setIsDeliveryAddressSaved(true);
-//           }
+//           const newId = await saveNewAddress(
+//   {
+//     street_address: deliveryAddressForm.street_address,
+//     postcode: deliveryAddressForm.postcode,
+//     additional_details: deliveryAddressDetails,
+//     house_number: deliveryGeoData.house_number,
+//     latitude: deliveryGeoData.latitude,
+//     longitude: deliveryGeoData.longitude,
+//     street_name: deliveryGeoData.street_name,
+//   },
+//   "delivery"
+// );
+
+// if (!newId) throw new Error("Failed to save delivery address");
+
+// // ✅ IMPORTANT FIX
+// const finalId = String(newId);
+
+// setSelectedAddressId(finalId);
+
+// // 🔥 RETURN IMMEDIATELY
+// return finalId;
 //         };
 //         saveDelivery();
 //       }, AUTO_SAVE_DELAY_MS);
@@ -2740,17 +2792,17 @@
 //                   </label>
 //                 </div>
 //                 <div className="qb-form-group">
-//                   <label className="qb-form-label">
-//                     Address details
-//                     <input
-//                       type="text"
-//                       placeholder="Flat / Door / Floor / Landmark"
-//                       value={addressDetails}
-//                       onChange={handleAddressDetailsChange}
-//                       className="qb-input"
-//                     />
-//                   </label>
-//                 </div>
+//   <label className="qb-form-label">
+//     Address details
+//     <input
+//       type="text"
+//       placeholder="Flat / Door / Floor / Landmark"
+//       value={addressDetails}
+//       onChange={handleAddressDetailsChange}
+//       className="qb-form-input"
+//     />
+//   </label>
+// </div>
 //               </div>
 
 //               {/* Save address checkbox removed – auto-save will happen in useEffect */}
@@ -2839,19 +2891,18 @@
 //                 </div>
 
 //                 <div className="qb-form-group">
-//                   <label className="qb-form-label">
-//                     Address details *
-//                     <input
-//                       type="text"
-//                       className="qb-address-details-input"
-//                       placeholder="Flat / Door / Floor (required)"
-//                       value={deliveryAddressDetails}
-//                       onChange={(e) =>
-//                         setDeliveryAddressDetails(e.target.value)
-//                       }
-//                       required
-//                     />
-//                   </label>
+//                   <div className="qb-form-group">
+//   <label className="qb-form-label">
+//     Address details
+//     <input
+//       type="text"
+//       placeholder="Flat / Door / Floor / Landmark"
+//       value={addressDetails}
+//       onChange={handleAddressDetailsChange}
+//       className="qb-form-input"
+//     />
+//   </label>
+// </div>
 //                 </div>
 //               </div>
 
@@ -2930,18 +2981,17 @@
 //                 </div>
 
 //                 <div className="qb-form-group">
-//                   <label className="qb-form-label">
-//                     Address details *
-//                     <input
-//                       type="text"
-//                       className="qb-address-details-input"
-//                       placeholder="Flat / Door / Floor (required)"
-//                       value={pickupAddressDetails}
-//                       onChange={handlePickupDetailsChange}
-//                       required
-//                     />
-//                   </label>
-//                 </div>
+//   <label className="qb-form-label">
+//     Address details
+//     <input
+//       type="text"
+//       placeholder="Flat / Door / Floor / Landmark"
+//       value={addressDetails}
+//       onChange={handleAddressDetailsChange}
+//       className="qb-form-input"
+//     />
+//   </label>
+// </div>
 //               </div>
 
 //               {userToken && (
@@ -3466,7 +3516,6 @@
 //   );
 // }
 
-// src/components/QuickBooking.jsx
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -3810,7 +3859,6 @@ export default function QuickBooking() {
   const [deliveryPostcodeAddresses, setDeliveryPostcodeAddresses] = useState([]);
   const [selectedDeliveryPostcodeAddress, setSelectedDeliveryPostcodeAddress] = useState("");
   const [guideStep, setGuideStep] = useState(1);
-  const [confirmedAddressId, setConfirmedAddressId] = useState(null);
 
   // Delay for auto‑save (milliseconds)
   const AUTO_SAVE_DELAY_MS = 1000; // 1 second
@@ -4064,10 +4112,10 @@ export default function QuickBooking() {
   };
 
   /* ---------------------------- Data Fetching ----------------------------- */
-  
+ 
   const fetchUserProfile = useCallback(async () => {
     if (!userToken) return;
-    
+   
     try {
       const response = await fetch(`${API_BASE}/profile`, {
         headers: {
@@ -4095,7 +4143,7 @@ export default function QuickBooking() {
 
   const fetchAddresses = useCallback(async () => {
     if (!userToken) return;
-    
+   
     try {
       const response = await fetch(`${API_BASE}/addresses`, {
         headers: {
@@ -4107,7 +4155,7 @@ export default function QuickBooking() {
         const data = await response.json();
         setAddresses(data);
         setPickupAddresses(data); // Also set pickup addresses
-        
+       
         if (data.length > 0) {
           const defaultAddress = data.find(addr => addr.is_selected) || data[0];
           if (defaultAddress) {
@@ -4130,7 +4178,7 @@ export default function QuickBooking() {
       setLoadingCards(false);
       return;
     }
-    
+   
     try {
       const response = await fetch(`${API_BASE}/stripe/saved-cards`, {
         headers: {
@@ -4412,11 +4460,11 @@ export default function QuickBooking() {
       const data = await response.json();
 
       if (!bookingInProgress) {
-  showToast(
-    `${type === "pickup" ? "Pickup" : "Delivery"} address saved`,
-    "success"
-  );
-}
+        showToast(
+          `${type === "pickup" ? "Pickup" : "Delivery"} address saved`,
+          "success"
+        );
+      }
 
       await fetchAddresses();
 
@@ -4425,12 +4473,12 @@ export default function QuickBooking() {
       console.error("Error saving address:", error);
       // Only show toast if it's not a duplicate error (duplicate handled above)
       // ❌ REMOVE TOAST completely for duplicate cases
-if (error.message?.toLowerCase().includes("already exists")) {
-  return existing?.address_id || null;
-}
+      if (error.message?.toLowerCase().includes("already exists")) {
+        return existing?.address_id || null;
+      }
 
-// Only show real errors
-showToast(error.message || "Failed to save address", "error");
+      // Only show real errors
+      showToast(error.message || "Failed to save address", "error");
       return null;
     }
   }, [userToken, addresses, showToast, fetchAddresses]);
@@ -4452,7 +4500,7 @@ showToast(error.message || "Failed to save address", "error");
 
       const contentType = response.headers.get("content-type");
       let responseBody;
-      
+     
       if (contentType && contentType.includes("application/json")) {
         responseBody = await response.json();
       } else {
@@ -4461,14 +4509,14 @@ showToast(error.message || "Failed to save address", "error");
       }
 
       if (!response.ok) {
-        let errorMessage = responseBody?.message || 
+        let errorMessage = responseBody?.message ||
                            (typeof responseBody === 'string' ? responseBody : `Server error: ${response.status}`);
-        
+       
         // Make the foreign‑key violation message more friendly
         if (errorMessage.includes("linked to existing orders") || errorMessage.includes("foreign key")) {
           errorMessage = "This address cannot be deleted because it has been used in past orders. You can keep it saved for future bookings.";
         }
-        
+       
         throw new Error(errorMessage);
       }
 
@@ -4530,13 +4578,13 @@ showToast(error.message || "Failed to save address", "error");
     }
     return null;
   }, [
-    userToken, 
-    addresses, 
-    selectedAddressId, 
-    addressForm, 
-    useSameAddress, 
-    pickupAddresses, 
-    selectedPickupAddressId, 
+    userToken,
+    addresses,
+    selectedAddressId,
+    addressForm,
+    useSameAddress,
+    pickupAddresses,
+    selectedPickupAddressId,
     pickupAddressForm
   ]);
 
@@ -4545,7 +4593,7 @@ showToast(error.message || "Failed to save address", "error");
 
     const tzOffset = -new Date().getTimezoneOffset();
     const formattedDate = dateIso;
-    
+   
     const params = new URLSearchParams({
       date: formattedDate,
       format: "24",
@@ -4566,7 +4614,7 @@ showToast(error.message || "Failed to save address", "error");
 
     // Get postcode based on pickup/delivery type
     const postcode = getPostcodeForTimeSlots(isDelivery ? 'delivery' : 'pickup');
-    
+   
     // Add postcode to params if available (remove spaces and uppercase as per Flutter code)
     if (postcode) {
       const cleanPostcode = postcode.replace(/\s/g, '').toUpperCase();
@@ -4581,7 +4629,7 @@ showToast(error.message || "Failed to save address", "error");
           'Content-Type': 'application/json',
         },
       });
-      
+     
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Server error:", errorText);
@@ -4589,7 +4637,7 @@ showToast(error.message || "Failed to save address", "error");
       }
 
       const data = await response.json();
-      
+     
       if (data.slots && Array.isArray(data.slots)) {
         return data.slots;
       } else if (Array.isArray(data)) {
@@ -4607,9 +4655,9 @@ showToast(error.message || "Failed to save address", "error");
 
   const fetchCollectSlots = useCallback(async () => {
     if (!collectDate) return;
-    
+   
     setLoadingSlots(prev => ({ ...prev, collect: true }));
-    
+   
     try {
       const slots = await fetchTimeSlots(collectDate, false);
       setCollectSlots(slots);
@@ -4637,9 +4685,9 @@ showToast(error.message || "Failed to save address", "error");
     if (!deliverDate || !collectDate || !selectedCollectSlotStart) {
       return;
     }
-    
+   
     setLoadingSlots(prev => ({ ...prev, deliver: true }));
-    
+   
     try {
       const slots = await fetchTimeSlots(deliverDate, true);
       setDeliverSlots(slots);
@@ -4781,6 +4829,34 @@ showToast(error.message || "Failed to save address", "error");
       }
     }
 
+    /* ---------------- ADDRESS IDs ---------------- */
+
+    // Determine delivery_address_id (for order's main address)
+    let deliveryAddressId = null;
+    if (userToken) {
+      if (useSameAddress) {
+        if (selectedAddressId && selectedAddressId !== "new") {
+          deliveryAddressId = selectedAddressId;
+        }
+      } else {
+        if (selectedAddressId && selectedAddressId !== "new") {
+          deliveryAddressId = selectedAddressId;
+        }
+      }
+    }
+
+    // Determine pickup_address_id
+    let pickupAddressId = null;
+    if (userToken) {
+      if (useSameAddress) {
+        pickupAddressId = deliveryAddressId; // same as delivery
+      } else {
+        if (selectedPickupAddressId && selectedPickupAddressId !== "new") {
+          pickupAddressId = selectedPickupAddressId;
+        }
+      }
+    }
+
     /* ---------------- FINAL ORDER ---------------- */
 
     return {
@@ -4798,7 +4874,10 @@ showToast(error.message || "Failed to save address", "error");
       delivery_slot: deliverySlotText,
 
       notes: notes.trim() || null,
-      images: []
+      images: [],
+
+      delivery_address_id: deliveryAddressId,
+      pickup_address_id: pickupAddressId,
     };
   }, [
     selectedCollectSlot,
@@ -4942,166 +5021,70 @@ showToast(error.message || "Failed to save address", "error");
   };
 
   /* ------------------------- Address Saving Helper ------------------------- */
+  // This function is kept for backward compatibility but no longer used in booking flow.
+  // It may be used elsewhere for background saving.
   const ensureAddressSaved = useCallback(async () => {
-  // ✅ 1. If already available → return immediately
-  if (selectedAddressId) {
-    return selectedAddressId;
-  }
-
-  // ✅ 2. Wait for auto-save (fix first-click issue)
-  let retries = 5;
-
-  while (retries > 0) {
     if (selectedAddressId) {
       return selectedAddressId;
     }
 
-    await new Promise(resolve => setTimeout(resolve, 300));
-    retries--;
-  }
-
-  // ✅ 3. Manual save fallback
-
-  if (useSameAddress) {
-    if (
-      !addressForm.street_address.trim() ||
-      !addressForm.postcode.trim() ||
-      !geoData.latitude ||
-      !geoData.longitude ||
-      !addressDetails.trim()
-    ) {
-      throw new Error("Please complete all address fields");
-    }
-
-    const newId = await saveNewAddress(
-      {
-        street_address: addressForm.street_address,
-        postcode: addressForm.postcode,
-        additional_details: addressDetails,
-        house_number: geoData.house_number,
-        latitude: geoData.latitude,
-        longitude: geoData.longitude,
-        street_name: geoData.street_name,
-      },
-      "delivery"
-    );
-
-    if (!newId) throw new Error("Failed to save address");
-
-    const finalId = String(newId);
-
-    setSelectedAddressId(finalId);
-
-    return finalId;
-  } else {
-    if (
-      !deliveryAddressForm.street_address.trim() ||
-      !deliveryAddressForm.postcode.trim() ||
-      !deliveryGeoData.latitude ||
-      !deliveryGeoData.longitude ||
-      !deliveryAddressDetails.trim()
-    ) {
-      throw new Error("Please complete all delivery address fields");
-    }
-
-    const newId = await saveNewAddress(
-      {
-        street_address: deliveryAddressForm.street_address,
-        postcode: deliveryAddressForm.postcode,
-        additional_details: deliveryAddressDetails,
-        house_number: deliveryGeoData.house_number,
-        latitude: deliveryGeoData.latitude,
-        longitude: deliveryGeoData.longitude,
-        street_name: deliveryGeoData.street_name,
-      },
-      "delivery"
-    );
-
-    if (!newId) throw new Error("Failed to save delivery address");
-
-    const finalId = String(newId);
-
-    setSelectedAddressId(finalId);
-
-    return finalId;
-  }
-}, [
-  selectedAddressId,
-  useSameAddress,
-  addressForm,
-  geoData,
-  addressDetails,
-  deliveryAddressForm,
-  deliveryGeoData,
-  deliveryAddressDetails,
-  saveNewAddress,
-]);
+    // If no saved ID, we return null – booking will rely on backend creation.
+    return null;
+  }, [selectedAddressId]);
 
   /* ------------------------- Main Booking Flow ---------------------------- */
   const handleConfirmBooking = async () => {
-  if (bookingInProgress) return;
+    if (bookingInProgress) return;
 
-  setBookingInProgress(true);
-  setLoading(true);
+    setBookingInProgress(true);
+    setLoading(true);
 
-  try {
-    // ✅ Validate addresses (keep your logic same)
-    if (useSameAddress) {
-      if (!userToken && (!geoData.latitude || !geoData.longitude)) {
-        throw new Error("Please select address from suggestions");
-      }
-    } else {
-      if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
-        throw new Error("Please select delivery address from suggestions");
-      }
+    try {
+      // Validate addresses (keep your logic same)
+      if (useSameAddress) {
+        if (!userToken && (!geoData.latitude || !geoData.longitude)) {
+          throw new Error("Please select address from suggestions");
+        }
+      } else {
+        if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
+          throw new Error("Please select delivery address from suggestions");
+        }
 
-      if (
-        !userToken ||
-        selectedPickupAddressId === "new" ||
-        !pickupGeoData.latitude ||
-        !pickupGeoData.longitude
-      ) {
-        if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
-          throw new Error("Please select pickup address from suggestions");
+        if (
+          !userToken ||
+          selectedPickupAddressId === "new" ||
+          !pickupGeoData.latitude ||
+          !pickupGeoData.longitude
+        ) {
+          if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
+            throw new Error("Please select pickup address from suggestions");
+          }
         }
       }
+
+      const order = prepareOrderData();
+      if (!order) throw new Error("Please select pickup and delivery times");
+
+      setPendingBookingData(order);
+
+      // ✅ Ensure token
+      let token = userToken || localStorage.getItem("jwtToken");
+      if (!token) {
+        token = await ensureUserExists();
+        if (!token) throw new Error("Authentication failed");
+      }
+
+      // 🔥 NO pre‑saving of address – just proceed to Stripe
+      await initiateStripeSetup(token, customerId);
+    } catch (error) {
+      if (!error.message?.toLowerCase().includes("address")) {
+        showToast(error.message || "Booking failed", "error");
+      }
+    } finally {
+      setLoading(false);
+      setBookingInProgress(false);
     }
-
-    const order = prepareOrderData();
-    if (!order) throw new Error("Please select pickup and delivery times");
-
-    setPendingBookingData(order);
-
-    // ✅ Ensure token
-    let token = userToken || localStorage.getItem("jwtToken");
-    if (!token) {
-      token = await ensureUserExists();
-      if (!token) throw new Error("Authentication failed");
-    }
-
-    // 🔥 CORE FIX: get addressId directly (NO DELAY, NO STATE DEPENDENCY)
-    const addressId = await ensureAddressSaved();
-
-    if (!addressId) {
-      throw new Error("Address not saved properly");
-    }
-
-    // ✅ Store for Stripe step
-    setConfirmedAddressId(String(addressId));
-    setSelectedAddressId(String(addressId)); // optional UI sync
-
-    // 🚀 Continue immediately
-    await initiateStripeSetup(token, customerId);
-
-  } catch (error) {
-    if (!error.message?.toLowerCase().includes("address")) {
-      showToast(error.message || "Booking failed", "error");
-    }
-  } finally {
-    setLoading(false);
-    setBookingInProgress(false);
-  }
-};
+  };
 
   // Handle saved card booking for logged-in users with saved cards
   const handleSavedCardBooking = async () => {
@@ -5120,23 +5103,12 @@ showToast(error.message || "Failed to save address", "error");
         if (!token) throw new Error("Authentication required");
       }
 
-      // Make sure the address is saved
-      await ensureAddressSaved();
-
-      const selectedCardData = savedCards.find(
-        card => card.payment_method_id === selectedCard
-      );
-      if (!selectedCardData) {
-        throw new Error("Selected card not found");
-      }
-
       const order = prepareOrderData();
       if (!order) throw new Error("Please select pickup and delivery times");
 
       const payload = {
         ...order,
-        address_id: selectedAddressId,
-        payment_method_id: selectedCardData.payment_method_id,
+        payment_method_id: selectedCard,
         stripe_customer_id: customerId
       };
 
@@ -5149,7 +5121,15 @@ showToast(error.message || "Failed to save address", "error");
         body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+     let data;
+
+try {
+  data = await response.json();
+} catch (err) {
+  const text = await response.text();
+  console.error("❌ Non-JSON response:", text);
+  throw new Error("Server crashed (not JSON)");
+}
 
       if (!response.ok) {
         throw new Error(data.message || "Booking failed");
@@ -5171,8 +5151,8 @@ showToast(error.message || "Failed to save address", "error");
     } catch (error) {
       console.error(error);
       if (!error.message?.toLowerCase().includes("address")) {
-  showToast(error.message || "Booking failed", "error");
-}
+        showToast(error.message || "Booking failed", "error");
+      }
     } finally {
       setLoading(false);
     }
@@ -5188,10 +5168,7 @@ showToast(error.message || "Failed to save address", "error");
       if (!order) throw new Error("Please complete booking details");
 
       setPendingBookingData(order);
-  
-      // Ensure address is saved before Stripe setup
-      await ensureAddressSaved();
-
+ 
       await initiateStripeSetup(token, customerId);
     } catch (err) {
       showToast(err.message || "Failed to setup card", "error");
@@ -5208,7 +5185,7 @@ showToast(error.message || "Failed to save address", "error");
       }
 
       const setupData = await createSetupIntent(token);
-      
+     
       if (!setupData || !setupData.setupIntentClientSecret) {
         throw new Error("Stripe setup failed");
       }
@@ -5219,7 +5196,7 @@ showToast(error.message || "Failed to save address", "error");
     } catch (error) {
       console.error("Stripe setup error:", error);
       showToast(error.message || "Failed to setup card payment", "error");
-      
+     
       setTimeout(() => {
         showToast("Please try again to complete your booking", "error");
       }, 400);
@@ -5272,13 +5249,20 @@ showToast(error.message || "Failed to save address", "error");
         },
         body: JSON.stringify({
           ...pendingBookingData,
-           address_id: confirmedAddressId || selectedAddressId,
           payment_method_id: paymentMethodId,
           stripe_customer_id: customerId
         }),
       });
 
-      const data = await response.json();
+   let data;
+
+try {
+  data = await response.json();
+} catch (err) {
+  const text = await response.text();
+  console.error("❌ Non-JSON response:", text);
+  throw new Error("Server crashed (not JSON)");
+}
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to create booking");
@@ -5286,7 +5270,6 @@ showToast(error.message || "Failed to save address", "error");
 
       setShowPaymentSetup(false);
       setPendingBookingData(null);
-      setConfirmedAddressId(null);
 
       showToast("Booking confirmed successfully!", "success");
 
@@ -5430,31 +5413,27 @@ showToast(error.message || "Failed to save address", "error");
       clearTimeout(mainAddressSaveTimerRef.current);
     }
 
-     if (hasAddress && !isDeliveryAddressSaved) {
+    if (hasAddress && !isDeliveryAddressSaved) {
       mainAddressSaveTimerRef.current = setTimeout(() => {
         const save = async () => {
           const newId = await saveNewAddress(
-  {
-    street_address: addressForm.street_address,
-    postcode: addressForm.postcode,
-    additional_details: addressDetails,
-    house_number: geoData.house_number,
-    latitude: geoData.latitude,
-    longitude: geoData.longitude,
-    street_name: geoData.street_name,
-  },
-  "delivery"
-);
+            {
+              street_address: addressForm.street_address,
+              postcode: addressForm.postcode,
+              additional_details: addressDetails,
+              house_number: geoData.house_number,
+              latitude: geoData.latitude,
+              longitude: geoData.longitude,
+              street_name: geoData.street_name,
+            },
+            "delivery"
+          );
 
-if (!newId) throw new Error("Failed to save address");
+          if (!newId) throw new Error("Failed to save address");
 
-// ✅ IMPORTANT FIX
-const finalId = String(newId);
-
-setSelectedAddressId(finalId);
-
-// 🔥 RETURN IMMEDIATELY (this is what fixes double click)
-return finalId;
+          const finalId = String(newId);
+          setSelectedAddressId(finalId);
+          return finalId;
         };
         save();
       }, AUTO_SAVE_DELAY_MS);
@@ -5488,27 +5467,23 @@ return finalId;
       deliveryAddressSaveTimerRef.current = setTimeout(() => {
         const saveDelivery = async () => {
           const newId = await saveNewAddress(
-  {
-    street_address: deliveryAddressForm.street_address,
-    postcode: deliveryAddressForm.postcode,
-    additional_details: deliveryAddressDetails,
-    house_number: deliveryGeoData.house_number,
-    latitude: deliveryGeoData.latitude,
-    longitude: deliveryGeoData.longitude,
-    street_name: deliveryGeoData.street_name,
-  },
-  "delivery"
-);
+            {
+              street_address: deliveryAddressForm.street_address,
+              postcode: deliveryAddressForm.postcode,
+              additional_details: deliveryAddressDetails,
+              house_number: deliveryGeoData.house_number,
+              latitude: deliveryGeoData.latitude,
+              longitude: deliveryGeoData.longitude,
+              street_name: deliveryGeoData.street_name,
+            },
+            "delivery"
+          );
 
-if (!newId) throw new Error("Failed to save delivery address");
+          if (!newId) throw new Error("Failed to save delivery address");
 
-// ✅ IMPORTANT FIX
-const finalId = String(newId);
-
-setSelectedAddressId(finalId);
-
-// 🔥 RETURN IMMEDIATELY
-return finalId;
+          const finalId = String(newId);
+          setSelectedAddressId(finalId);
+          return finalId;
         };
         saveDelivery();
       }, AUTO_SAVE_DELAY_MS);
@@ -5593,7 +5568,7 @@ return finalId;
   }, [pickupAddressForm.street_address, useSameAddress, showPickupAddressForm]);
 
   /* ---------------------------- UI Handlers ------------------------------- */
-  
+ 
   const handleCollectDateChange = (e) => {
     const newDate = e.target.value;
     setCollectDate(newDate);
@@ -5608,7 +5583,7 @@ return finalId;
 
   const handleDeliverDateChange = (e) => {
     const newDate = e.target.value;
-    
+   
     if (collectDate && newDate < collectDate) {
       showToast("Delivery date cannot be before pickup date", "error");
       return;
@@ -5623,10 +5598,10 @@ return finalId;
 
   const handleCollectSlotSelect = (slot) => {
     if (!slot.enabled) return;
-    
+   
     const start = new Date(slot.start);
     const end = slot.end ? new Date(slot.end) : null;
-    
+   
     setSelectedCollectSlot(slot);
     setSelectedCollectSlotStart(start);
     setSelectedCollectSlotEnd(end);
@@ -5639,10 +5614,10 @@ return finalId;
 
   const handleDeliverSlotSelect = (slot) => {
     if (!slot.enabled) return;
-    
+   
     const start = new Date(slot.start);
     const end = slot.end ? new Date(slot.end) : null;
-    
+   
     setSelectedDeliverSlot(slot);
     setSelectedDeliverSlotStart(start);
     setSelectedDeliverSlotEnd(end);
@@ -5894,7 +5869,7 @@ return finalId;
     } else {
       document.body.classList.remove('payment-modal-open');
     }
-    
+   
     return () => {
       document.body.classList.remove('payment-modal-open');
     };
@@ -5902,43 +5877,86 @@ return finalId;
 
   const minDeliveryDate = collectDate || today;
 
-  const isBookingValid = () => {
+ const isBookingValid = () => {
+  // Basic personal info
   if (!userInfo.name.trim()) return false;
   if (!userInfo.email.trim()) return false;
   if (!userInfo.phone.trim()) return false;
   if (!selectedCollectSlot || !selectedDeliverSlot) return false;
-  
-  // Address validation:
+
+  // ---------- ADDRESS VALIDATION ----------
+ 
+  // CASE 1: Logged in with saved addresses, not adding a new one
   if (userToken && addresses.length > 0 && !showAddressForm) {
-    // They must have a selected saved address (either from list or auto-saved)
-    if (!selectedAddressId) return false;
-  } else {
-    // Manual address form (guest or adding new)
-    if (!addressForm.street_address.trim()) return false;
-    if (!addressForm.postcode.trim()) return false;
-    if (useSameAddress) {
-      if (!geoData.latitude || !geoData.longitude) return false;
-      if (!addressDetails.trim()) return false; // ✅ FIX: require address details
-    } else {
-      if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) return false;
+    // Must have a delivery address selected
+    if (!selectedAddressId) {
+      console.warn("[Validation] Delivery address ID missing");
+      return false;
+    }
+    // If pickup is different, must have a pickup address selected
+    if (!useSameAddress && !selectedPickupAddressId) {
+      console.warn("[Validation] Pickup address ID missing (different addresses)");
+      return false;
     }
   }
-  
-  if (!useSameAddress) {
-    if (userToken) {
-      // For logged-in: they must have a selected pickup address (either from list or auto-saved)
-      if (!selectedPickupAddressId) return false;
-      // If they are adding new pickup address (selectedPickupAddressId === "new") and the form is shown, the address must be valid
-      if (selectedPickupAddressId === "new" && showPickupAddressForm) {
-        if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
-        if (!pickupGeoData.latitude || !pickupGeoData.longitude) return false;
-        if (!pickupAddressDetails.trim()) return false;
+  // CASE 2: Guest or adding a new address (manual form)
+  else {
+    // Delivery address basic fields
+    if (!addressForm.street_address.trim()) {
+      console.warn("[Validation] Street address missing");
+      return false;
+    }
+    if (!addressForm.postcode.trim()) {
+      console.warn("[Validation] Postcode missing");
+      return false;
+    }
+
+    // Delivery address geocoding (must be selected from suggestions)
+    if (useSameAddress) {
+      if (!geoData.latitude || !geoData.longitude) {
+        console.warn("[Validation] Geocoding missing for same address");
+        return false;
       }
     } else {
-      // Guest
-      if (!pickupAddressForm.street_address.trim() || !pickupAddressForm.postcode.trim()) return false;
-      if (!pickupGeoData.latitude || !pickupGeoData.longitude) return false;
-      if (!pickupAddressDetails.trim()) return false;
+      if (!deliveryGeoData.latitude || !deliveryGeoData.longitude) {
+        console.warn("[Validation] Geocoding missing for delivery address");
+        return false;
+      }
+    }
+
+    // Delivery details (flat/door/floor) – required for all manual forms
+    if (!addressDetails.trim()) {
+      console.warn("[Validation] Delivery address details missing");
+      return false;
+    }
+  }
+
+  // Pickup address validation when different from delivery
+  if (!useSameAddress) {
+    if (userToken && addresses.length > 0 && !showPickupAddressForm) {
+      // Using saved pickup address
+      if (!selectedPickupAddressId) {
+        console.warn("[Validation] Saved pickup address ID missing");
+        return false;
+      }
+    } else {
+      // Manual pickup address (guest or adding new)
+      if (!pickupAddressForm.street_address.trim()) {
+        console.warn("[Validation] Pickup street address missing");
+        return false;
+      }
+      if (!pickupAddressForm.postcode.trim()) {
+        console.warn("[Validation] Pickup postcode missing");
+        return false;
+      }
+      if (!pickupGeoData.latitude || !pickupGeoData.longitude) {
+        console.warn("[Validation] Pickup geocoding missing");
+        return false;
+      }
+      if (!pickupAddressDetails.trim()) {
+        console.warn("[Validation] Pickup address details missing");
+        return false;
+      }
     }
   }
 
@@ -6017,9 +6035,22 @@ return finalId;
       }
     };
   }, []);
+ 
+  useEffect(() => {
+  if (userToken && addresses.length > 0 && !selectedAddressId) {
+    // Pick the first address as default (or find the one with is_selected)
+    const defaultAddr = addresses.find(addr => addr.is_selected) || addresses[0];
+    if (defaultAddr) {
+      setSelectedAddressId(String(defaultAddr.address_id));
+      if (useSameAddress) {
+        setSelectedPickupAddressId(String(defaultAddr.address_id));
+      }
+    }
+  }
+}, [userToken, addresses, selectedAddressId, useSameAddress]);
 
   /* ------------------------------ Render ---------------------------------- */
-  
+ 
   return (
     <div className="qb-page">
       <div className="qb-container">
@@ -6260,17 +6291,17 @@ return finalId;
                   </label>
                 </div>
                 <div className="qb-form-group">
-  <label className="qb-form-label">
-    Address details
-    <input
-      type="text"
-      placeholder="Flat / Door / Floor / Landmark"
-      value={addressDetails}
-      onChange={handleAddressDetailsChange}
-      className="qb-form-input"
-    />
-  </label>
-</div>
+                  <label className="qb-form-label">
+                    Address details
+                    <input
+                      type="text"
+                      placeholder="Flat / Door / Floor / Landmark"
+                      value={addressDetails}
+                      onChange={handleAddressDetailsChange}
+                      className="qb-form-input"
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Save address checkbox removed – auto-save will happen in useEffect */}
@@ -6360,17 +6391,17 @@ return finalId;
 
                 <div className="qb-form-group">
                   <div className="qb-form-group">
-  <label className="qb-form-label">
-    Address details
-    <input
-      type="text"
-      placeholder="Flat / Door / Floor / Landmark"
-      value={addressDetails}
-      onChange={handleAddressDetailsChange}
-      className="qb-form-input"
-    />
-  </label>
-</div>
+                    <label className="qb-form-label">
+                      Address details
+                      <input
+                        type="text"
+                        placeholder="Flat / Door / Floor / Landmark"
+                        value={addressDetails}
+                        onChange={handleAddressDetailsChange}
+                        className="qb-form-input"
+                      />
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -6449,17 +6480,17 @@ return finalId;
                 </div>
 
                 <div className="qb-form-group">
-  <label className="qb-form-label">
-    Address details
-    <input
-      type="text"
-      placeholder="Flat / Door / Floor / Landmark"
-      value={addressDetails}
-      onChange={handleAddressDetailsChange}
-      className="qb-form-input"
-    />
-  </label>
-</div>
+                  <label className="qb-form-label">
+                    Address details
+                    <input
+                      type="text"
+                      placeholder="Flat / Door / Floor / Landmark"
+                      value={pickupAddressDetails}
+                      onChange={handlePickupDetailsChange}
+                      className="qb-form-input"
+                    />
+                  </label>
+                </div>
               </div>
 
               {userToken && (
@@ -6534,7 +6565,7 @@ return finalId;
                     <i className="fas fa-clock"></i>
                     Available Pickup Times
                   </label>
-                  
+                 
                   {loadingSlots.collect ? (
                     <div className="qb-loading-state">
                       <div className="qb-loading-spinner"></div>
@@ -6628,7 +6659,7 @@ return finalId;
                     <i className="fas fa-clock"></i>
                     Available Delivery Times
                   </label>
-                  
+                 
                   {loadingSlots.deliver ? (
                     <div className="qb-loading-state">
                       <div className="qb-loading-spinner"></div>
@@ -6751,7 +6782,7 @@ return finalId;
                     Your Saved Cards
                   </h3>
                   <p className="qb-saved-cards-subtitle">Select a card or add a new one</p>
-                  
+                 
                   <div className="qb-cards-list">
                     {savedCards.map((card) => (
                       <div
@@ -6818,8 +6849,8 @@ return finalId;
                 </div>
 
                 <div className="qb-payment-actions">
-                  <button 
-                    className="qb-primary-btn qb-book-btn" 
+                  <button
+                    className="qb-primary-btn qb-book-btn"
                     onClick={handleSavedCardBooking}
                     disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
                   >
@@ -6873,8 +6904,8 @@ return finalId;
                 </div>
 
                 <div className="qb-payment-actions">
-                  <button 
-                    className="qb-primary-btn qb-book-btn" 
+                  <button
+                    className="qb-primary-btn qb-book-btn"
                     onClick={handleConfirmBooking}
                     disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
                   >
@@ -6921,7 +6952,7 @@ return finalId;
               </div>
             </div>
             <div className="qb-summary-action">
-              <button 
+              <button
                 className="qb-primary-btn qb-confirm-btn"
                 onClick={userToken && savedCards.length > 0 ? handleSavedCardBooking : handleConfirmBooking}
                 disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
