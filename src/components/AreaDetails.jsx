@@ -17,15 +17,16 @@ import repairImg from "../images/repair.webp";
 
 // Local AREAS data
 const AREAS = [
-  { name: "Chelsea", slug: "chelsea", postcodes: ["SW3", "SW10"] },
-  { name: "Earls Court", slug: "earls-court", postcodes: ["SW5"] },
-  { name: "Fulham", slug: "fulham", postcodes: ["SW6"] },
-  { name: "Hammersmith", slug: "hammersmith", postcodes: ["W6"] },
-  { name: "Kensington", slug: "kensington", postcodes: ["W8", "SW7"] },
-  { name: "Notting Hill", slug: "notting-hill", postcodes: ["W11"] },
-  { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2","OX3","OX4"] },
-  { name: "Paddington", slug: "paddington", postcodes: ["W2"] },
-  { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"] },
+  { name: "Ealing", slug: "ealing", postcodes: ["W5"] },
+  { name: "West Ealing", slug: "west-ealing", postcodes: ["W13"] },
+  { name: "Acton", slug: "acton", postcodes: ["W3"] },
+  { name: "Hanwell", slug: "hanwell", postcodes: ["W7"] },
+  { name: "Northolt / Greenford / Perivale", slug: "greenford", postcodes: ["UB5", "UB6"] },
+  { name: "Chiswick High Road", slug: "chiswick-1", postcodes: ["W4 1"] },
+  { name: "Bedford Park", slug: "chiswick-2", postcodes: ["W4 2"] },
+  { name: "South Acton", slug: "chiswick-3", postcodes: ["W4 3"] },
+  { name: "Gunnersbury / Chiswick Park", slug: "chiswick-4", postcodes: ["W4 4"] },
+  { name: "Chiswick North West", slug: "chiswick-5", postcodes: ["W4 5"] },
 ];
 
 const MAIN_SERVICES = [

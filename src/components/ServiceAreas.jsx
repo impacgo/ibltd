@@ -6,16 +6,16 @@ import "./ServiceAreas.css";
 
 
 const AREAS = [
-  { name: "Paddington", slug: "paddington", postcodes: ["W2"], position: { top: "42%", left: "48%" }, icon: "fas fa-train" },
-  { name: "Notting Hill", slug: "notting-hill", postcodes: ["W11"], position: { top: "45%", left: "44%" }, icon: "fas fa-home" },
-  { name: "Kensington", slug: "kensington", postcodes: ["W8", "SW7"], position: { top: "48%", left: "47%" }, icon: "fas fa-landmark" },
-  { name: "Earls Court", slug: "earls-court", postcodes: ["SW5"], position: { top: "52%", left: "47%" }, icon: "fas fa-theater-masks" },
-  { name: "Chelsea", slug: "chelsea", postcodes: ["SW3", "SW10"], position: { top: "52%", left: "49%" }, icon: "fas fa-university" },
-  { name: "Fulham", slug: "fulham", postcodes: ["SW6"], position: { top: "55%", left: "47%" }, icon: "fas fa-futbol" },
-  { name: "Hammersmith", slug: "hammersmith", postcodes: ["W6"], position: { top: "52%", left: "42%" }, icon: "fas fa-hammer" },
-  { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"], position: { top: "48%", left: "40%" }, icon: "fas fa-tree" },
-  // { name: "Oxford", slug: "oxford", postcodes: ["OX1", "OX2","OX3","OX4"], position: { top: "35%", left: "30%" }, icon: "fas fa-graduation-cap" },
-  { name: "Oxford — Ironing & Laundry Service", slug: "oxford", postcodes: ["OX1", "OX2", "OX3", "OX4"], position: { top: "35%", left: "30%" }, icon: "fas fa-graduation-cap" },
+  { name: "Ealing", slug: "ealing", postcodes: ["W5"], position: { top: "45%", left: "38%" }, icon: "fas fa-map-marker-alt" },
+  { name: "West Ealing", slug: "west-ealing", postcodes: ["W13"], position: { top: "46%", left: "36%" }, icon: "fas fa-map-marker-alt" },
+  { name: "Acton", slug: "acton", postcodes: ["W3"], position: { top: "48%", left: "39%" }, icon: "fas fa-map-marker-alt" },
+  { name: "Hanwell", slug: "hanwell", postcodes: ["W7"], position: { top: "47%", left: "34%" }, icon: "fas fa-map-marker-alt" },
+  { name: "Northolt / Greenford / Perivale", slug: "greenford", postcodes: ["UB5", "UB6"], position: { top: "42%", left: "33%" }, icon: "fas fa-map-marker-alt" },
+  { name: "Chiswick High Road", slug: "chiswick-1", postcodes: ["W4 1"], position: { top: "50%", left: "41%" }, icon: "fas fa-map-marker-alt" },
+  { name: "Bedford Park", slug: "chiswick-2", postcodes: ["W4 2"], position: { top: "51%", left: "40%" }, icon: "fas fa-map-marker-alt" },
+  { name: "South Acton", slug: "chiswick-3", postcodes: ["W4 3"], position: { top: "52%", left: "39%" }, icon: "fas fa-map-marker-alt" },
+  { name: "Gunnersbury / Chiswick Park", slug: "chiswick-4", postcodes: ["W4 4"], position: { top: "52%", left: "42%" }, icon: "fas fa-map-marker-alt" },
+  { name: "Chiswick North West", slug: "chiswick-5", postcodes: ["W4 5"], position: { top: "49%", left: "42%" }, icon: "fas fa-map-marker-alt" },
 ];
 
 export default function ServiceAreas() {
@@ -42,15 +42,6 @@ export default function ServiceAreas() {
   };
 
 const filteredAreas = AREAS.filter(area => {
-  // Region filter
-  if (activeFilter === "london" && area.name.toLowerCase().includes("oxford")) {
-    return false;
-  }
-  if (activeFilter === "oxford" && !area.name.toLowerCase().includes("oxford")) {
-    return false;
-  }
-
-  // Search filter
   if (searchTerm.trim()) {
     const query = searchTerm.toLowerCase();
 
@@ -82,13 +73,13 @@ const filteredAreas = AREAS.filter(area => {
               {/* We Serve 
               <span className="hero-highlight"> London & Oxford</span> Areas */}
               Professional Ironing & Laundry Service in
-<span className="hero-highlight"> Oxford & London</span>
+<span className="hero-highlight"> West London</span>
             </h1>
             
             <p className="hero-subtitle">
-              Oxford's trusted ironing & laundry service. We offer shirt ironing, 
+              West London's trusted ironing & laundry service. We offer shirt ironing, 
 bedding ironing, wash & fold, and free collection & delivery across 
-Oxford (OX1–OX4) and London. Click any area to view service details.
+Ealing, Acton, Hanwell, Greenford, Chiswick and surrounding areas.
             </p>
 
             {/* Stats */}
@@ -157,15 +148,9 @@ Oxford (OX1–OX4) and London. Click any area to view service details.
                 onClick={() => setActiveFilter("london")}
               >
                 <i className="fas fa-landmark"></i>
-                London Areas
+                Service Areas
               </button>
-              <button 
-                className={`filter-btn ${activeFilter === "oxford" ? "active" : ""}`}
-                onClick={() => setActiveFilter("oxford")}
-              >
-                <i className="fas fa-graduation-cap"></i>
-                Oxford Areas
-              </button>
+              
             </div>
           </div>
 
