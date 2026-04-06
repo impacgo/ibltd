@@ -17,6 +17,17 @@ import repairImg from "../images/repair.webp";
 
 // Local AREAS data
 const AREAS = [
+  // ✅ OLD AREAS
+  { name: "Paddington", slug: "paddington", postcodes: ["W2"] },
+  { name: "Notting Hill", slug: "notting-hill", postcodes: ["W11"] },
+  { name: "Kensington", slug: "kensington", postcodes: ["W8", "SW7"] },
+  { name: "Earls Court", slug: "earls-court", postcodes: ["SW5"] },
+  { name: "Chelsea", slug: "chelsea", postcodes: ["SW3", "SW10"] },
+  { name: "Fulham", slug: "fulham", postcodes: ["SW6"] },
+  { name: "Hammersmith", slug: "hammersmith", postcodes: ["W6"] },
+  { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"] },
+
+  // ✅ NEW AREAS
   { name: "Ealing", slug: "ealing", postcodes: ["W5"] },
   { name: "West Ealing", slug: "west-ealing", postcodes: ["W13"] },
   { name: "Acton", slug: "acton", postcodes: ["W3"] },
