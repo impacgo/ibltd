@@ -6,6 +6,17 @@ import "./ServiceAreas.css";
 
 
 const AREAS = [
+  // ✅ OLD AREAS (UNCHANGED)
+  { name: "Paddington", slug: "paddington", postcodes: ["W2"], position: { top: "42%", left: "48%" }, icon: "fas fa-train" },
+  { name: "Notting Hill", slug: "notting-hill", postcodes: ["W11"], position: { top: "45%", left: "44%" }, icon: "fas fa-home" },
+  { name: "Kensington", slug: "kensington", postcodes: ["W8", "SW7"], position: { top: "48%", left: "47%" }, icon: "fas fa-landmark" },
+  { name: "Earls Court", slug: "earls-court", postcodes: ["SW5"], position: { top: "52%", left: "47%" }, icon: "fas fa-theater-masks" },
+  { name: "Chelsea", slug: "chelsea", postcodes: ["SW3", "SW10"], position: { top: "52%", left: "49%" }, icon: "fas fa-university" },
+  { name: "Fulham", slug: "fulham", postcodes: ["SW6"], position: { top: "55%", left: "47%" }, icon: "fas fa-futbol" },
+  { name: "Hammersmith", slug: "hammersmith", postcodes: ["W6"], position: { top: "52%", left: "42%" }, icon: "fas fa-hammer" },
+  { name: "Shepherds Bush", slug: "shepherds-bush", postcodes: ["W12", "W14"], position: { top: "48%", left: "40%" }, icon: "fas fa-tree" },
+
+  // ✅ NEW AREAS (ADDED)
   { name: "Ealing", slug: "ealing", postcodes: ["W5"], position: { top: "45%", left: "38%" }, icon: "fas fa-map-marker-alt" },
   { name: "West Ealing", slug: "west-ealing", postcodes: ["W13"], position: { top: "46%", left: "36%" }, icon: "fas fa-map-marker-alt" },
   { name: "Acton", slug: "acton", postcodes: ["W3"], position: { top: "48%", left: "39%" }, icon: "fas fa-map-marker-alt" },
@@ -280,7 +291,7 @@ Ealing, Acton, Hanwell, Greenford, Chiswick and surrounding areas.
                 <div className="list-footer">
                  <div className="footer-note">
   <i className="fas fa-clock"></i>
-  <span>Same-day collection available in all areas — including Oxford Bedding Ironing, Business Shirt Service Oxford & Wash and Fold Oxford</span>
+ <span>Same-day collection available in all West London areas including Ealing, Acton, Chiswick & more</span>
 </div>
                   <button 
                     className="book-all-btn"
