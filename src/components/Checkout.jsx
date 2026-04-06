@@ -235,7 +235,7 @@ export default function Checkout() {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [showPickupAddressForm, setShowPickupAddressForm] = useState(false);
   const [pendingBookingData, setPendingBookingData] = useState(null);
-  const phoneCheckTimeoutRef = useRef(null);
+  // const phoneCheckTimeoutRef = useRef(null);
 
   // Auto-save timers and flags
   const mainAddressSaveTimerRef = useRef(null);
@@ -1370,40 +1370,55 @@ export default function Checkout() {
     return country ? country.minDigits : 10;
   };
 
-  const validatePhone = useCallback(async (fullPhone, localRaw) => {
-    const cleanedLocal = stripLeadingZeros(localRaw.replace(/\D/g, ''));
-    const expectedLen = getExpectedPhoneLength();
+  // const validatePhone = useCallback(async (fullPhone, localRaw) => {
+  //   const cleanedLocal = stripLeadingZeros(localRaw.replace(/\D/g, ''));
+  //   const expectedLen = getExpectedPhoneLength();
 
-    if (cleanedLocal.length !== expectedLen) {
-      setPhoneError("Enter a valid mobile number");
-      setPhoneValid(false);
-      return false;
-    }
+  //   if (cleanedLocal.length !== expectedLen) {
+  //     setPhoneError("Enter a valid mobile number");
+  //     setPhoneValid(false);
+  //     return false;
+  //   }
 
-    try {
-      const res = await fetch(`${API_BASE}/validate-phone`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: fullPhone }),
-      });
+  //   try {
+  //     const res = await fetch(`${API_BASE}/validate-phone`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ phone: fullPhone }),
+  //     });
 
-      const data = await res.json();
+  //     const data = await res.json();
 
-      if (!data.valid) {
-        setPhoneError(data.message || "Enter a valid mobile number");
-        setPhoneValid(false);
-        return false;
-      }
+  //     if (!data.valid) {
+  //       setPhoneError(data.message || "Enter a valid mobile number");
+  //       setPhoneValid(false);
+  //       return false;
+  //     }
 
-      setPhoneError("");
-      setPhoneValid(true);
-      return true;
-    } catch {
-      setPhoneError("Validation failed");
-      setPhoneValid(false);
-      return false;
-    }
-  }, [countryCode]);
+  //     setPhoneError("");
+  //     setPhoneValid(true);
+  //     return true;
+  //   } catch {
+  //     setPhoneError("Validation failed");
+  //     setPhoneValid(false);
+  //     return false;
+  //   }
+  // }, [countryCode]);
+const validatePhone = useCallback((fullPhone, localRaw) => {
+  const cleanedLocal = stripLeadingZeros(localRaw.replace(/\D/g, ""));
+  const expectedLen = getExpectedPhoneLength();
+
+  if (cleanedLocal.length !== expectedLen) {
+    setPhoneError("Enter a valid mobile number");
+    setPhoneValid(false);
+    return false;
+  }
+
+  // ✅ No API call
+  setPhoneError("");
+  setPhoneValid(true);
+  return true;
+}, [countryCode]);
 
   const validateEmail = useCallback((email) => {
     if (!email.trim()) {
@@ -1421,45 +1436,77 @@ export default function Checkout() {
     return true;
   }, []);
 
-  const handlePhoneChange = (e) => {
-    let raw = e.target.value;
-    raw = raw.replace(/\D/g, '');
-    setLocalPhone(raw);
+  // const handlePhoneChange = (e) => {
+  //   let raw = e.target.value;
+  //   raw = raw.replace(/\D/g, '');
+  //   setLocalPhone(raw);
 
-    const cleanedLocal = stripLeadingZeros(raw);
-    const full = countryCode + cleanedLocal;
+  //   const cleanedLocal = stripLeadingZeros(raw);
+  //   const full = countryCode + cleanedLocal;
+  //   setUserInfo(prev => ({ ...prev, phone: full }));
+
+  //   clearTimeout(phoneCheckTimeoutRef.current);
+
+  //   const expectedLen = getExpectedPhoneLength();
+  //   if (raw.length >= expectedLen) {
+  //     phoneCheckTimeoutRef.current = setTimeout(() => {
+  //       validatePhone(full, raw);
+  //     }, 800);
+  //   } else {
+  //     setPhoneError(`Please enter a valid ${expectedLen}-digit number`);
+  //     setPhoneValid(false);
+  //   }
+  // };
+const handlePhoneChange = (e) => {
+  let raw = e.target.value.replace(/\D/g, '');
+  setLocalPhone(raw);
+
+  const cleanedLocal = stripLeadingZeros(raw);
+  const full = countryCode + cleanedLocal;
+
+  setUserInfo(prev => ({ ...prev, phone: full }));
+
+  const expectedLen = getExpectedPhoneLength();
+
+  if (cleanedLocal.length === expectedLen) {
+    validatePhone(full, raw);
+  } else {
+    setPhoneError(`Enter a valid mobile number`);
+    setPhoneValid(false);
+  }
+};
+
+  // const handleCountryCodeChange = (e) => {
+  //   const code = e.target.value;
+  //   setCountryCode(code);
+  //   if (localPhone.trim().length >= getExpectedPhoneLength()) {
+  //     const cleanedLocal = stripLeadingZeros(localPhone);
+  //     const full = code + cleanedLocal;
+  //     setUserInfo(prev => ({ ...prev, phone: full }));
+  //     clearTimeout(phoneCheckTimeoutRef.current);
+  //     phoneCheckTimeoutRef.current = setTimeout(() => {
+  //       validatePhone(full, localPhone);
+  //     }, 800);
+  //   } else {
+  //     setPhoneError(`Please enter a valid ${getExpectedPhoneLength()}-digit number`);
+  //     setPhoneValid(false);
+  //   }
+  // };
+const handleCountryCodeChange = (e) => {
+  const code = e.target.value;
+  setCountryCode(code);
+
+  const cleanedLocal = stripLeadingZeros(localPhone);
+
+  if (cleanedLocal.length === getExpectedPhoneLength()) {
+    const full = code + cleanedLocal;
     setUserInfo(prev => ({ ...prev, phone: full }));
-
-    clearTimeout(phoneCheckTimeoutRef.current);
-
-    const expectedLen = getExpectedPhoneLength();
-    if (raw.length >= expectedLen) {
-      phoneCheckTimeoutRef.current = setTimeout(() => {
-        validatePhone(full, raw);
-      }, 800);
-    } else {
-      setPhoneError(`Please enter a valid ${expectedLen}-digit number`);
-      setPhoneValid(false);
-    }
-  };
-
-  const handleCountryCodeChange = (e) => {
-    const code = e.target.value;
-    setCountryCode(code);
-    if (localPhone.trim().length >= getExpectedPhoneLength()) {
-      const cleanedLocal = stripLeadingZeros(localPhone);
-      const full = code + cleanedLocal;
-      setUserInfo(prev => ({ ...prev, phone: full }));
-      clearTimeout(phoneCheckTimeoutRef.current);
-      phoneCheckTimeoutRef.current = setTimeout(() => {
-        validatePhone(full, localPhone);
-      }, 800);
-    } else {
-      setPhoneError(`Please enter a valid ${getExpectedPhoneLength()}-digit number`);
-      setPhoneValid(false);
-    }
-  };
-
+    validatePhone(full, localPhone);
+  } else {
+    setPhoneError("Enter a valid mobile number");
+    setPhoneValid(false);
+  }
+};
   const handleEmailChange = (e) => {
     const v = e.target.value;
     setUserInfo(prev => ({ ...prev, email: v }));
@@ -1927,12 +1974,12 @@ export default function Checkout() {
     }
   }, [userToken, fetchUserProfile, fetchAddresses, fetchSavedCards, ensureStripeCustomer]);
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (phoneCheckTimeoutRef.current) clearTimeout(phoneCheckTimeoutRef.current);
-    };
-  }, []);
+  // // Cleanup
+  // useEffect(() => {
+  //   return () => {
+  //     if (phoneCheckTimeoutRef.current) clearTimeout(phoneCheckTimeoutRef.current);
+  //   };
+  // }, []);
 
   // Step validation
   const stepDone = (s) => {
