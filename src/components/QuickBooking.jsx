@@ -705,8 +705,44 @@ useEffect(() => {
     return country ? country.minDigits : 10;
   };
 
- const validatePhone = useCallback(async (fullPhone, localRaw) => {
-  const cleanedLocal = stripLeadingZeros(localRaw.replace(/\D/g, ''));
+//  const validatePhone = useCallback(async (fullPhone, localRaw) => {
+//   const cleanedLocal = stripLeadingZeros(localRaw.replace(/\D/g, ''));
+//   const expectedLen = getExpectedPhoneLength();
+
+//   if (cleanedLocal.length !== expectedLen) {
+//     setPhoneError("Enter a valid mobile number");
+//     setPhoneValid(false);
+//     return false;
+//   }
+
+//   try {
+//     const res = await fetch(`${API_BASE}/validate-phone`, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({ phone: fullPhone }),
+//     });
+
+//     const data = await res.json();
+
+//     if (!data.valid) {
+//       setPhoneError(data.message || "Enter a valid mobile number");
+//       setPhoneValid(false);
+//       return false;
+//     }
+
+//     setPhoneError("");
+//     setPhoneValid(true);
+//     return true;
+//   } catch {
+//     setPhoneError("Validation failed");
+//     setPhoneValid(false);
+//     return false;
+//   }
+// }, [selectedCountryCode]);
+const validatePhone = useCallback((fullPhone, localRaw) => {
+  const cleanedLocal = stripLeadingZeros(localRaw.replace(/\D/g, ""));
   const expectedLen = getExpectedPhoneLength();
 
   if (cleanedLocal.length !== expectedLen) {
@@ -715,72 +751,83 @@ useEffect(() => {
     return false;
   }
 
-  try {
-    const res = await fetch(`${API_BASE}/validate-phone`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ phone: fullPhone }),
-    });
-
-    const data = await res.json();
-
-    if (!data.valid) {
-      setPhoneError(data.message || "Enter a valid mobile number");
-      setPhoneValid(false);
-      return false;
-    }
-
-    setPhoneError("");
-    setPhoneValid(true);
-    return true;
-  } catch {
-    setPhoneError("Validation failed");
-    setPhoneValid(false);
-    return false;
-  }
+  // ✅ No API call — just basic validation
+  setPhoneError("");
+  setPhoneValid(true);
+  return true;
 }, [selectedCountryCode]);
 
-  const handlePhoneChange = (e) => {
-    let raw = e.target.value;
-    raw = raw.replace(/\D/g, '');
-    setLocalPhone(raw);
+  // const handlePhoneChange = (e) => {
+  //   let raw = e.target.value;
+  //   raw = raw.replace(/\D/g, '');
+  //   setLocalPhone(raw);
 
-    const cleanedLocal = stripLeadingZeros(raw);
-    const full = selectedCountryCode + cleanedLocal;
+  //   const cleanedLocal = stripLeadingZeros(raw);
+  //   const full = selectedCountryCode + cleanedLocal;
+  //   setUserInfo((p) => ({ ...p, phone: full }));
+
+  //   clearTimeout(phoneCheckTimeoutRef.current);
+
+  //   const expectedLen = getExpectedPhoneLength();
+  //   if (raw.length >= expectedLen) {
+  //     phoneCheckTimeoutRef.current = setTimeout(() => {
+  //       validatePhone(full, raw);
+  //     }, 800);
+  //   } else {
+  //     setPhoneError(`Please enter a valid mobile number`);
+  //     setPhoneValid(false);
+  //   }
+  // };
+const handlePhoneChange = (e) => {
+  let raw = e.target.value.replace(/\D/g, '');
+  setLocalPhone(raw);
+
+  const cleanedLocal = stripLeadingZeros(raw);
+  const full = selectedCountryCode + cleanedLocal;
+
+  setUserInfo((p) => ({ ...p, phone: full }));
+
+  const expectedLen = getExpectedPhoneLength();
+
+  if (cleanedLocal.length === expectedLen) {
+    validatePhone(full, raw);
+  } else {
+    setPhoneError("Enter a valid mobile number");
+    setPhoneValid(false);
+  }
+};
+
+  // const handleCountryCodeChange = (e) => {
+  //   const code = e.target.value;
+  //   setSelectedCountryCode(code);
+  //   if (localPhone.trim().length >= getExpectedPhoneLength()) {
+  //     const cleanedLocal = stripLeadingZeros(localPhone);
+  //     const full = code + cleanedLocal;
+  //     setUserInfo((p) => ({ ...p, phone: full }));
+  //     clearTimeout(phoneCheckTimeoutRef.current);
+  //     phoneCheckTimeoutRef.current = setTimeout(() => {
+  //       validatePhone(full, localPhone);
+  //     }, 800);
+  //   } else {
+  //     setPhoneError(`Please enter a valid ${getExpectedPhoneLength()}-digit number`);
+  //     setPhoneValid(false);
+  //   }
+  // };
+const handleCountryCodeChange = (e) => {
+  const code = e.target.value;
+  setSelectedCountryCode(code);
+
+  const cleanedLocal = stripLeadingZeros(localPhone);
+
+  if (cleanedLocal.length === getExpectedPhoneLength()) {
+    const full = code + cleanedLocal;
     setUserInfo((p) => ({ ...p, phone: full }));
-
-    clearTimeout(phoneCheckTimeoutRef.current);
-
-    const expectedLen = getExpectedPhoneLength();
-    if (raw.length >= expectedLen) {
-      phoneCheckTimeoutRef.current = setTimeout(() => {
-        validatePhone(full, raw);
-      }, 800);
-    } else {
-      setPhoneError(`Please enter a valid mobile number`);
-      setPhoneValid(false);
-    }
-  };
-
-  const handleCountryCodeChange = (e) => {
-    const code = e.target.value;
-    setSelectedCountryCode(code);
-    if (localPhone.trim().length >= getExpectedPhoneLength()) {
-      const cleanedLocal = stripLeadingZeros(localPhone);
-      const full = code + cleanedLocal;
-      setUserInfo((p) => ({ ...p, phone: full }));
-      clearTimeout(phoneCheckTimeoutRef.current);
-      phoneCheckTimeoutRef.current = setTimeout(() => {
-        validatePhone(full, localPhone);
-      }, 800);
-    } else {
-      setPhoneError(`Please enter a valid ${getExpectedPhoneLength()}-digit number`);
-      setPhoneValid(false);
-    }
-  };
-
+    validatePhone(full, localPhone);
+  } else {
+    setPhoneError("Enter a valid mobile number");
+    setPhoneValid(false);
+  }
+};
   const ensureUserExists = useCallback(async () => {
     const fullPhone = `${selectedCountryCode}${stripLeadingZeros(localPhone)}`;
     if (!fullPhone || fullPhone.trim().length < 5) throw new Error("Please enter a valid phone number");
@@ -911,7 +958,7 @@ useEffect(() => {
       setPhoneValid(true);
     } else {
       setPhoneError("Enter a valid mobile number");
-      setPhoneValid(false);
+      setPhoneValid(true);
     }
   }
 }, [userInfo]);
