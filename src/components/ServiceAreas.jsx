@@ -3,8 +3,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ServiceAreas.css";
 
-
-
 const AREAS = [
   // ✅ OLD AREAS (UNCHANGED)
   { name: "Paddington", slug: "paddington", postcodes: ["W2"], position: { top: "42%", left: "48%" }, icon: "fas fa-train" },
@@ -33,6 +31,7 @@ export default function ServiceAreas() {
   const [hoverIndex, setHoverIndex] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPostcode, setSelectedPostcode] = useState("all");
   const navigate = useNavigate();
 
   const openAreaPage = (slug) => {
@@ -51,21 +50,28 @@ export default function ServiceAreas() {
     // Navigate to home page and pass state to trigger service availability check
     navigate("/", { state: { openServiceCheck: true } });
   };
+const allPostcodes = [
+  ...new Set(
+    AREAS.flatMap(area =>
+      area.postcodes.map(pc => pc.split(" ")[0]) // take only W4 from "W4 1"
+    )
+  )
+];
 
 const filteredAreas = AREAS.filter(area => {
-  if (searchTerm.trim()) {
-    const query = searchTerm.toLowerCase();
+  const query = searchTerm.toLowerCase();
 
-    const matchesName = area.name.toLowerCase().includes(query);
-    const matchesPostcode = area.postcodes.some(pc =>
-      pc.toLowerCase().includes(query)
-    );
+  const matchesSearch =
+    area.name.toLowerCase().includes(query) ||
+    area.postcodes.some(pc => pc.toLowerCase().includes(query));
 
-    return matchesName || matchesPostcode;
-  }
+  const matchesPostcode =
+    selectedPostcode === "all" ||
+    area.postcodes.some(pc => pc.startsWith(selectedPostcode))
 
-  return true;
+  return matchesSearch && matchesPostcode;
 });
+
 
 
   return (
@@ -234,18 +240,40 @@ Ealing, Acton, Hanwell, Greenford, Chiswick and surrounding areas.
                     <span className="list-count">{filteredAreas.length}</span>
                   </h3>
                   <div className="list-controls">
-                    <div className="search-box">
-                      <i className="fas fa-search"></i>
-                      <input
-  type="text"
-  placeholder="Search areas or postcodes (e.g. Fulham, SW6)"
-  className="search-input"
-  value={searchTerm}
-  onChange={(e) => setSearchTerm(e.target.value)}
-/>
+  
+  {/* 🔍 SEARCH FULL WIDTH */}
+  <div className="search-box">
+    <i className="fas fa-search"></i>
+    <input
+      type="text"
+      placeholder="Search areas or postcodes (e.g. Ealing, W5)"
+      className="search-input"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
+  </div>
 
-                    </div>
-                  </div>
+  {/* 🔥 CHIPS BELOW SEARCH */}
+  <div className="postcode-chips">
+    <button
+      className={`chip ${selectedPostcode === "all" ? "active" : ""}`}
+      onClick={() => setSelectedPostcode("all")}
+    >
+      All
+    </button>
+
+    {allPostcodes.map((pc, i) => (
+      <button
+        key={i}
+        className={`chip ${selectedPostcode === pc ? "active" : ""}`}
+        onClick={() => setSelectedPostcode(pc)}
+      >
+        {pc}
+      </button>
+    ))}
+  </div>
+
+</div>
                 </div>
                 
                 <div className="area-list">
