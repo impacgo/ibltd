@@ -1,0 +1,699 @@
+/* ReferAndEarn.css - Matching PersonalInfo styling */
+
+:root {
+  --refer-bg: #f8fafc;
+  --refer-card-bg: #ffffff;
+  --refer-card-border: #e2e8f0;
+  --refer-text-primary: #1e293b;
+  --refer-text-secondary: #475569;
+  --refer-text-light: #64748b;
+  --refer-text-muted: #94a3b8;
+  --refer-accent: #ff6b00;
+  --refer-accent-hover: #ff8c00;
+  --refer-accent-light: #ffedd5;
+  --refer-accent-gradient: linear-gradient(135deg, #ff6b00, #ff8c00);
+  --refer-success: #10b981;
+  --refer-success-bg: #d1fae5;
+  --refer-error: #ef4444;
+  --refer-error-bg: #fee2e2;
+  --refer-info: #3b82f6;
+  --refer-info-bg: #dbeafe;
+  --refer-warning: #f59e0b;
+  --refer-warning-bg: #fef3c7;
+  
+  --refer-radius-sm: 8px;
+  --refer-radius-md: 12px;
+  --refer-radius-lg: 16px;
+  --refer-radius-xl: 20px;
+  --refer-radius-full: 9999px;
+  
+  --refer-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --refer-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --refer-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --refer-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
+  --refer-shadow-accent: 0 8px 20px rgba(255, 107, 0, 0.2);
+}
+
+.refer-page {
+  background: var(--refer-bg);
+  min-height: 100vh;
+  padding: 40px 20px 100px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* Page Header - exactly like PersonalInfo */
+.refer-page-header {
+  max-width: 800px;
+  margin: 0 auto 32px;
+  text-align: center;
+}
+
+.refer-page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--refer-text-primary);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
+}
+
+.refer-page-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: var(--refer-accent-gradient);
+  margin: 14px auto 0;
+  border-radius: var(--refer-radius-full);
+}
+
+/* Tabs Container - matches PersonalInfo profile tabs */
+.refer-tabs-container {
+  max-width: 800px;
+  margin: 0 auto 24px;
+  display: flex;
+  gap: 8px;
+  background: var(--refer-card-bg);
+  border: 1px solid var(--refer-card-border);
+  border-radius: var(--refer-radius-lg);
+  padding: 6px;
+}
+
+.refer-tab-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--refer-text-secondary);
+  cursor: pointer;
+  border-radius: var(--refer-radius-md);
+  transition: all 0.2s ease;
+}
+
+.refer-tab-btn.active {
+  background: var(--refer-accent-gradient);
+  color: white;
+  box-shadow: var(--refer-shadow-sm);
+}
+
+.refer-tab-btn:not(.active):hover {
+  background: var(--refer-accent-light);
+  color: var(--refer-accent);
+}
+
+/* Main Card - matches profile-card */
+.refer-card {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--refer-card-bg);
+  border: 1px solid var(--refer-card-border);
+  border-radius: var(--refer-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--refer-shadow-lg);
+  transition: box-shadow 0.2s;
+}
+
+/* Hero Section - matches avatar-section gradient */
+.refer-hero-section {
+  background: var(--refer-accent-gradient);
+  padding: 40px 32px;
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.refer-hero-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.refer-gift-emoji {
+  font-size: 56px;
+  background: white;
+  width: 100px;
+  height: 100px;
+  line-height: 100px;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  box-shadow: var(--refer-shadow-md);
+  position: relative;
+  z-index: 2;
+}
+
+.refer-bonus-amount {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.refer-description-text {
+  font-size: 14px;
+  opacity: 0.9;
+  max-width: 280px;
+  margin: 0 auto 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.refer-code-wrapper {
+  background: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 60px;
+  padding: 6px 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--refer-shadow-sm);
+  position: relative;
+  z-index: 2;
+}
+
+.refer-code-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--refer-text-primary);
+  letter-spacing: 1px;
+}
+
+.refer-copy-code-btn {
+  background: var(--refer-accent);
+  border: none;
+  color: white;
+  padding: 6px 18px;
+  border-radius: 40px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refer-copy-code-btn:hover {
+  background: #e65c00;
+  transform: scale(1.02);
+}
+
+.refer-copy-feedback {
+  font-size: 12px;
+  margin-left: 8px;
+  color: white;
+  font-weight: 500;
+}
+
+.refer-share-label {
+  font-size: 13px;
+  margin-bottom: 12px;
+  opacity: 0.9;
+  position: relative;
+  z-index: 2;
+}
+
+.refer-share-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.refer-share-wa {
+  background: #25d366;
+  color: white;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 40px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refer-share-wa:hover {
+  background: #20b858;
+  transform: translateY(-2px);
+}
+
+.refer-share-more {
+  background: white;
+  color: var(--refer-accent);
+  border: 1px solid var(--refer-card-border);
+  padding: 10px 28px;
+  border-radius: 40px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refer-share-more:hover {
+  border-color: var(--refer-accent);
+  transform: translateY(-2px);
+}
+
+/* Info Box - matches field-group style */
+.refer-info-box {
+  background: var(--refer-bg);
+  border-top: 1px solid var(--refer-card-border);
+  padding: 20px 24px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.refer-info-icon {
+  font-size: 28px;
+  color: var(--refer-accent);
+}
+
+.refer-info-text strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 4px;
+  color: var(--refer-text-primary);
+}
+
+.refer-info-text p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--refer-text-secondary);
+}
+
+/* Earn Tab Summary */
+.refer-earned-summary {
+  background: var(--refer-accent-gradient);
+  text-align: center;
+  padding: 32px;
+  color: white;
+}
+
+.refer-earned-amount {
+  font-size: 36px;
+  font-weight: 800;
+  margin-top: 8px;
+}
+
+/* Apply Referral Code Card */
+.refer-apply-card {
+  background: var(--refer-card-bg);
+  border-bottom: 1px solid var(--refer-card-border);
+  padding: 24px;
+}
+
+.refer-apply-card h4 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--refer-text-primary);
+}
+
+.refer-apply-card input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--refer-card-border);
+  border-radius: var(--refer-radius-md);
+  font-size: 1rem;
+  background: var(--refer-bg);
+  transition: border 0.2s;
+}
+
+.refer-apply-card input:focus {
+  outline: none;
+  border-color: var(--refer-accent);
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+}
+
+.refer-apply-card button {
+  width: 100%;
+  background: var(--refer-accent-gradient);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: var(--refer-radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refer-apply-card button:hover:not(:disabled) {
+  background: var(--refer-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--refer-shadow-accent);
+}
+
+.refer-apply-card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* History Header */
+.refer-history-header {
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 20px 24px 8px;
+  color: var(--refer-text-primary);
+  border-bottom: 2px solid var(--refer-card-border);
+  margin-bottom: 0;
+}
+
+/* History Items */
+.refer-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--refer-card-border);
+  transition: background 0.2s;
+}
+
+.refer-history-item:hover {
+  background: var(--refer-bg);
+}
+
+.refer-history-name {
+  font-weight: 700;
+  color: var(--refer-text-primary);
+}
+
+.refer-history-date {
+  font-size: 0.75rem;
+  color: var(--refer-text-muted);
+  margin-top: 4px;
+}
+
+.refer-history-right {
+  text-align: right;
+}
+
+.refer-history-amount {
+  font-weight: 800;
+  color: var(--refer-text-primary);
+}
+
+.refer-history-status {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: var(--refer-radius-full);
+  margin-top: 6px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.refer-history-status.success {
+  background: var(--refer-success-bg);
+  color: #065f46;
+}
+
+.refer-history-status.pending {
+  background: var(--refer-warning-bg);
+  color: #92400e;
+}
+
+.refer-empty-history {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--refer-text-muted);
+  font-size: 0.9rem;
+  background: var(--refer-card-bg);
+}
+
+/* Loading State */
+.refer-loading-state {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--refer-card-bg);
+  border-radius: var(--refer-radius-xl);
+  border: 1px solid var(--refer-card-border);
+  box-shadow: var(--refer-shadow-md);
+}
+
+.refer-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--refer-card-border);
+  border-top-color: var(--refer-accent);
+  border-radius: 50%;
+  animation: referSpin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes referSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive - matching PersonalInfo breakpoints */
+@media (max-width: 768px) {
+  .refer-page {
+    padding: 30px 16px 100px;
+  }
+  
+  .refer-page-title {
+    font-size: 1.8rem;
+  }
+  
+  .refer-hero-section {
+    padding: 32px 24px;
+  }
+  
+  .refer-gift-emoji {
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    font-size: 42px;
+  }
+  
+  .refer-bonus-amount {
+    font-size: 28px;
+  }
+  
+  .refer-code-wrapper {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+  }
+  
+  .refer-share-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .refer-share-wa,
+  .refer-share-more {
+    width: 100%;
+    max-width: 200px;
+    text-align: center;
+  }
+  
+  .refer-info-box {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .refer-earned-amount {
+    font-size: 28px;
+  }
+  
+  .refer-history-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .refer-history-right {
+    text-align: left;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .refer-page {
+    padding: 20px 12px 80px;
+  }
+  
+  .refer-page-title {
+    font-size: 1.5rem;
+  }
+  
+  .refer-tab-btn {
+    font-size: 0.9rem;
+    padding: 10px 12px;
+  }
+  
+  .refer-hero-section {
+    padding: 24px 20px;
+  }
+  
+  .refer-gift-emoji {
+    width: 70px;
+    height: 70px;
+    line-height: 70px;
+    font-size: 38px;
+  }
+  
+  .refer-bonus-amount {
+    font-size: 24px;
+  }
+  
+  .refer-code-value {
+    font-size: 16px;
+  }
+  
+  .refer-apply-card {
+    padding: 20px;
+  }
+  
+  .refer-history-header {
+    padding: 16px 20px;
+  }
+  
+  .refer-history-item {
+    padding: 14px 20px;
+  }
+}
+
+/* Dark Mode Support - matches PersonalInfo */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --refer-bg: #111827;
+    --refer-card-bg: #1f2937;
+    --refer-card-border: #374151;
+    --refer-text-primary: #f9fafb;
+    --refer-text-secondary: #e5e7eb;
+    --refer-text-light: #d1d5db;
+    --refer-text-muted: #9ca3af;
+  }
+  
+  .refer-code-wrapper {
+    background: #374151;
+  }
+  
+  .refer-code-value {
+    color: var(--refer-text-primary);
+  }
+  
+  .refer-share-more {
+    background: #374151;
+    border-color: #4b5563;
+    color: var(--refer-text-primary);
+  }
+  
+  .refer-share-more:hover {
+    border-color: var(--refer-accent);
+    color: var(--refer-accent);
+  }
+  
+  .refer-info-box {
+    background: var(--refer-card-bg);
+  }
+  
+  .refer-history-item:hover {
+    background: #1e293b;
+  }
+}
+
+/* Accessibility */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--refer-accent);
+  outline-offset: 2px;
+}
+/* Toast Notification */
+.refer-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: var(--refer-card-bg);
+  border: 1px solid var(--refer-card-border);
+  border-radius: var(--refer-radius-lg);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--refer-shadow-xl);
+  z-index: 1000;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: referToastSlideIn 0.3s ease forwards;
+  max-width: 350px;
+  width: 90%;
+}
+
+@keyframes referToastSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.refer-toast-success {
+  border-left: 4px solid var(--refer-success);
+}
+
+.refer-toast-error {
+  border-left: 4px solid var(--refer-error);
+}
+
+.refer-toast-icon {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.refer-toast-success .refer-toast-icon {
+  color: var(--refer-success);
+}
+
+.refer-toast-error .refer-toast-icon {
+  color: var(--refer-error);
+}
+
+.refer-toast-message {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--refer-text-primary);
+}
+
+/* Remove old copy-feedback span if still present */
+.refer-copy-feedback {
+  display: none;
+}
+
+/* Ensure copy button has smooth transition */
+.refer-copy-code-btn {
+  transition: all 0.2s ease;
+  min-width: 70px;
+}
+/* Apply Referral Code Card - Input text white */
+.refer-apply-card input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--refer-card-border);
+  border-radius: var(--refer-radius-md);
+  font-size: 1rem;
+  background: var(--refer-card-bg);
+  color: white; /* Force white text */
+  transition: border 0.2s;
+}
+
+.refer-apply-card input::placeholder {
+  color: var(--refer-text-muted);
+}
+
+.refer-apply-card input:focus {
+  outline: none;
+  border-color: var(--refer-accent);
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+}

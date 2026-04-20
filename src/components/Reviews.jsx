@@ -1,5 +1,4 @@
-import React from 'react';
-import ReviewabilityAdvancedWidget from './ReviewabilityAdvancedWidget';
+
 import './Reviews.css';
 
 const Reviews = () => {
@@ -18,13 +17,9 @@ const Reviews = () => {
         </div>
 
         <div className="reviews-widget-panel">
-          <div className="reviews-widget-frame">
-            <ReviewabilityAdvancedWidget
-              className="reviews-widget"
-              bid="164019"
-              url="https://app.revu.cloud"
-            />
-          </div>
+          <div class="trustpilot-widget" data-locale="en-GB" data-template-id="539adbd6dec7e10e686debee" data-businessunit-id="699c575141462e7a0920077a" data-style-height="500px" data-style-width="100%" data-token="4e341fae-41a0-4daf-8c92-d2e8dd58db13" data-stars="4,5" data-review-languages="en">
+  <a href="https://uk.trustpilot.com/review/ironingboy.com" target="_blank" rel="noopener">Trustpilot</a>
+</div>
         </div>
       </div>
     </section>

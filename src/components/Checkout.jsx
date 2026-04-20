@@ -95,6 +95,7 @@ const StripeSetupForm = ({
       setSubmitting(false);
     }
   };
+ 
 
   return (
     <div className="stripe-payment-modal">
@@ -215,11 +216,30 @@ export default function Checkout() {
     tip: 0,
     total: 0,
   };
+  const [walletBalance, setWalletBalance] = useState(0);
+const [walletMaxUsage, setWalletMaxUsage] = useState(0);
+const [walletThreshold, setWalletThreshold] = useState(0);
+const [walletUsed, setWalletUsed] = useState(0);
+const [walletApplied, setWalletApplied] = useState(false);
+const [loadingWallet, setLoadingWallet] = useState(false);
+ const [referralBalance, setReferralBalance] = useState(0);
+const [referralUsed, setReferralUsed] = useState(0);
+const [referralApplied, setReferralApplied] = useState(false);
+const [referralMaxUsage, setReferralMaxUsage] = useState(0);
+const [referralThreshold, setReferralThreshold] = useState(0);
+const [loadingReferral, setLoadingReferral] = useState(false);
 
-  const computedSubtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const computedSubtotal = items.reduce((sum, item) => {
+  const price = Number(item.price || item.price_at_purchase || 0);
+  const qty = Number(item.quantity) || 1;
+  return sum + (price * qty);
+}, 0);
   const subtotal = propSubtotal !== undefined ? propSubtotal : computedSubtotal;
   const tip = propTip !== undefined ? propTip : 0;
-  const total = propTotal !== undefined ? propTotal : subtotal + tip;
+  const baseTotal = propTotal !== undefined ? propTotal : subtotal + tip;
+
+
 
   // State management
   const [loading, setLoading] = useState(false);
@@ -274,6 +294,62 @@ export default function Checkout() {
   const [selectedCollectSlotEnd, setSelectedCollectSlotEnd] = useState(null);
   const [selectedDeliverSlotStart, setSelectedDeliverSlotStart] = useState(null);
   const [selectedDeliverSlotEnd, setSelectedDeliverSlotEnd] = useState(null);
+  
+  const [referralCode, setReferralCode] = useState("");
+const [referralLoading, setReferralLoading] = useState(false);
+const [referralError, setReferralError] = useState("");
+const [referralSuccess, setReferralSuccess] = useState("");
+const [referralDiscount, setReferralDiscount] = useState(0);
+const total =
+  baseTotal
+  - (walletApplied ? walletUsed : 0)
+  - (referralApplied && !walletApplied ? referralDiscount : 0);
+const applyReferralCode = async () => {
+  if (!referralCode.trim()) {
+    setReferralError("Please enter referral code");
+    return;
+  }
+
+  setReferralLoading(true);
+  setReferralError("");
+  setReferralSuccess("");
+
+  try {
+    const token = userToken || localStorage.getItem("jwtToken");
+
+    const res = await fetch(`${API_BASE}/referrals/apply`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    referral_code: referralCode,   // ✅ FIXED KEY NAME
+  }),
+});
+
+    if (res.status === 404) {
+      throw new Error("Referral system not available");
+    }
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Invalid referral code");
+    }
+
+    setReferralDiscount(Number(data.discountAmount || 0)); // OR remove this completely
+    setReferralApplied(true);
+    setReferralSuccess("Referral applied successfully 🎉");
+
+  } catch (err) {
+  setReferralError(err.message);
+  setReferralApplied(false);
+  setReferralDiscount(0); // reset cleanly
+} finally {
+    setReferralLoading(false);
+  }
+};
 
   // User info and addresses
   const [userInfo, setUserInfo] = useState(() => {
@@ -334,7 +410,7 @@ export default function Checkout() {
   const [notes, setNotes] = useState("");
 
   const [googleReady, setGoogleReady] = useState(false);
-
+ 
   const today = new Date().toISOString().split("T")[0];
 
   const showToast = useCallback((msg, type = "info") => {
@@ -679,17 +755,20 @@ export default function Checkout() {
       });
 
       const contentType = response.headers.get("content-type");
-      let responseBody;
-      if (contentType && contentType.includes("application/json")) {
-        responseBody = await response.json();
-      } else {
-        responseBody = await response.text();
-        console.error("Server responded with non-JSON:", responseBody);
-      }
+    
+let data;
+
+if (contentType && contentType.includes("application/json")) {
+  data = await response.json();
+} else {
+  const text = await response.text();
+  console.error("❌ Non-JSON response:", text);
+  throw new Error("Server returned invalid response");
+}
 
       if (!response.ok) {
-        let errorMessage = responseBody?.message ||
-          (typeof responseBody === 'string' ? responseBody : `Server error: ${response.status}`);
+        let errorMessage = data?.message ||
+          (typeof data === 'string' ? data : `Server error: ${response.status}`);
         if (errorMessage.includes("linked to existing orders") || errorMessage.includes("foreign key")) {
           errorMessage = "This address cannot be deleted because it has been used in past orders. You can keep it saved for future bookings.";
         }
@@ -968,11 +1047,10 @@ export default function Checkout() {
     }
 
     const orderItems = (items || []).map(item => ({
-      product_id: item.id,
-      quantity: item.quantity,
-      price_at_purchase: item.price,
-    }));
-
+  product_id: item.product_id || item.id,
+  quantity: Number(item.quantity) || 1,
+  price_at_purchase: Number(item.price_at_purchase || item.price || 0),
+}));
     return {
       deliveryAddress: deliveryAddressData,
       pickupAddress: pickupAddressData,
@@ -1182,43 +1260,61 @@ export default function Checkout() {
       if (!selectedCardData) throw new Error("Selected card not found");
 
       const payload = {
-        address_id: deliveryId,
-        pickup_address_id: pickupId,
-        use_same_address: useSameAddress,
-        items: order.items,
-        subtotal: order.subtotal,
-        tip: order.tip,
-        total: order.total,
-        collect_slot: order.collect_slot,
-        delivery_slot: order.delivery_slot,
-        notes: order.notes,
-        images: [],
-        is_student: order.is_student,
-        student_id_image: order.student_id_image,
-        change_manager_requested: order.change_manager_requested,
-        discount_percent: order.discount_percent,
-        discount_amount: order.discount_amount,
-        topup_amount: order.topup_amount,
-        payment_method_id: selectedCardData.payment_method_id,
-        stripe_customer_id: currentCustomerId,
-      };
+  address_id: deliveryId,
+  pickup_address_id: pickupId,
+  use_same_address: useSameAddress,
+
+  items: order.items,
+  subtotal: order.subtotal,
+  tip: order.tip,
+  total: order.total,
+
+  collect_slot: order.collect_slot,
+  delivery_slot: order.delivery_slot,
+
+  notes: order.notes,
+  images: [],
+
+  is_student: order.is_student,
+  student_id_image: order.student_id_image,
+
+  change_manager_requested: order.change_manager_requested,
+
+  discount_percent: order.discount_percent,
+  discount_amount: order.discount_amount,
+  topup_amount: order.topup_amount,
+
+  // ✅ CRITICAL (missing before)
+  wallet_used_amount: walletUsed,
+  wallet_applied: walletApplied,
+};
 
       const response = await fetch(`${API_BASE}/api/orders`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload),
+});
+const contentType = response.headers.get("content-type");
 
-      const data = await response.json();
+let data;
+if (contentType && contentType.includes("application/json")) {
+  data = await response.json();
+} else {
+  const text = await response.text();
+  console.error("❌ Non-JSON response from /api/orders:", text);
+  throw new Error(`Server error ${response.status}: ${text.substring(0, 200)}`);
+}
 
-      if (!response.ok) {
-        throw new Error(data.message || "Booking failed");
-      }
+if (!response.ok) {
+  console.error("❌ Order creation failed:", data);
+  throw new Error(data.message || data.error || `Failed to create booking (${response.status})`);
+}
 
-      localStorage.removeItem('laundryCart');
+localStorage.removeItem('laundryCart');
+
       showToast("Booking confirmed successfully!", "success");
 
       navigate("/thankyou", {
@@ -1283,28 +1379,34 @@ export default function Checkout() {
       const { deliveryId, pickupId } = await ensureAddressIds(pendingBookingData);
 
       const payload = {
-        address_id: deliveryId,
-        pickup_address_id: pickupId,
-        use_same_address: useSameAddress,
-        items: pendingBookingData.items,
-        subtotal: pendingBookingData.subtotal,
-        tip: pendingBookingData.tip,
-        total: pendingBookingData.total,
-        collect_slot: pendingBookingData.collect_slot,
-        delivery_slot: pendingBookingData.delivery_slot,
-        notes: pendingBookingData.notes,
-        images: [],
-        is_student: pendingBookingData.is_student,
-        student_id_image: pendingBookingData.student_id_image,
-        change_manager_requested: pendingBookingData.change_manager_requested,
-        discount_percent: pendingBookingData.discount_percent,
-        discount_amount: pendingBookingData.discount_amount,
-        topup_amount: pendingBookingData.topup_amount,
-        payment_method_id: paymentMethodId,
-        payment_intent_id: paymentIntentId,
-        stripe_customer_id: customerId,
-      };
+  address_id: deliveryId,
+  pickup_address_id: pickupId,
+  use_same_address: useSameAddress,
 
+  items: pendingBookingData.items,
+  subtotal: pendingBookingData.subtotal,
+  tip: pendingBookingData.tip,
+  total: pendingBookingData.total,
+
+  collect_slot: pendingBookingData.collect_slot,
+  delivery_slot: pendingBookingData.delivery_slot,
+
+  notes: pendingBookingData.notes,
+  images: [],
+
+  is_student: pendingBookingData.is_student,
+  student_id_image: pendingBookingData.student_id_image,
+
+  change_manager_requested: pendingBookingData.change_manager_requested,
+
+  discount_percent: pendingBookingData.discount_percent,
+  discount_amount: pendingBookingData.discount_amount,
+  topup_amount: pendingBookingData.topup_amount,
+
+  // ✅ CRITICAL
+  wallet_used_amount: walletUsed,
+  wallet_applied: walletApplied,
+};
       const response = await fetch(`${API_BASE}/api/orders`, {
         method: "POST",
         headers: {
@@ -1314,7 +1416,17 @@ export default function Checkout() {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type");
+
+let data;
+
+if (contentType && contentType.includes("application/json")) {
+  data = await response.json();
+} else {
+  const text = await response.text();
+  console.error("❌ Non-JSON response from /api/orders:", text);
+  throw new Error("Server error: Invalid response from backend");
+}
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to create booking");
@@ -1435,6 +1547,130 @@ const validatePhone = useCallback((fullPhone, localRaw) => {
     setEmailValid(true);
     return true;
   }, []);
+  const fetchWalletSettings = useCallback(async () => {
+  try {
+    const token = userToken || localStorage.getItem("jwtToken");
+    if (!token) return null;
+
+    const response = await fetch(`${API_BASE}/wallet/settings`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!response.ok) return null;
+
+    return await response.json();
+  } catch (e) {
+    console.error("Wallet fetch error:", e);
+    return null;
+  }
+}, [userToken]);
+
+const applyWallet = useCallback(async (subtotal) => {
+  if (loadingWallet) return;
+
+  setLoadingWallet(true);
+
+  const data = await fetchWalletSettings();
+
+  if (!data) {
+    setLoadingWallet(false);
+    return;
+  }
+
+  const balance = Number(data.walletBalance || 0);
+  const maxUsage = Number(data.walletMaxUsagePerOrder || 0);
+  const threshold = Number(data.walletThreshold || 0);
+
+  setWalletBalance(balance);
+  setWalletMaxUsage(maxUsage);
+  setWalletThreshold(threshold);
+
+  // threshold check
+  if (subtotal < threshold) {
+    setWalletUsed(0);
+    setWalletApplied(false);
+    setLoadingWallet(false);
+    return;
+  }
+
+  const usable = Math.min(balance, maxUsage, subtotal);
+
+setWalletUsed(usable);
+// ✅ Keep user's choice if already applied
+setWalletApplied((prev) => prev);
+
+  setLoadingWallet(false);
+}, [fetchWalletSettings, loadingWallet]);
+
+const fetchReferralSettings = useCallback(async () => {
+  try {
+    const token = userToken || localStorage.getItem("jwtToken");
+    if (!token) return null;
+
+    const res = await fetch(`${API_BASE}/referral/settings`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (res.status === 404) {
+      console.warn("Referral API not available");
+      return null;
+    }
+
+    if (!res.ok) return null;
+
+    return await res.json();
+  } catch (e) {
+    console.error("Referral fetch error:", e);
+    return null;
+  }
+}, [userToken]);
+
+const applyReferral = useCallback(async (subtotal) => {
+  if (loadingReferral) return;
+
+  setLoadingReferral(true);
+
+  const data = await fetchReferralSettings();
+
+  if (!data) {
+    setLoadingReferral(false);
+    return;
+  }
+
+  const balance = Number(data.referralBalance || 0);
+  const maxUsage = Number(data.referralMaxUsagePerOrder || 0);
+  const threshold = Number(data.referralThreshold || 0);
+
+  setReferralBalance(balance);
+  setReferralMaxUsage(maxUsage);
+  setReferralThreshold(threshold);
+
+  if (subtotal < threshold) {
+    setReferralUsed(0);
+    setReferralApplied(false);
+    setWalletUsed(0);
+    setLoadingReferral(false);
+    return;
+  }
+
+  const usable = Math.min(
+  balance,
+  maxUsage,
+  subtotal
+);
+
+  setReferralUsed(usable);
+  setReferralApplied((prev) => prev);
+  setWalletUsed(0);
+
+  setLoadingReferral(false);
+}, [fetchReferralSettings, loadingReferral]);
 
   // const handlePhoneChange = (e) => {
   //   let raw = e.target.value;
@@ -1982,6 +2218,9 @@ const handleCountryCodeChange = (e) => {
   // }, []);
 
   // Step validation
+useEffect(() => {
+  applyWallet(subtotal);
+}, [subtotal, applyWallet]);
   const stepDone = (s) => {
     if (s === 1) {
       const phoneLen = stripLeadingZeros(localPhone).length;
@@ -2499,123 +2738,249 @@ const handleCountryCodeChange = (e) => {
         )}
 
         {/* ════════ STEP 4 — Payment ════════ */}
-        {step === 4 && !showPaymentSetup && (
-          <div className="qb-section-card">
-            <h2 className="qb-section-title">Payment Method</h2>
-            <p className="qb-section-desc">No charge now — you'll only pay after approving your invoice.</p>
+{/* ════════ STEP 4 — Payment ════════ */}
+{step === 4 && !showPaymentSetup && (
+  <div className="qb-section-card">
+    <h2 className="qb-section-title">Payment Method</h2>
+    <p className="qb-section-desc">
+      No charge now — you'll only pay after approving your invoice.
+    </p>
 
-            <div className="qb-no-charge-notice">
-              <div className="qb-notice-icon"><i className="fas fa-info-circle" /></div>
-              <div>
-                <strong>No payment taken now.</strong> Save your card to confirm your booking. We'll send an invoice after pickup — you only pay when you're happy.
-              </div>
-            </div>
+    {/* NOTICE */}
+    <div className="qb-no-charge-notice">
+      <div className="qb-notice-icon">
+        <i className="fas fa-info-circle" />
+      </div>
+      <div>
+        <strong>No payment taken now.</strong> Enter your card details to confirm your booking. We'll send an invoice after pickup — you only pay when you're happy.
+      </div>
+    </div>
 
-            <div className="qb-summary-box">
-              <div className="qb-summary-row">
-                <span>Collection</span>
-                <span>{selectedCollectSlot ? `${new Date(collectDate).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} · ${formatTimeRange24Hour(selectedCollectSlot.start, selectedCollectSlot.end)}` : "—"}</span>
-              </div>
-              <div className="qb-summary-row">
-                <span>Delivery</span>
-                <span>{selectedDeliverSlot ? `${new Date(deliverDate).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} · ${formatTimeRange24Hour(selectedDeliverSlot.start, selectedDeliverSlot.end)}` : "—"}</span>
-              </div>
-              <div className="qb-summary-row">
-                <span>Total (inc. fees)</span>
-                <span>£{total.toFixed(2)}</span>
-              </div>
-            </div>
+    {/* SUMMARY (MATCHED) */}
+    <div className="qb-summary-box">
+      <div className="qb-summary-row">
+        <span>Collection</span>
+        <span>
+          {selectedCollectSlot
+            ? `${new Date(collectDate).toLocaleDateString("en-GB", {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+              })} · ${formatTimeRange24Hour(
+                selectedCollectSlot.start,
+                selectedCollectSlot.end
+              )}`
+            : "—"}
+        </span>
+      </div>
 
-            {userToken && loadingCards ? (
-              <div className="qb-loading-cards">
-                <span className="qb-spin" /> Loading your saved cards…
-              </div>
-            ) : userToken && savedCards.length > 0 ? (
-              <>
-                <p className="qb-cards-heading"><i className="fas fa-credit-card" style={{ marginRight: 6 }} />Your Saved Cards</p>
-                <div className="qb-saved-cards-list">
-                  {savedCards.map((card) => (
-                    <div
-                      key={card.payment_method_id}
-                      className={`qb-card-item${selectedCard === card.payment_method_id ? " selected" : ""}`}
-                      onClick={() => setSelectedCard(card.payment_method_id)}
-                    >
-                      <i className={getCardBrandIcon(card.brand)} style={{ fontSize: "1.4rem", color: "var(--qb-text-secondary)" }} />
-                      <span className="qb-card-brand-text">{card.brand?.toUpperCase() || "CARD"}</span>
-                      <span className="qb-card-num">•••• {card.last4}</span>
-                      {card.is_default && <span className="qb-card-default-badge"><i className="fas fa-check-circle" /> Default</span>}
-                      {selectedCard === card.payment_method_id && <div className="qb-check-circle"><i className="fas fa-check" /></div>}
-                      <button className="qb-card-del" onClick={(e) => { e.stopPropagation(); handleDeleteCard(card.payment_method_id); }}>
-                        <i className="fas fa-trash" />
-                      </button>
-                    </div>
-                  ))}
-                  <div className="qb-add-card-btn" onClick={handleUseAnotherCard}>
-                    <div className="qb-add-icon"><i className="fas fa-plus" /></div>
-                    <span>Use a different card</span>
-                  </div>
+      <div className="qb-summary-row">
+        <span>Delivery</span>
+        <span>
+          {selectedDeliverSlot
+            ? `${new Date(deliverDate).toLocaleDateString("en-GB", {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+              })} · ${formatTimeRange24Hour(
+                selectedDeliverSlot.start,
+                selectedDeliverSlot.end
+              )}`
+            : "—"}
+        </span>
+      </div>
+
+      <div className="qb-summary-row">
+        <span>Collection & Delivery fee</span>
+        <span>
+          <span className="qb-free-badge">FREE</span>
+        </span>
+      </div>
+
+      {/* Wallet */}
+      {walletApplied && (
+        <div className="qb-summary-row">
+          <span>Wallet Used</span>
+          <span>-£{walletUsed.toFixed(2)}</span>
+        </div>
+      )}
+
+      {/* Referral */}
+      {referralApplied && (
+        <div className="qb-summary-row">
+          <span>Referral Discount</span>
+          <span>-£{referralDiscount.toFixed(2)}</span>
+        </div>
+      )}
+
+      <div className="qb-summary-row">
+        <strong>Total</strong>
+        <strong>£{total.toFixed(2)}</strong>
+      </div>
+    </div>
+
+
+    {/* WALLET (same logic, improved UI spacing) */}
+    {/* WALLET UI */}
+{walletBalance > 0 ? (
+  <div className="qb-wallet-card">
+    <div className="qb-wallet-left">
+      <strong>Use Wallet Balance</strong>
+      <div style={{ fontSize: 12 }}>
+        Available: £{walletBalance.toFixed(2)}
+      </div>
+
+      {subtotal < walletThreshold ? (
+        <div style={{ fontSize: 12, color: "red" }}>
+          Wallet usable above £{walletThreshold.toFixed(2)}
+        </div>
+      ) : (
+        <div style={{ fontSize: 12 }}>
+          Max usable: £{walletMaxUsage.toFixed(2)}
+        </div>
+      )}
+    </div>
+
+    {/* 🔥 TOGGLE SWITCH */}
+    <label className="qb-switch">
+      <input
+        type="checkbox"
+        checked={walletApplied}
+        disabled={subtotal < walletThreshold}
+        onChange={(e) => {
+          const isChecked = e.target.checked;
+
+          setWalletApplied(isChecked);
+
+          if (isChecked) {
+            const usable = Math.min(
+              walletBalance,
+              walletMaxUsage,
+              subtotal
+            );
+            setWalletUsed(usable);
+          } else {
+            setWalletUsed(0);
+          }
+        }}
+      />
+      <span className="qb-slider"></span>
+    </label>
+  </div>
+) : (
+  /* REFERRAL UI (ONLY when no wallet) */
+  <div className="qb-field" style={{ marginTop: "16px" }}>
+    <label className="qb-label">
+      Have a referral code? <span className="qb-label-opt">(optional)</span>
+    </label>
+
+    <div style={{ display: "flex", gap: "8px" }}>
+      <input
+        className="qb-input"
+        type="text"
+        value={referralCode}
+        onChange={(e) => {
+          setReferralCode(e.target.value.toUpperCase());
+          setReferralApplied(false);
+          setReferralError("");
+          setReferralSuccess("");
+        }}
+        placeholder="Enter referral code"
+        disabled={referralApplied}
+      />
+
+      <button
+        className="qb-btn-ghost"
+        onClick={applyReferralCode}
+        disabled={referralLoading || referralApplied}
+      >
+        {referralLoading
+          ? "Applying..."
+          : referralApplied
+          ? "Applied"
+          : "Apply"}
+      </button>
+    </div>
+
+    {referralError && (
+      <div className="qb-error-message">{referralError}</div>
+    )}
+
+    {referralSuccess && (
+      <div className="qb-success-message">{referralSuccess}</div>
+    )}
+  </div>
+)}
+
+    {/* SAVED CARDS */}
+    {userToken && loadingCards ? (
+      <div className="qb-loading-cards">
+        <span className="qb-spin" /> Loading your saved cards…
+      </div>
+    ) : userToken && savedCards.length > 0 ? (
+      <>
+        <p className="qb-cards-heading">
+          <i className="fas fa-credit-card" /> Your Saved Cards
+        </p>
+
+        <div className="qb-saved-cards-list">
+          {savedCards.map((card) => (
+            <div
+              key={card.payment_method_id}
+              className={`qb-card-item${
+                selectedCard === card.payment_method_id ? " selected" : ""
+              }`}
+              onClick={() =>
+                setSelectedCard(card.payment_method_id)
+              }
+            >
+              <i className={getCardBrandIcon(card.brand)} />
+              <span>•••• {card.last4}</span>
+
+              {selectedCard === card.payment_method_id && (
+                <div className="qb-check-circle">
+                  <i className="fas fa-check" />
                 </div>
-                <button
-                  className="qb-btn-primary lg"
-                  onClick={handleSavedCardBooking}
-                  disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
-                >
-                  {loading ? <><div className="qb-btn-spinner" /> Processing…</> : <><i className="fas fa-check-circle" /> Confirm Booking</>}
-                </button>
-              </>
-            ) : (
-              <>
-                {/* <label className="qb-save-toggle-row">
-  <div className="qb-save-toggle-icon">
-    <i className="fas fa-lock" />
-  </div>
- 
-  <div className="qb-save-toggle-text">
-    <strong>Reserve My Slot</strong>
-    <span>
-      Enter your card details to secure your booking.
-      No charges will be made until after inspection.
-    </span>
-  </div>
- 
-  <label className="qb-switch">
-    <input
-      type="checkbox"
-      checked={saveCardOption}
-      onChange={(e) => setSaveCardOption(e.target.checked)}
-    />
-    <span className="qb-switch-slider" />
-  </label>
-</label> */}
-                <button
-                  className="qb-btn-primary lg"
-                  onClick={() => handleConfirmBooking()}
-                  disabled={!isBookingValid() || loading || setupProcessing || bookingInProgress}
-                >
-                  {loading || setupProcessing
-                    ? <><div className="qb-btn-spinner" /> Processing…</>
-                    : <><i className="fas fa-lock" /> {saveCardOption ? "Book Now " : "Book Now"}</>}
-                </button>
-              </>
-            )}
-
-            <button className="qb-btn-ghost" onClick={() => navigate("/")} disabled={loading || setupProcessing}>
-              <i className="fas fa-times" /> Cancel Booking
-            </button>
-
-            <div className="qb-trust-row">
-              <span><i className="fas fa-check" />Free collection</span>
-              <span><i className="fas fa-check" />24hr turnaround</span>
-              <span><i className="fas fa-check" />Pay after inspection</span>
+              )}
             </div>
+          ))}
+        </div>
 
-            <div className="qb-btn-row" style={{ marginTop: 10 }}>
-              <button className="qb-btn-ghost" onClick={() => setStep(3)}>
-                <i className="fas fa-arrow-left" /> Back
-              </button>
-            </div>
-          </div>
-        )}
+        <button
+          className="qb-btn-primary lg"
+          onClick={handleSavedCardBooking}
+          disabled={!isBookingValid() || loading}
+        >
+          {loading ? "Processing..." : "Confirm Booking"}
+        </button>
+      </>
+    ) : (
+      <button
+        className="qb-btn-primary lg"
+        onClick={handleConfirmBooking}
+        disabled={!isBookingValid() || loading}
+      >
+        {loading ? "Processing..." : "Book Now"}
+      </button>
+    )}
+
+    <button className="qb-btn-ghost" onClick={() => navigate("/")}>
+      Cancel Booking
+    </button>
+
+    <div className="qb-trust-row">
+      <span>✔ Free collection</span>
+      <span>✔ 24hr turnaround</span>
+      <span>✔ Pay after inspection</span>
+    </div>
+
+    <div className="qb-btn-row">
+      <button className="qb-btn-ghost" onClick={() => setStep(3)}>
+        Back
+      </button>
+    </div>
+  </div>
+)}
 
       </main>
 

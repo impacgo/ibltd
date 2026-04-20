@@ -1158,3 +1158,164 @@ button:focus:not(:focus-visible) { outline: none; }
     font-size: 1rem;
   }
 }
+.qb-input-spinner {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+/* 🔥 Referral Copy Button */
+.qb-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 12px;
+  margin-top: 8px;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  color: var(--qb-accent);
+  background: var(--qb-accent-light);
+
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  border-radius: var(--qb-radius-full);
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* hover */
+.qb-copy-btn:hover {
+  background: var(--qb-accent);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.25);
+}
+
+/* click */
+.qb-copy-btn:active {
+  transform: scale(0.96);
+}
+
+/* icon */
+.qb-copy-btn i {
+  font-size: 0.7rem;
+}
+.qb-success-message {
+  color: #16a34a;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.qb-error-message {
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 6px;
+}
+/* 🔥 Wallet Toggle Switch */
+.qb-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.qb-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.qb-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #e5e7eb; /* light gray */
+  border-radius: 999px;
+  transition: all 0.3s ease;
+}
+
+.qb-slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* ✅ ACTIVE STATE */
+.qb-switch input:checked + .qb-slider {
+  background-color: #22c55e; /* green (matches your theme) */
+}
+
+.qb-switch input:checked + .qb-slider::before {
+  transform: translateX(22px);
+}
+
+/* Disabled */
+.qb-switch input:disabled + .qb-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.qb-wallet-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+/* Wallet toggle slider */
+.qb-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.qb-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.qb-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #cbd5e1;
+  border-radius: 24px;
+  transition: 0.3s;
+}
+
+.qb-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.qb-switch input:checked + .qb-slider {
+  background: #FF6B00;
+}
+
+.qb-switch input:checked + .qb-slider:before {
+  transform: translateX(20px);
+}
+
+.qb-switch input:disabled + .qb-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

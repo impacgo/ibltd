@@ -1,7 +1,6 @@
 // src/components/Testimonials.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ReviewabilityAdvancedWidget from './ReviewabilityAdvancedWidget';
 import './Testimonials.css';
 
 const testimonials = [
@@ -166,12 +165,13 @@ const Testimonials = () => {
           <p className="testimonials-subtitle">
             Don't just take our word for it - hear from our satisfied customers across the UK
           </p>
-          <ReviewabilityAdvancedWidget
-            className="reviewability-widget-wrap"
-            bid="164019"
-            url="https://app.revu.cloud"
-            aid="27069"
-          />
+          
+        
+
+<div class="trustpilot-widget" data-locale="en-GB" data-template-id="539adbd6dec7e10e686debee" data-businessunit-id="699c575141462e7a0920077a" data-style-height="500px" data-style-width="100%" data-token="4e341fae-41a0-4daf-8c92-d2e8dd58db13" data-stars="4,5" data-review-languages="en">
+  <a href="https://uk.trustpilot.com/review/ironingboy.com" target="_blank" rel="noopener">Trustpilot</a>
+</div>
+
         </div>
 
         {/* Mobile Progress Indicator */}

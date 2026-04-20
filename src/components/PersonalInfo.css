@@ -1,10 +1,8 @@
+/* ===== Personal Info Component - QuickBooking Styling ===== */
+/* Refreshed design matching QuickBooking UI - all functionality unchanged */
 
-/* ===== Personal Info Component Styles ===== */
-/* Matches Contact Component Design System */
 :root {
-  --personal-bg: #ffffff;
-  --personal-bg-light: #f8fafc;
-  --personal-bg-lighter: #f1f5f9;
+  --personal-bg: #f8fafc;
   --personal-card-bg: #ffffff;
   --personal-card-border: #e2e8f0;
   --personal-text-primary: #1e293b;
@@ -30,111 +28,78 @@
   --personal-radius-xl: 20px;
   --personal-radius-full: 9999px;
   
-  --personal-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --personal-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --personal-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --personal-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
-  --personal-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.1);
-  --personal-shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --personal-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --personal-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
   --personal-shadow-accent: 0 8px 20px rgba(255, 107, 0, 0.2);
 }
 
 .personal-info-container {
-  background: var(--personal-bg-light);
-  min-height: 100dvh; /* mobile-safe viewport */
+  background: var(--personal-bg);
+  min-height: 100vh;
   padding: 40px 20px 100px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  position: relative;
-
-  overflow-y: auto;        /* ✅ allow vertical scroll */
-  overflow-x: hidden;      /* prevent horizontal lock */
-  -webkit-overflow-scrolling: touch; /* iOS smooth scroll */
-}
-
-.profile-card {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-
-.personal-info-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 107, 0, 0.2) 50%, 
-    transparent 100%
-  );
 }
 
 /* Page Header */
 .page-header {
   max-width: 800px;
-  margin: 0 auto 40px;
+  margin: 0 auto 32px;
   text-align: center;
 }
 
 .page-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
-  line-height: 1.1;
   color: var(--personal-text-primary);
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
 }
 
 .page-title::after {
   content: '';
   display: block;
   width: 60px;
-  height: 4px;
+  height: 3px;
   background: var(--personal-accent-gradient);
-  margin: 16px auto 0;
-  border-radius: 2px;
+  margin: 14px auto 0;
+  border-radius: var(--personal-radius-full);
 }
 
 /* Loading & Error Screens */
 .loading-screen,
 .error-screen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
+  max-width: 800px;
+  margin: 0 auto;
   background: var(--personal-card-bg);
   border: 1px solid var(--personal-card-border);
   border-radius: var(--personal-radius-xl);
   box-shadow: var(--personal-shadow-md);
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .loading-content,
 .error-content {
   text-align: center;
   padding: 40px;
-  max-width: 400px;
 }
 
 .loader {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   border: 3px solid var(--personal-card-border);
   border-top: 3px solid var(--personal-accent);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 24px;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 20px;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-.loading-content p {
-  color: var(--personal-text-secondary);
-  font-size: 1rem;
-  font-weight: 500;
-  margin: 0;
 }
 
 .error-content i {
@@ -144,75 +109,67 @@
 }
 
 .error-content h3 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: var(--personal-text-primary);
-  margin: 0 0 12px 0;
-}
-
-.error-content p {
-  color: var(--personal-text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin: 0 0 30px 0;
+  margin-bottom: 12px;
 }
 
 .primary-btn {
-  padding: 14px 28px;
+  padding: 12px 24px;
   background: var(--personal-accent-gradient);
   color: white;
   border: none;
   border-radius: var(--personal-radius-md);
-  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-  box-shadow: var(--personal-shadow-accent);
+  gap: 8px;
+  margin-top: 16px;
 }
 
 .primary-btn:hover {
   background: var(--personal-accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(255, 107, 0, 0.3);
+  box-shadow: var(--personal-shadow-accent);
 }
 
 /* Booking Info Banner */
 .booking-info-banner {
   max-width: 800px;
-  margin: 0 auto 30px;
+  margin: 0 auto 24px;
   animation: slideDown 0.3s ease;
 }
 
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .booking-info-content {
-  background: var(--personal-info-bg);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: linear-gradient(135deg, #eef6ff, #e6f0ff);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-left: 4px solid var(--personal-info);
   border-radius: var(--personal-radius-lg);
-  padding: 24px;
+  padding: 20px 24px;
   display: flex;
   align-items: flex-start;
   gap: 20px;
-  position: relative;
+  flex-wrap: wrap;
+  box-shadow: var(--personal-shadow-sm);
+  transition: all 0.2s;
+}
+
+.booking-info-content:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--personal-shadow-md);
 }
 
 .booking-info-icon {
   width: 48px;
   height: 48px;
-  background: var(--personal-info);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   border-radius: var(--personal-radius-md);
   display: flex;
   align-items: center;
@@ -220,6 +177,7 @@
   color: white;
   font-size: 1.2rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(59,130,246,0.2);
 }
 
 .booking-info-details {
@@ -229,31 +187,27 @@
 .booking-info-details h4 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--personal-text-primary);
-  margin: 0 0 8px 0;
+  color: #1e40af;
+  margin: 0 0 6px 0;
 }
 
 .booking-info-details p {
   font-size: 0.9rem;
-  color: var(--personal-text-secondary);
+  color: #334155;
+  margin: 0 0 10px 0;
   line-height: 1.5;
-  margin: 0 0 12px 0;
 }
 
 .booking-id {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: var(--personal-radius-sm);
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--personal-info);
-}
-
-.booking-id i {
-  font-size: 0.9rem;
+  gap: 6px;
+  background: rgba(59,130,246,0.15);
+  padding: 5px 12px;
+  border-radius: var(--personal-radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1d4ed8;
 }
 
 .booking-info-actions {
@@ -263,18 +217,16 @@
 }
 
 .btn {
-  padding: 10px 20px;
+  padding: 8px 18px;
   border-radius: var(--personal-radius-md);
-  font-size: 0.85rem;
   font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  transition: all 0.3s ease;
-  border: none;
-  font-family: inherit;
 }
 
 .create-account-btn {
@@ -296,52 +248,39 @@
 }
 
 .dismiss-btn:hover {
-  border-color: var(--personal-accent);
-  color: var(--personal-accent);
+  border-color: var(--personal-info);
+  color: var(--personal-info);
   transform: translateY(-2px);
 }
 
 /* Error Banner */
 .error-banner {
   max-width: 800px;
-  margin: 0 auto 30px;
+  margin: 0 auto 20px;
   background: var(--personal-error-bg);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--personal-radius-lg);
-  padding: 16px 20px;
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--personal-radius-md);
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   gap: 12px;
   color: var(--personal-error);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  animation: slideDown 0.3s ease;
-}
-
-.error-banner i {
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.error-banner span {
-  flex: 1;
-  line-height: 1.4;
 }
 
 .error-banner button {
   background: none;
   border: none;
-  color: var(--personal-error);
-  font-size: 1rem;
+  color: inherit;
   cursor: pointer;
+  margin-left: auto;
   padding: 4px;
-  border-radius: var(--personal-radius-sm);
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+  border-radius: 50%;
 }
 
 .error-banner button:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239,68,68,0.1);
 }
 
 /* Profile Card */
@@ -351,8 +290,9 @@
   background: var(--personal-card-bg);
   border: 1px solid var(--personal-card-border);
   border-radius: var(--personal-radius-xl);
-  box-shadow: var(--personal-shadow-lg);
   overflow: hidden;
+  box-shadow: var(--personal-shadow-lg);
+  transition: box-shadow 0.2s;
 }
 
 /* Avatar Section */
@@ -367,17 +307,9 @@
 .avatar-section::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  right: -50%;
-  bottom: -50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  animation: float 20s infinite linear;
-}
-
-@keyframes float {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .avatar-circle {
@@ -390,9 +322,9 @@
   justify-content: center;
   margin: 0 auto 20px;
   box-shadow: var(--personal-shadow-lg);
+  border: 4px solid white;
   position: relative;
   z-index: 2;
-  border: 4px solid white;
 }
 
 .avatar-initials {
@@ -400,8 +332,8 @@
   font-weight: 800;
   background: var(--personal-accent-gradient);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
 }
 
 .user-info {
@@ -413,28 +345,27 @@
   font-size: 1.75rem;
   font-weight: 800;
   color: white;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .user-email {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 16px 0;
-  font-weight: 500;
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.9);
+  margin: 0 0 14px 0;
 }
 
 .account-status {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  padding: 8px 16px;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(8px);
+  padding: 6px 16px;
   border-radius: var(--personal-radius-full);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255,255,255,0.25);
 }
 
 .status-dot {
@@ -452,15 +383,15 @@
 
 /* Info Section */
 .info-section {
-  padding: 40px 32px;
+  padding: 32px;
 }
 
 .section-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--personal-text-primary);
-  margin: 0 0 30px 0;
-  padding-bottom: 16px;
+  margin: 0 0 24px 0;
+  padding-bottom: 12px;
   border-bottom: 2px solid var(--personal-card-border);
   position: relative;
 }
@@ -473,48 +404,47 @@
   width: 50px;
   height: 2px;
   background: var(--personal-accent-gradient);
-  border-radius: 1px;
+  border-radius: var(--personal-radius-full);
 }
 
 /* Field Groups */
 .field-group {
-  margin-bottom: 24px;
-  background: var(--personal-bg-light);
+  margin-bottom: 20px;
+  background: var(--personal-bg);
   border: 1.5px solid var(--personal-card-border);
   border-radius: var(--personal-radius-lg);
   padding: 20px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .field-group.editing {
   border-color: var(--personal-accent);
   background: white;
-  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(255,107,0,0.1);
 }
 
 .field-group label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--personal-text-secondary);
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 12px;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: var(--personal-text-muted);
+  margin-bottom: 12px;
 }
 
 .field-group label i {
   color: var(--personal-accent);
-  font-size: 0.9rem;
-  width: 16px;
-  text-align: center;
+  font-size: 0.85rem;
+  width: 18px;
 }
 
 .field-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .view-mode {
@@ -525,12 +455,11 @@
 }
 
 .field-value {
-  font-size: 1.1rem;
-  color: var(--personal-text-primary);
+  font-size: 1rem;
   font-weight: 600;
+  color: var(--personal-text-primary);
   flex: 1;
-  padding: 10px 0;
-  line-height: 1.4;
+  padding: 8px 0;
 }
 
 .field-value:empty::before {
@@ -547,12 +476,11 @@
   height: 40px;
   border-radius: var(--personal-radius-md);
   color: var(--personal-text-secondary);
-  font-size: 0.9rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   flex-shrink: 0;
 }
 
@@ -568,110 +496,83 @@
 .edit-mode {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .edit-input {
-  padding: 14px 16px;
-  border: 2px solid var(--personal-card-border);
+  padding: 12px 14px;
+  border: 1.5px solid var(--personal-card-border);
   border-radius: var(--personal-radius-md);
   font-size: 1rem;
+  font-weight: 500;
   color: var(--personal-text-primary);
   background: white;
-  transition: all 0.3s ease;
-  font-family: inherit;
-  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .edit-input:focus {
   outline: none;
   border-color: var(--personal-accent);
-  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
-}
-
-.edit-input::placeholder {
-  color: var(--personal-text-muted);
-  font-weight: 400;
+  box-shadow: 0 0 0 3px rgba(255,107,0,0.1);
 }
 
 .edit-buttons {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  align-items: center;
+}
+
+.save-btn, .cancel-btn {
+  padding: 10px 20px;
+  border-radius: var(--personal-radius-md);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+  text-align: center;
 }
 
 .save-btn {
-  padding: 12px 24px;
   background: var(--personal-accent-gradient);
   color: white;
   border: none;
-  border-radius: var(--personal-radius-md);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  min-width: 80px;
 }
 
 .save-btn:hover:not(:disabled) {
   background: var(--personal-accent-hover);
   transform: translateY(-2px);
-  box-shadow: var(--personal-shadow-md);
+  box-shadow: var(--personal-shadow-sm);
 }
 
 .save-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-.save-btn i.fa-spinner {
-  animation: spin 1s linear infinite;
 }
 
 .cancel-btn {
-  padding: 12px 24px;
   background: white;
   border: 1.5px solid var(--personal-card-border);
   color: var(--personal-text-secondary);
-  border-radius: var(--personal-radius-md);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 80px;
 }
 
 .cancel-btn:hover:not(:disabled) {
-  background: var(--personal-bg-light);
   border-color: var(--personal-accent);
   color: var(--personal-accent);
   transform: translateY(-2px);
 }
 
-.cancel-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
 /* Actions Section */
 .actions-section {
-  padding: 32px;
-  background: var(--personal-bg-light);
+  padding: 28px 32px;
+  background: var(--personal-bg);
   border-top: 1px solid var(--personal-card-border);
 }
 
 .actions-section .section-title {
-  margin-bottom: 24px;
   border-bottom: none;
   padding-bottom: 0;
+  margin-bottom: 20px;
 }
 
 .actions-section .section-title::after {
@@ -684,61 +585,51 @@
   flex-wrap: wrap;
 }
 
-.logout-btn {
+.logout-btn, .delete-btn {
   flex: 1;
   min-width: 200px;
-  padding: 16px 24px;
+  padding: 14px 24px;
+  border-radius: var(--personal-radius-lg);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.logout-btn {
   background: white;
   border: 1.5px solid var(--personal-card-border);
   color: var(--personal-text-primary);
-  border-radius: var(--personal-radius-lg);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-  background: var(--personal-bg-light);
   border-color: var(--personal-accent);
   color: var(--personal-accent);
   transform: translateY(-2px);
-  box-shadow: var(--personal-shadow-md);
+  box-shadow: var(--personal-shadow-sm);
 }
 
 .delete-btn {
-  flex: 1;
-  min-width: 200px;
-  padding: 16px 24px;
   background: linear-gradient(135deg, #ef4444, #dc2626);
   border: none;
   color: white;
-  border-radius: var(--personal-radius-lg);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 4px 12px rgba(239,68,68,0.2);
 }
 
 .delete-btn:hover {
   background: linear-gradient(135deg, #dc2626, #b91c1c);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 8px 20px rgba(239,68,68,0.3);
 }
 
 /* Message Toast */
 .message-toast {
   position: fixed;
-  top: 20px;
+  top: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(-100px);
   background: var(--personal-card-bg);
@@ -747,10 +638,9 @@
   box-shadow: var(--personal-shadow-xl);
   z-index: 1000;
   opacity: 0;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   max-width: 400px;
   width: 90%;
-  overflow: hidden;
   border-left: 4px solid var(--personal-accent);
 }
 
@@ -759,280 +649,117 @@
   opacity: 1;
 }
 
-.message-toast.success {
-  border-left-color: var(--personal-success);
-}
-
-.message-toast.error {
-  border-left-color: var(--personal-error);
-}
-
-.message-toast.info {
-  border-left-color: var(--personal-info);
-}
+.message-toast.success { border-left-color: var(--personal-success); }
+.message-toast.error { border-left-color: var(--personal-error); }
+.message-toast.info { border-left-color: var(--personal-info); }
 
 .message-content {
-  padding: 18px 20px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .message-content i {
-  font-size: 1.2rem;
-  flex-shrink: 0;
+  font-size: 1.1rem;
 }
 
-.message-toast.success .message-content i {
-  color: var(--personal-success);
-}
-
-.message-toast.error .message-content i {
-  color: var(--personal-error);
-}
-
-.message-toast.info .message-content i {
-  color: var(--personal-info);
-}
+.message-toast.success .message-content i { color: var(--personal-success); }
+.message-toast.error .message-content i { color: var(--personal-error); }
+.message-toast.info .message-content i { color: var(--personal-info); }
 
 .message-content span {
   flex: 1;
-  color: var(--personal-text-primary);
   font-weight: 600;
   font-size: 0.9rem;
-  line-height: 1.4;
+  color: var(--personal-text-primary);
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+/* Profile Tabs (if used from PersonalInfo with tabs) */
+.profile-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+  background: var(--personal-card-bg);
+  border: 1px solid var(--personal-card-border);
+  border-radius: var(--personal-radius-lg);
+  padding: 6px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
+.profile-tab {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--personal-text-secondary);
+  cursor: pointer;
+  border-radius: var(--personal-radius-md);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.profile-tab.active {
+  background: var(--personal-accent-gradient);
+  color: white;
+  box-shadow: var(--personal-shadow-sm);
+}
+
+.profile-tab:not(.active):hover {
+  background: var(--personal-accent-light);
+  color: var(--personal-accent);
+}
+
+.profile-tab-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .personal-info-container {
-    padding: 30px 16px 120px;
-    padding-bottom: 160px;
-  }
-  
-  .page-title {
-    font-size: 2rem;
-  }
-  
-  .avatar-section {
-    padding: 32px 24px;
-  }
-  
-  .avatar-circle {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .avatar-initials {
-    font-size: 1.5rem;
-  }
-  
-  .user-name {
-    font-size: 1.5rem;
-  }
-  
-  .info-section {
-    padding: 32px 24px;
-  }
-  
-  .section-title {
-    font-size: 1.1rem;
-    margin-bottom: 24px;
-  }
-  
-  .field-group {
-    padding: 18px;
-  }
-  
-  .field-value {
-    font-size: 1rem;
-  }
-  
-  .edit-input {
-    padding: 12px 14px;
-    font-size: 0.95rem;
-  }
-  
-  .actions-section {
-    padding: 24px;
-  }
-  
-  .logout-btn,
-  .delete-btn {
-    min-width: 100%;
-  }
-  
-  .booking-info-content {
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .booking-info-actions {
-    width: 100%;
-  }
-  
-  .btn {
-    flex: 1;
-  }
-  
-  .edit-buttons {
-    flex-direction: column;
-  }
-  
-  .save-btn,
-  .cancel-btn {
-    width: 100%;
-  }
+  .personal-info-container { padding: 30px 16px 100px; }
+  .page-title { font-size: 1.8rem; }
+  .avatar-section { padding: 32px 24px; }
+  .avatar-circle { width: 80px; height: 80px; }
+  .avatar-initials { font-size: 1.5rem; }
+  .user-name { font-size: 1.4rem; }
+  .info-section, .actions-section { padding: 24px; }
+  .field-group { padding: 16px; }
+  .edit-buttons { flex-direction: column; }
+  .save-btn, .cancel-btn { width: 100%; }
+  .booking-info-content { flex-direction: column; }
+  .booking-info-actions { width: 100%; }
+  .btn { flex: 1; }
 }
 
 @media (max-width: 480px) {
-  .personal-info-container {
-    padding: 24px 12px 140px;
-  }
-  
-  .page-title {
-    font-size: 1.75rem;
-  }
-  
-  .avatar-section {
-    padding: 24px 20px;
-  }
-  
-  .avatar-circle {
-    width: 70px;
-    height: 70px;
-  }
-  
-  .avatar-initials {
-    font-size: 1.3rem;
-  }
-  
-  .user-name {
-    font-size: 1.3rem;
-  }
-  
-  .user-email {
-    font-size: 0.9rem;
-  }
-  
-  .info-section {
-    padding: 24px 20px;
-  }
-  
-  .section-title {
-    font-size: 1rem;
-  }
-  
-  .field-group {
-    padding: 16px;
-  }
-  
-  .field-group label {
-    font-size: 0.8rem;
-  }
-  
-  .field-value {
-    font-size: 0.95rem;
-  }
-  
-  .actions-section {
-    padding: 20px;
-  }
-  
-  .action-buttons {
-    gap: 12px;
-  }
-  
-  .logout-btn,
-  .delete-btn {
-    padding: 14px 20px;
-    font-size: 0.9rem;
-  }
-  
-  .error-banner {
-    padding: 14px 16px;
-    font-size: 0.85rem;
-  }
-  
-  .booking-info-content {
-    padding: 20px;
-  }
-  
-  .message-toast {
-    width: 95%;
-  }
-  
-  .message-content {
-    padding: 16px;
-  }
-  
-  .message-content span {
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .personal-info-container {
-    padding: 20px 10px 140px;
-  }
-  
-  .page-title {
-    font-size: 1.5rem;
-  }
-  
-  .field-value {
-    font-size: 0.9rem;
-  }
-  
-  .edit-input {
-    padding: 10px 12px;
-    font-size: 0.9rem;
-  }
-}
-
-/* Accessibility */
-button:focus,
-input:focus {
-  outline: 2px solid var(--personal-accent);
-  outline-offset: 2px;
-}
-
-button:focus:not(:focus-visible) {
-  outline: none;
-}
-
-/* Print Styles */
-@media print {
-  .personal-info-container {
-    background: white !important;
-    padding: 20px !important;
-  }
-  
-  .profile-card {
-    box-shadow: none !important;
-    border: 1px solid #ddd !important;
-  }
-  
-  .logout-btn,
-  .delete-btn,
-  .edit-btn,
-  .create-account-btn,
-  .dismiss-btn {
-    display: none !important;
-  }
-  
-  .field-group {
-    break-inside: avoid;
-  }
+  .personal-info-container { padding: 20px 12px 80px; }
+  .page-title { font-size: 1.5rem; }
+  .avatar-section { padding: 24px 20px; }
+  .avatar-circle { width: 70px; height: 70px; }
+  .avatar-initials { font-size: 1.3rem; }
+  .user-name { font-size: 1.2rem; }
+  .user-email { font-size: 0.85rem; }
+  .info-section, .actions-section { padding: 20px; }
+  .field-group { padding: 14px; }
+  .section-title { font-size: 1rem; }
+  .action-buttons { flex-direction: column; }
+  .logout-btn, .delete-btn { min-width: auto; width: 100%; }
+  .profile-tab { font-size: 0.8rem; padding: 8px 12px; }
+  .profile-tab i { font-size: 0.9rem; }
 }
 
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   :root {
     --personal-bg: #111827;
-    --personal-bg-light: #1f2937;
-    --personal-bg-lighter: #374151;
     --personal-card-bg: #1f2937;
     --personal-card-border: #374151;
     --personal-text-primary: #f9fafb;
@@ -1041,177 +768,20 @@ button:focus:not(:focus-visible) {
     --personal-text-muted: #9ca3af;
   }
   
-  .personal-info-container {
-    background: #111827;
-  }
-  
-  .edit-input {
+  .edit-input, .edit-btn, .cancel-btn, .logout-btn, .dismiss-btn {
     background: #374151;
     border-color: #4b5563;
     color: var(--personal-text-primary);
   }
   
-  .edit-input::placeholder {
-    color: var(--personal-text-muted);
-  }
-  
-  .edit-btn {
-    background: #374151;
-    border-color: #4b5563;
-    color: var(--personal-text-primary);
-  }
-  
-  .edit-btn:hover {
-    background: var(--personal-accent);
-    border-color: var(--personal-accent);
-    color: white;
-  }
-  
-  .cancel-btn {
-    background: #374151;
-    border-color: #4b5563;
-    color: var(--personal-text-primary);
-  }
-  
-  .cancel-btn:hover {
-    background: #4b5563;
-    border-color: var(--personal-accent);
-    color: var(--personal-accent);
-  }
-  
-  .logout-btn {
-    background: #374151;
-    border-color: #4b5563;
-    color: var(--personal-text-primary);
-  }
-  
-  .logout-btn:hover {
-    background: #4b5563;
-    border-color: var(--personal-accent);
-    color: var(--personal-accent);
-  }
-  
-  .dismiss-btn {
-    background: #374151;
-    border-color: #4b5563;
-    color: var(--personal-text-primary);
-  }
-  
-  .dismiss-btn:hover {
-    border-color: var(--personal-accent);
-    color: var(--personal-accent);
-  }
-}
-@media (max-width: 480px) {
-  .personal-info-container {
-    padding-bottom: 180px;
-  }
+  .edit-input:focus { border-color: var(--personal-accent); }
+  .edit-btn:hover { background: var(--personal-accent); color: white; }
+  .cancel-btn:hover, .logout-btn:hover { background: #4b5563; border-color: var(--personal-accent); color: var(--personal-accent); }
+  .dismiss-btn:hover { border-color: var(--personal-info); color: var(--personal-info); }
 }
 
-.booking-info-content,
-.error-banner {
-  max-width: 100%;
-  overflow-wrap: break-word;
-}
-
-/* ===== IMPROVED BOOKING INFO BANNER ===== */
-
-.booking-info-content {
-  background: linear-gradient(135deg, #eef6ff, #e6f0ff);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  border-left: 5px solid var(--personal-info);
-  border-radius: var(--personal-radius-lg);
-  padding: 26px;
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  position: relative;
-  box-shadow: var(--personal-shadow-sm);
-  transition: all 0.25s ease;
-}
-
-.booking-info-content:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--personal-shadow-md);
-}
-
-/* Icon */
-.booking-info-icon {
-  width: 52px;
-  height: 52px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  border-radius: var(--personal-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.3rem;
-  flex-shrink: 0;
-  box-shadow: 0 6px 16px rgba(59,130,246,0.25);
-}
-
-/* Text section */
-.booking-info-details {
-  flex: 1;
-}
-
-.booking-info-details h4 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #1e40af;
-  margin: 0 0 8px 0;
-}
-
-.booking-info-details p {
-  font-size: 0.92rem;
-  color: #334155;
-  line-height: 1.5;
-  margin: 0 0 14px 0;
-}
-
-/* Booking ID badge */
-.booking-id {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 14px;
-  background: #e0ecff;
-  border-radius: var(--personal-radius-full);
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #1d4ed8;
-  border: 1px solid rgba(59,130,246,0.25);
-}
-
-.booking-id i {
-  font-size: 0.9rem;
-}
-
-/* Buttons */
-.booking-info-actions {
-  display: flex;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.create-account-btn {
-  background: var(--personal-accent-gradient);
-  color: white;
-  box-shadow: var(--personal-shadow-sm);
-}
-
-.create-account-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--personal-shadow-md);
-}
-
-.dismiss-btn {
-  background: white;
-  border: 1.5px solid var(--personal-card-border);
-  color: var(--personal-text-secondary);
-}
-
-.dismiss-btn:hover {
-  border-color: var(--personal-info);
-  color: var(--personal-info);
+/* Accessibility */
+button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--personal-accent);
+  outline-offset: 2px;
 }

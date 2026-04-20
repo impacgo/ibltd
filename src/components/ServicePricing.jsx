@@ -1732,6 +1732,15 @@ const getServiceType = useCallback((serviceCategory) => {
   }, []);
 
   useEffect(() => {
+  // Add a class to the body when the component mounts
+  document.body.classList.add('hide-reviewability-popup');
+  
+  // Remove the class when the component unmounts
+  return () => {
+    document.body.classList.remove('hide-reviewability-popup');
+  };
+}, []);
+  useEffect(() => {
     localStorage.setItem('laundryCart', JSON.stringify(cart));
   }, [cart]);
 
@@ -1750,6 +1759,13 @@ const getServiceType = useCallback((serviceCategory) => {
   }
 }, [location.state, services]);
 
+
+useEffect(() => {
+    document.body.classList.add('hide-reviewability-popup');
+    return () => {
+      document.body.classList.remove('hide-reviewability-popup');
+    };
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -1825,6 +1841,7 @@ const getServiceType = useCallback((serviceCategory) => {
 
     fetchProducts();
   }, [categorizeProduct]);
+  
 
   useEffect(() => {
     let result = [...products];
@@ -2075,8 +2092,16 @@ const getServiceTypeDisplay = (serviceType, productName) => {
   };
 
   const handleProceedToCheckout = () => {
-   navigate("/checkout", { state: { items: cart } });
-  };
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  navigate("/checkout", { 
+    state: { 
+      items: cart,
+      subtotal,
+      tip: 0,
+      total: subtotal
+    } 
+  });
+};
 
   const formatPrice = (price) => {
     return `£${Number(price).toFixed(2)}`;

@@ -27,6 +27,7 @@ const ProfileIcon = () => (
   </svg>
 );
 
+
 const ArrowIcon = ({ isOpen }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <path d={isOpen ? "M6 15L12 9L18 15" : "M9 6L15 12L9 18"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -276,6 +277,13 @@ const Header = () => {
     setIsMenuOpen(false);
     navigate("/profile");
   }, [navigate]);
+  // Navigate to Refer & Earn page
+const goToReferAndEarn = useCallback(() => {
+  console.log("🎁 Navigating to Refer & Earn");
+  setShowProfileMenu(false);
+  setIsMenuOpen(false);
+  navigate("/refer-and-earn");
+}, [navigate]);
 
   // Handle login popup close
   const handleLoginClose = useCallback(() => {
@@ -492,6 +500,12 @@ const Header = () => {
                     >
                       <i className="fas fa-history"></i> Order History
                     </button>
+                    <button 
+  className="profile-option" 
+  onClick={goToReferAndEarn}
+>
+  <i className="fas fa-gift"></i> Refer & Earn
+</button>
                     <div className="profile-divider"></div>
                     <button 
                       className="profile-option logout-option" 
@@ -680,6 +694,17 @@ const Header = () => {
                       <span className="menu-item-text">Order History</span>
                     </button>
                   </li>
+                  <li>
+  <button 
+    className="mobile-profile-btn" 
+    onClick={goToReferAndEarn}
+  >
+    <span className="menu-item-icon">
+      <i className="fas fa-gift"></i>
+    </span>
+    <span className="menu-item-text">Refer & Earn</span>
+  </button>
+</li>
                   <li>
                     <button 
                       className="mobile-profile-btn logout" 

@@ -154,7 +154,7 @@ const handleAppleApp = () => {
               </a>
             </div>
           </div>
-
+          
           <div className="footer-links">
             {/* Services Column - FIXED: Now shows all 6 services properly on laptop */}
             <div className="footer-column services-column">
@@ -342,6 +342,10 @@ const handleAppleApp = () => {
           </div>
         </div>
       </div>
+      
+<div class="trustpilot-widget" data-locale="en-GB" data-template-id="5419b732fbfb950b10de65e5" data-businessunit-id="699c575141462e7a0920077a" data-style-height="44px" data-style-width="100%" data-theme="dark" data-token="c049beb3-59eb-4ac6-9504-c579803a4fcf">
+  <a href="https://uk.trustpilot.com/review/ironingboy.com" target="_blank" rel="noopener">Trustpilot</a>
+</div>
     </footer>
   );
 };

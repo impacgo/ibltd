@@ -236,6 +236,19 @@ export default function QuickBooking() {
   const [collectDate, setCollectDate] = useState("");
   const [deliverDate, setDeliverDate] = useState("");
   const [notes, setNotes] = useState("");
+  // 🔥 Referral State
+const [referralCode, setReferralCode] = useState("");
+const [referralLoading, setReferralLoading] = useState(false);
+const [referralApplied, setReferralApplied] = useState(false);
+const [referralMessage, setReferralMessage] = useState("");
+const [myReferralCode, setMyReferralCode] = useState("");
+const [copied, setCopied] = useState(false);
+const [walletBalance, setWalletBalance] = useState(0);
+const [walletMaxUsage, setWalletMaxUsage] = useState(0);
+const [walletThreshold, setWalletThreshold] = useState(0);
+const [walletUsed, setWalletUsed] = useState(0);
+const [walletApplied, setWalletApplied] = useState(false);
+const [loadingWallet, setLoadingWallet] = useState(false);
 
   /* ── auto-save timers ── */
   const AUTO_SAVE_DELAY_MS = 1000;
@@ -851,6 +864,10 @@ const handleCountryCodeChange = (e) => {
         fetchSavedCards();
         ensureStripeCustomer();
       }
+      // 🔥 store referral code
+if (d.referral_code) {
+  setMyReferralCode(d.referral_code);
+}
       showToast(d.isNewUser ? "Account created!" : "Welcome back!", "success");
       return d.token;
     }
@@ -1176,6 +1193,58 @@ useEffect(() => {
       if (!err.message?.toLowerCase().includes("address")) showToast(err.message || "Booking failed", "error");
     } finally { setLoading(false); setBookingInProgress(false); }
   }, [bookingInProgress, useSameAddress, userToken, geoData, deliveryGeoData, prepareOrderData, ensureUserExists, initiateStripeSetup, customerId, saveCardOption, showToast]);
+  const fetchMyReferralCode = useCallback(async () => {
+  try {
+    const token = localStorage.getItem("jwtToken");
+    if (!token) return;
+
+    const res = await fetch(`${API_BASE}/user/referral-code`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.referral_code) {
+      setMyReferralCode(data.referral_code);
+    }
+  } catch (err) {
+    console.error("Failed to fetch referral code");
+  }
+}, []);
+const fetchWalletSettings = useCallback(async () => {
+  try {
+    const token = userToken || localStorage.getItem("jwtToken");
+    if (!token) return;
+
+    const response = await fetch(`${API_BASE}/wallet/settings`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+
+    const balance = Number(data.walletBalance || 0);
+    const maxUsage = Number(data.walletMaxUsagePerOrder || 0);
+    const threshold = Number(data.walletThreshold || 0);
+
+    setWalletBalance(balance);
+    setWalletMaxUsage(maxUsage);
+    setWalletThreshold(threshold);
+
+    if (balance > 0 && balance >= threshold) {
+      const usable = Math.min(balance, maxUsage);
+      setWalletUsed(usable);
+    }
+  } catch (e) {
+    console.error("Wallet fetch error:", e);
+  }
+}, [userToken]);
 
   const handleSavedCardBooking = async () => {
     if (!selectedCard) { showToast("Please select a saved card", "error"); return; }
@@ -1188,7 +1257,13 @@ useEffect(() => {
       const res = await fetch(`${API_BASE}/quick-booking`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ ...order, payment_method_id: selectedCard, stripe_customer_id: customerId }),
+       body: JSON.stringify({
+  ...order,
+  payment_method_id: selectedCard,
+  stripe_customer_id: customerId,
+  wallet_applied: walletApplied === true,
+  wallet_used_amount: walletApplied ? walletUsed : 0,
+}),
       });
       let data; try { data = await res.json(); } catch { throw new Error("Server error"); }
       if (!res.ok) throw new Error(data.message || "Booking failed");
@@ -1229,7 +1304,15 @@ useEffect(() => {
       const res = await fetch(`${API_BASE}/quick-booking`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...pendingBookingData, payment_method_id: paymentMethodId, stripe_customer_id: stripeCustomerId, payment_intent_id: paymentIntentId, save_card: shouldSave }),
+        body: JSON.stringify({
+  ...pendingBookingData,
+  payment_method_id: paymentMethodId,
+  stripe_customer_id: stripeCustomerId,
+  payment_intent_id: paymentIntentId,
+  save_card: shouldSave,
+  wallet_applied: walletApplied === true,
+  wallet_used_amount: walletApplied ? walletUsed : 0,
+}),
       });
       let data; try { data = await res.json(); } catch { throw new Error("Server crashed"); }
       if (!res.ok) throw new Error(data.message || "Failed to create booking");
@@ -1271,6 +1354,12 @@ useEffect(() => {
   }, [showPaymentSetup]);
 
   useEffect(() => () => { clearTimeout(phoneCheckTimeoutRef.current); }, []);
+  useEffect(() => {
+  if (userToken) {
+    fetchMyReferralCode();
+    fetchWalletSettings();
+  }
+}, [userToken, fetchMyReferralCode, fetchWalletSettings]);
 
   /* ══════════════ STEP VALIDATION ══════════════ */
   const stepDone = (s) => {
@@ -1319,15 +1408,71 @@ useEffect(() => {
         if (!token) throw new Error("Failed to authenticate");
       }
       // Fetch addresses and cards after login (or refresh for existing user)
-      await Promise.all([fetchAddresses(), fetchSavedCards()]);
-       setShowAddressForm(false);
-      setStep(2);
+      await Promise.all([fetchAddresses(), fetchSavedCards(), fetchWalletSettings()]);
+setShowAddressForm(false);
+setStep(2);
     } catch (err) {
       showToast(err.message || "Failed to continue", "error");
     } finally {
       setLoading(false);
     }
   };
+
+  const applyReferralCode = async () => {
+
+  // ✅ ADD HERE
+  if (referralApplied) return;
+
+  if (!referralCode.trim()) {
+    showToast("Enter referral code", "error");
+    return;
+  }
+
+  setReferralLoading(true);
+
+  try {
+    let token = userToken || localStorage.getItem("jwtToken");
+
+    if (!token) {
+      token = await ensureUserExists();
+      if (!token) throw new Error("Login required");
+    }
+
+    const res = await fetch(`${API_BASE}/referrals/apply`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ referral_code: referralCode }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      let msg = data.message || "Invalid referral code";
+
+      if (msg.toLowerCase().includes("already")) {
+        msg = "⚠️ You have already used a referral code";
+      } else if (msg.toLowerCase().includes("invalid")) {
+        msg = "❌ Invalid referral code";
+      }
+
+      throw new Error(msg);
+    }
+
+    setReferralApplied(true);
+    setReferralMessage("Referral applied successfully 🎉");
+    showToast("Referral applied!", "success");
+
+  } catch (err) {
+    setReferralApplied(false);
+    setReferralMessage(err.message);
+    showToast(err.message, "error");
+  } finally {
+    setReferralLoading(false);
+  }
+};
 
   /* ══════════════════════════════════════
      RENDER
@@ -1752,6 +1897,141 @@ useEffect(() => {
                 <span><span className="qb-free-badge">FREE</span></span>
               </div>
             </div>
+            {/* 🔥 USER REFERRAL CODE DISPLAY */}
+{/* {myReferralCode && (
+  <div
+    style={{
+      background: "#f1f5f9",
+      padding: "12px",
+      borderRadius: "10px",
+      marginBottom: "12px",
+      border: "1px dashed #FF6B00",
+    }}
+  >
+    <div style={{ fontSize: "12px", color: "#64748b" }}>
+      Your Referral Code
+    </div>
+
+    <div
+      style={{
+        fontSize: "18px",
+        fontWeight: "700",
+        color: "#FF6B00",
+        letterSpacing: "1px",
+      }}
+    >
+      {myReferralCode}
+    </div>
+
+    <div style={{ fontSize: "12px", color: "#64748b" }}>
+      Share with friends & earn rewards 🎁
+    </div>
+  </div>
+)} */}
+{/* <button
+  className="qb-copy-btn"
+  onClick={() => {
+    navigator.clipboard.writeText(myReferralCode);
+    setCopied(true);
+    showToast("Copied!", "success");
+
+    setTimeout(() => setCopied(false), 2000);
+  }}
+>
+  <i className="fas fa-copy" />
+  {copied ? "Copied!" : "Copy Code"}
+</button> */}
+
+            {/* 🔥 REFERRAL SECTION (STEP 4) */}
+{/* 🔥 WALLET OR REFERRAL SECTION */}
+{walletBalance > 0 ? (
+  <div
+    style={{
+      background: "#ffffff",
+      border: "1px solid #e2e8f0",
+      borderRadius: "14px",
+      padding: "16px",
+      marginTop: "16px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "12px",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+    }}
+  >
+    <div style={{ flex: 1 }}>
+      <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#1a1a1a", marginBottom: 4 }}>
+        Use Wallet Balance
+      </div>
+      <div style={{ fontSize: "0.8rem", color: "#4a5568" }}>
+        Available: £{walletBalance.toFixed(2)}
+      </div>
+      {walletThreshold > 0 ? (
+        <div style={{ fontSize: "0.78rem", color: "#dc2626", marginTop: 2 }}>
+          Wallet usable above £{walletThreshold.toFixed(2)}
+        </div>
+      ) : (
+        <div style={{ fontSize: "0.78rem", color: "#4a5568", marginTop: 2 }}>
+          Only part of your wallet balance can be used for this order.
+        </div>
+      )}
+    </div>
+
+    <label className="qb-switch">
+      <input
+        type="checkbox"
+        checked={walletApplied}
+        onChange={(e) => {
+          const isChecked = e.target.checked;
+          setWalletApplied(isChecked);
+          if (isChecked) {
+            const usable = Math.min(walletBalance, walletMaxUsage);
+            setWalletUsed(usable);
+          } else {
+            setWalletUsed(0);
+          }
+        }}
+      />
+      <span className="qb-slider"></span>
+    </label>
+  </div>
+) : (
+  <div className="qb-field" style={{ marginTop: "16px" }}>
+    <label className="qb-label">
+      Have a referral code? <span className="qb-label-opt">(optional)</span>
+    </label>
+
+    <div style={{ display: "flex", gap: "8px" }}>
+      <input
+        className="qb-input"
+        type="text"
+        value={referralCode}
+        onChange={(e) => {
+          setReferralCode(e.target.value.toUpperCase());
+          setReferralApplied(false);
+          setReferralMessage("");
+        }}
+        placeholder="Enter referral code"
+        disabled={referralApplied}
+      />
+
+      <button
+        className="qb-btn-ghost"
+        style={{ maxWidth: "120px" }}
+        onClick={applyReferralCode}
+        disabled={referralLoading || referralApplied}
+      >
+        {referralLoading ? "Applying..." : referralApplied ? "Applied" : "Apply"}
+      </button>
+    </div>
+
+    {referralMessage && (
+      <div className={referralApplied ? "qb-success-message" : "qb-error-message"}>
+        {referralMessage}
+      </div>
+    )}
+  </div>
+)}
 
             {userToken && loadingCards ? (
               <div className="qb-loading-cards">
