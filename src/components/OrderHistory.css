@@ -37,7 +37,7 @@
 
 /* Main Container */
 .order-history-page {
-  min-height: 100vh;
+  min-height: calc(100vh - 72px); /* header height */
   background: var(--order-bg);
   padding: 40px 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
@@ -1180,4 +1180,12 @@
 button:focus-visible {
   outline: 2px solid var(--order-accent);
   outline-offset: 2px;
+}
+
+/* Add to OrderHistory.css */
+.order-history-page {
+  min-height: calc(100vh - 72px); /* header height */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
 }

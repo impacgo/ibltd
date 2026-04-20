@@ -99,6 +99,7 @@
   .header.hide-header {
     opacity: 0;
     pointer-events: none;
+    visibility: hidden;   /* ADD THIS — prevents any invisible blocking */
   }
 }
 
@@ -1711,22 +1712,6 @@ body {
   to { transform: translateX(-50%); }
 }
 
-/* ===== BODY OFFSET (SINGLE SOURCE OF TRUTH) ===== */
-body {
-  padding-top: calc(44px + var(--header-height-mobile));
-}
-
-@media (min-width: 768px) {
-  body {
-    padding-top: calc(44px + var(--header-height-tablet));
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    padding-top: calc(44px + var(--header-height-desktop));
-  }
-}
 @media (max-width: 1023px) {
   .header-content {
     display: flex !important;
@@ -2762,6 +2747,26 @@ body {
 /* ===== BODY OFFSET (SINGLE SOURCE OF TRUTH) ===== */
 body {
   padding-top: calc(48px + var(--header-height-mobile));
+}
+
+@media (min-width: 768px) {
+  body {
+    padding-top: calc(48px + var(--header-height-tablet));
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    padding-top: calc(48px + var(--header-height-desktop));
+  }
+}
+/* ===== BODY OFFSET — SINGLE SOURCE OF TRUTH ===== */
+body {
+  padding-top: calc(48px + var(--header-height-mobile));
+  overflow-x: hidden;        /* ADD THIS */
+  overflow-y: auto;          /* ADD THIS — fixes production scroll */
+  -webkit-overflow-scrolling: touch;  /* ADD THIS — fixes iOS scroll */
+  min-height: 100%;          /* ADD THIS */
 }
 
 @media (min-width: 768px) {

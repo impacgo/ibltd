@@ -37,7 +37,7 @@
 
 .personal-info-container {
   background: var(--personal-bg);
-  min-height: 100vh;
+ min-height: calc(100vh - 72px); /* header height */
   padding: 40px 20px 100px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
@@ -785,3 +785,11 @@ button:focus-visible, input:focus-visible {
   outline: 2px solid var(--personal-accent);
   outline-offset: 2px;
 }
+/* Add to PersonalInfo.css */
+.personal-info-container {
+  min-height: calc(100vh - 72px); /* header height */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
