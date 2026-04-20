@@ -1,4 +1,3 @@
-
 // src/App.jsx
 import React, { useEffect, Suspense, lazy } from "react";
 import {
@@ -19,6 +18,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import ServicePricing from "./components/ServicePricing";
 import Reviews from "./components/Reviews";
 import ReviewBannerWidget from "./components/ReviewBannerWidget";
+import ReferAndEarn from "./components/ReferAndEarn";
 
 /* -------------------- MAIN LAYOUT -------------------- */
 
@@ -245,6 +245,7 @@ function App() {
             <Route path="/terms" element={<PageWrapper component={TermsPage} />} />
             <Route path="/search" element={<PageWrapper component={SearchResults} />} />
             <Route path="/corporate-services" element={<PageWrapper component={CorporateServices} />}/>
+            <Route path="/refer-and-earn" element={<PageWrapper component={ReferAndEarn} />} />
 
 
             <Route
@@ -291,4 +292,3 @@ const FloatingCallButtonWithCondition = () => {
   return <FloatingCallButton />;
 };
 export default App;
-
