@@ -48,3 +48,26 @@
     transform: translate(-50%, 0);
   }
 }
+/* Hide Reviewability popup on pages that have the class 'hide-reviewability-popup' */
+.hide-reviewability-popup .popup-rating-widget,
+.hide-reviewability-popup #popup-rating-widget,
+.hide-reviewability-popup [class*="reviewability"],
+.hide-reviewability-popup [id*="popup-rating"] {
+  display: none !important;
+}
+/* Global scroll fix for production mobile */
+html, body {
+  height: auto;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+* {
+  touch-action: manipulation;
+}
+
+body.menu-open {
+  overflow: hidden;
+}
