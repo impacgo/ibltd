@@ -52,8 +52,13 @@ const MainLayout = ({ children, hideHeaderFooter = false }) => {
   const location = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+  window.scrollTo(0, 0);
+
+  // 🔥 FORCE SCROLL RESET
+  document.body.style.overflow = "auto";
+}, [location.pathname]);
+
+
 
   return (
     <div className="App">
