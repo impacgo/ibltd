@@ -1864,7 +1864,7 @@ setStep(2);
                 <i className="fas fa-arrow-left" /> Back
               </button>
               <button className="qb-btn-primary" onClick={() => setStep(4)} disabled={!stepDone(3)}>
-                Continue to Payment <i className="fas fa-arrow-right" />
+                Continue booking <i className="fas fa-arrow-right" />
               </button>
             </div>
           </div>
