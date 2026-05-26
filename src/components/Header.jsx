@@ -314,8 +314,8 @@ const goToReferAndEarn = useCallback(() => {
     <div className="header-discount-marquee">
       <div className="header-discount-track">
         {[
-  "🎉 <strong>First Booking Offer</strong> – Get <strong>50% OFF</strong> on your first order.",
-  "🎉 <strong>First Booking Offer</strong> – Get <strong>50% OFF</strong> on your first order."
+  "🎉 <strong>First Booking Offer</strong> – Get <strong>20% OFF</strong> on your first order.",
+  "🎉 <strong>First Booking Offer</strong> – Get <strong>20% OFF</strong> on your first order."
 ]
 //         [
 //   "🎉 <strong>First Booking</strong> – <strong>50% OFF</strong> on orders above £50",
@@ -344,8 +344,8 @@ const goToReferAndEarn = useCallback(() => {
 
         {/* duplicate for seamless loop */}
         {[
-  "🎉 <strong>First Booking Offer</strong> – Get <strong>50% OFF</strong> on your first order.",
-  "🎉 <strong>First Booking Offer</strong> – Get <strong>50% OFF</strong> on your first order."
+  "🎉 <strong>First Booking Offer</strong> – Get <strong>20% OFF</strong> on your first order.",
+  "🎉 <strong>First Booking Offer</strong> – Get <strong>20% OFF</strong> on your first order."
 ]
 //         [
 //   "🎉 <strong>First Booking</strong> – <strong>50% OFF</strong> on orders above £50",
