@@ -83,15 +83,15 @@ const MetaManager = () => {
 
   /* ---------- Static Pages ---------- */
   if (pathname === "/") {
-    title = "Premium Ironing and Laundry Services | 50% OFF on First Order";
+    title = "Premium Ironing and Laundry Services | 20% OFF on First Order";
     description =
-      "Book professional ironing and laundry services with Ironing Boy. Get 50% OFF on your first order, doorstep pickup and delivery, and premium garment care.";
+      "Book professional ironing and laundry services with Ironing Boy. Get 20% OFF on your first order, doorstep pickup and delivery, and premium garment care.";
     keywords = "Premium Laundry Services";
 
   } else if (pathname === "/services") {
-    title = "Laundry and Ironing Services | 50% OFF First Order";
+    title = "Laundry and Ironing Services | 20% OFF First Order";
     description =
-      "Explore professional laundry and ironing services by Ironing Boy. Doorstep pickup and delivery, expert garment care, and up to 50% OFF on your first order.";
+      "Explore professional laundry and ironing services by Ironing Boy. Doorstep pickup and delivery, expert garment care, and up to 20% OFF on your first order.";
     keywords = "laundry and ironing services";
 
   } else if (pathname === "/areas") {
